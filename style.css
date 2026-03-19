@@ -315,10 +315,10 @@ img {
 }
 
 .hero h1 {
-  font-size: clamp(3rem, 10vw, 5rem);
+  font-size: clamp(3rem, 10vw, 5.5rem);
   font-weight: 900;
-  line-height: 1.05;
-  letter-spacing: -0.05em;
+  line-height: 0.95;
+  letter-spacing: -0.06em;
   margin-bottom: 28px;
   color: var(--text-primary);
 }
@@ -1099,6 +1099,178 @@ img {
   font-size: 0.8rem;
 }
 
+
+/* ============================================
+   BEYOND COMPRESSION (POV)
+   ============================================ */
+.beyond-compression {
+  padding: var(--section-padding);
+  position: relative;
+}
+
+.comparison-grid-simple {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.comparison-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 40px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.comparison-card.highlight {
+  background: rgba(168, 85, 247, 0.04);
+  border-color: rgba(168, 85, 247, 0.3);
+  box-shadow: 0 0 40px rgba(168, 85, 247, 0.1);
+}
+
+.comparison-card.highlight::before {
+  content: 'MARROW';
+  position: absolute;
+  top: -12px;
+  right: 20px;
+  background: var(--gradient-main);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 900;
+  padding: 4px 12px;
+  border-radius: 100px;
+  letter-spacing: 0.1em;
+}
+
+.card-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.comparison-card h3 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 24px;
+  letter-spacing: -0.02em;
+}
+
+.comparison-card ul {
+  list-style: none;
+  padding: 0;
+}
+
+.comparison-card li {
+  font-size: 1rem;
+  padding: 8px 0;
+  color: var(--text-secondary);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.comparison-card li:last-child {
+  border-bottom: none;
+}
+
+.comparison-card.highlight li {
+  color: var(--text-primary);
+}
+
+/* ============================================
+   V0.5 BREAKTHROUGH SECTION
+   ============================================ */
+.breakthrough {
+  padding: var(--section-padding);
+  background: radial-gradient(circle at 80% 20%, rgba(34, 211, 238, 0.03) 0%, transparent 50%);
+}
+
+.breakthrough-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.breakthrough-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 40px;
+  backdrop-filter: blur(12px);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.breakthrough-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(168, 85, 247, 0.4);
+  background: var(--bg-card-hover);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(168, 85, 247, 0.1);
+}
+
+.breakthrough-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle at center, var(--accent-purple), transparent 70%);
+  opacity: 0.05;
+  filter: blur(20px);
+}
+
+.breakthrough-icon {
+  width: 64px;
+  height: 64px;
+  background: rgba(15, 15, 35, 0.6);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  color: var(--accent-purple);
+  transition: all 0.3s;
+}
+
+.breakthrough-card:hover .breakthrough-icon {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  transform: scale(1.1) rotate(5deg);
+}
+
+.breakthrough-card h3 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+}
+
+.breakthrough-card p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+/* Specific Icons & Animations */
+.shield-icon { color: var(--accent-cyan); }
+.shield-icon svg { animation: shield-pulse 3s infinite; }
+
+@keyframes shield-pulse {
+  0%, 100% { filter: drop-shadow(0 0 0px rgba(34, 211, 238, 0)); }
+  50% { filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.5)); }
+}
+
+.dashboard-icon { color: var(--accent-purple); }
+.density-icon { color: var(--accent-pink); }
+.autopilot-icon { color: var(--accent-blue); }
+
 /* ============================================
    RESPONSIVE
    ============================================ */
@@ -1121,6 +1293,7 @@ img {
   .integration-cards { grid-template-columns: 1fr; }
   .cli-grid { grid-template-columns: 1fr; }
   .roadmap-grid { grid-template-columns: 1fr; }
+  .breakthrough-grid { grid-template-columns: 1fr; }
 
   .pipeline-visual {
     flex-direction: column;
