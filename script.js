@@ -8,7 +8,7 @@ function initAIAnimation() {
   if (!canvas) return;
 
   const ctx = canvas.getContext('2d');
-  let width, height, particles = [], signalPulses = [];
+  let width, height, lines = [];
   
   const resize = () => {
     width = canvas.width = window.innerWidth;
@@ -18,93 +18,54 @@ function initAIAnimation() {
   window.addEventListener('resize', resize);
   resize();
 
-  class Particle {
+  class FlowLine {
     constructor() {
       this.reset();
     }
     reset() {
       this.x = Math.random() * width;
       this.y = Math.random() * height;
-      this.vx = (Math.random() - 0.5) * 2;
-      this.vy = (Math.random() - 0.5) * 2;
-      this.size = Math.random() * 2 + 1;
-      this.alpha = Math.random() * 0.5 + 0.2;
-      this.processed = false;
+      this.length = Math.random() * 80 + 20;
+      this.speed = Math.random() * 0.5 + 0.1;
+      this.opacity = Math.random() * 0.3 + 0.1;
+      this.color = Math.random() > 0.5 ? '168, 85, 247' : '34, 211, 238'; // purple or cyan
     }
     update() {
-      const centerX = width / 2;
-      const centerY = height / 2;
-      const dx = centerX - this.x;
-      const dy = centerY - this.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      
-      // Attraction to center (distillation)
-      if (dist < 300) {
-        this.vx += dx * 0.001;
-        this.vy += dy * 0.001;
-        this.vx *= 0.98;
-        this.vy *= 0.98;
-        
-        if (dist < 20) {
-          this.reset();
-          if (Math.random() > 0.7) createSignal();
-        }
-      }
-
-      this.x += this.vx;
-      this.y += this.vy;
-
-      if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) {
+      this.y -= this.speed;
+      if (this.y < -this.length) {
         this.reset();
+        this.y = height + this.length;
       }
     }
     draw() {
-      ctx.fillStyle = `rgba(168, 85, 247, ${this.alpha})`;
+      const grad = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.length);
+      grad.addColorStop(0, `rgba(${this.color}, ${this.opacity})`);
+      grad.addColorStop(1, `rgba(${this.color}, 0)`);
+      
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.moveTo(this.x, this.y);
+      ctx.lineTo(this.x, this.y + this.length);
+      ctx.stroke();
     }
   }
 
-  function createSignal() {
-    signalPulses.push({
-      x: width / 2,
-      y: height / 2,
-      r: 0,
-      alpha: 0.8,
-      color: Math.random() > 0.5 ? '#22d3ee' : '#a855f7'
-    });
-  }
-
-  for (let i = 0; i < 150; i++) particles.push(new Particle());
+  for (let i = 0; i < 40; i++) lines.push(new FlowLine());
 
   function animate() {
     ctx.clearRect(0, 0, width, height);
     
-    // Draw central glow
-    const gradient = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, 100);
-    gradient.addColorStop(0, 'rgba(168, 85, 247, 0.2)');
-    gradient.addColorStop(1, 'rgba(168, 85, 247, 0)');
+    // Subtle background glow
+    const gradient = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, width/1.5);
+    gradient.addColorStop(0, 'rgba(8, 8, 20, 0)');
+    gradient.addColorStop(1, 'rgba(168, 85, 247, 0.05)');
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, width, height);
 
-    particles.forEach(p => {
-      p.update();
-      p.draw();
-    });
-
-    signalPulses.forEach((s, i) => {
-      s.r += 4;
-      s.alpha *= 0.97;
-      ctx.strokeStyle = s.color;
-      ctx.globalAlpha = s.alpha;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.globalAlpha = 1;
-
-      if (s.alpha < 0.01) signalPulses.splice(i, 1);
+    lines.forEach(line => {
+      line.update();
+      line.draw();
     });
 
     requestAnimationFrame(animate);
@@ -184,7 +145,30 @@ function initNavbarScroll() {
   check();
 }
 
+// --- Mobile Menu Toggle ---
+function initMobileMenu() {
+  const toggle = document.getElementById('mobile-toggle');
+  const navLinks = document.querySelector('.nav-links');
+  
+  if (!toggle || !navLinks) return;
+
+  toggle.addEventListener('click', () => {
+    navLinks.classList.toggle('active');
+    toggle.textContent = navLinks.classList.contains('active') ? '✕' : '☰';
+  });
+
+  // Close menu when clicking a link
+  navLinks.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      console.log('Link clicked, closing menu');
+      navLinks.classList.remove('active');
+      toggle.textContent = '☰';
+    });
+  });
+}
+
 // --- Smooth Scroll ---
+
 function initSmoothScroll() {
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', (e) => {
@@ -204,4 +188,5 @@ document.addEventListener('DOMContentLoaded', () => {
   initNavbarScroll();
   initAIAnimation(); // Replaced initStarfield with AI animation
   initSmoothScroll();
+  initMobileMenu();
 });
