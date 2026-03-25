@@ -132,6 +132,12 @@
     </div>
   </section>
 
+  <!-- ===== MARKETING SHOWCASE ===== -->
+  <section class="marketing-showcase" style="padding: 0 24px 60px; text-align: center; position: relative; z-index: 10;">
+    <div class="container reveal">
+      <img src="media/omni_token_savings_graphic.png" alt="OMNI Token Savings Strategy" style="max-width: 100%; width: 900px; margin: 0 auto; border-radius: var(--radius-lg); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-card), var(--shadow-glow);">
+    </div>
+  </section>
 
   <!-- ===== FEATURE STATS ===== -->
   <section class="stats" id="features">
@@ -235,9 +241,13 @@
           </div>
         </div>
 
-        <div class="lifecycle-summary">
+        <div class="lifecycle-summary" style="flex-direction: column; align-items: center; gap: 32px;">
           <div class="summary-badge">
             <span class="pulse"></span> Native Rust Integration
+          </div>
+          <div class="hook-indicator reveal" style="max-width: 800px; width: 100%;">
+            <img src="media/omni-terminal-hook-indikator.png" alt="OMNI Terminal Hook" style="width: 100%; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-card);">
+            <p style="text-align: center; color: var(--text-secondary); font-size: 0.9rem; margin-top: 16px;"><i>Real-time ROI feedback on every distilled command.</i></p>
           </div>
         </div>
       </div>
@@ -326,6 +336,11 @@ Step 15/15 : CMD ["node", "server.js"]
   ✦ LLM Reasoning 150x Sharper</span></pre>
         </div>
       </div>
+      
+      <div class="diff-visual reveal" style="text-align: center; margin-top: 60px;">
+        <h3 style="margin-bottom: 24px; font-size: 1.5rem; font-weight: 700;">Signal Comparison: <code style="color: var(--accent-cyan); font-family: var(--font-mono); font-size: 1.3rem;">omni diff</code></h3>
+        <img src="media/omni-diff.png" alt="OMNI Diff" style="max-width: 100%; width: 900px; margin: 0 auto; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-card);">
+      </div>
     </div>
   </section>
 
@@ -360,6 +375,12 @@ Step 15/15 : CMD ["node", "server.js"]
           <div class="cli-desc">Pipe mode — distil any command output in real-time.</div>
         </div>
       </div>
+      
+      <div class="analytics-dashboard reveal" style="text-align: center; margin-top: 60px;">
+        <h3 style="margin-bottom: 16px; font-size: 1.5rem; font-weight: 700;">Analytics Dashboard</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 32px;">Keep track of your project's efficiency with OMNI's built-in reporting via `omni stats`.</p>
+        <img src="media/omni-stats.png" alt="OMNI Stats" style="max-width: 100%; width: 900px; margin: 0 auto; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); box-shadow: var(--shadow-card);">
+      </div>
     </div>
   </section>
 
@@ -374,60 +395,44 @@ Step 15/15 : CMD ["node", "server.js"]
             <tr>
               <th>Feature</th>
               <th class="omni-col">OMNI</th>
-              <th>RTK</th>
-              <th>Snip</th>
-              <th>Serena</th>
+              <th>Traditional Alternatives</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td>Engine Speed</td>
               <td class="omni-col">< 1ms</td>
-              <td>~10ms</td>
-              <td>~15ms</td>
-              <td>~50ms+</td>
+              <td>10ms – 50ms+</td>
             </tr>
             <tr>
               <td>Density Gain</td>
               <td class="omni-col">60–99%</td>
-              <td>10–20%</td>
-              <td>~5%</td>
-              <td>Variable</td>
+              <td>5–20%</td>
             </tr>
             <tr>
               <td>Governance</td>
               <td class="omni-col">SHA-256 Trust Boundary</td>
-              <td>Basic Rules</td>
-              <td>Manual</td>
-              <td>None</td>
+              <td>Manual / None</td>
             </tr>
             <tr>
               <td>Auditing</td>
-              <td class="omni-col">Deep JSON Rpt</td>
-              <td>Basic Stats</td>
-              <td>None</td>
-              <td>None</td>
+              <td class="omni-col">Deep JSON Reports</td>
+              <td>Basic Stats / None</td>
             </tr>
             <tr>
               <td>Philosophy</td>
-              <td class="omni-col">Semantic Layer</td>
-              <td>Proxy Filtering</td>
-              <td>YAML Pipes</td>
-              <td>Retrieval</td>
+              <td class="omni-col">Semantic Context Layer</td>
+              <td>Blind Text Processing</td>
             </tr>
             <tr>
               <td>Deployment</td>
-              <td class="omni-col">68KB Wasm</td>
-              <td>Native Bin</td>
-              <td>Static Bin</td>
-              <td>Python Pkg</td>
+              <td class="omni-col">< 5MB Single Native Binary</td>
+              <td>Heavy dependencies / Python pkgs</td>
             </tr>
             <tr>
               <td>Memory</td>
-              <td class="omni-col">Manual (Zero GC)</td>
-              <td>ARC (Fast)</td>
-              <td>GC (Slow)</td>
-              <td>GC (Heavy)</td>
+              <td class="omni-col">Zero GC (Rust)</td>
+              <td>Garbage Collected (Slow)</td>
             </tr>
           </tbody>
         </table>
@@ -447,7 +452,8 @@ Step 15/15 : CMD ["node", "server.js"]
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>
           </div>
           <h3>Session Continuity</h3>
-          <p>OMNI tracks hot files, active errors, and domain hints across restarts, so your agent never loses its place.</p>
+          <p style="margin-bottom: 20px;">OMNI tracks hot files, active errors, and domain hints across restarts, so your agent never loses its place.</p>
+          <img src="media/omni-session-status.png" alt="OMNI Session" style="width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); margin-top: auto;">
         </div>
 
         <div class="breakthrough-card">
@@ -455,7 +461,8 @@ Step 15/15 : CMD ["node", "server.js"]
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
           </div>
           <h3>RewindStore</h3>
-          <p>Zero information loss guaranteed. Any compressed content is stored via SHA-256 for instant retrieval when needed.</p>
+          <p style="margin-bottom: 20px;">Zero information loss guaranteed. Any compressed content is stored via SHA-256 for instant retrieval when needed.</p>
+          <img src="media/omni-rewind-list.png" alt="OMNI Rewind List" style="width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); margin-top: auto;">
         </div>
 
         <div class="breakthrough-card">
@@ -471,7 +478,8 @@ Step 15/15 : CMD ["node", "server.js"]
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M2 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="M12 20v2"/><path d="m17.66 17.66 1.41 1.41"/><path d="M20 12h2"/><path d="m19.07 4.93-1.41 1.41"/><circle cx="12" cy="12" r="4"/></svg>
           </div>
           <h3>Automatic Learning</h3>
-          <p>Use `omni learn` to automatically generate semantic filters from your command history and patterns.</p>
+          <p style="margin-bottom: 20px;">Use `omni learn` to automatically generate semantic filters from your command history and patterns.</p>
+          <img src="media/omni-learn-status.png" alt="OMNI Learn" style="width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); margin-top: auto;">
         </div>
       </div>
     </div>
