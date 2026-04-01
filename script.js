@@ -2,48 +2,80 @@
 // OMNI Landing Page — Interactions
 // ============================================
 
-// --- AI Animation (Semantic Distillation) ---
+// --- Semantic Signal Flow Background ---
 function initAIAnimation() {
   const canvas = document.getElementById('hero-canvas');
   if (!canvas) return;
 
   const ctx = canvas.getContext('2d');
-  let width, height, lines = [];
-  
+  let width, height, particles = [], signals = [];
+
   const resize = () => {
     width = canvas.width = window.innerWidth;
     height = canvas.height = window.innerHeight;
   };
-  
+
   window.addEventListener('resize', resize);
   resize();
 
-  class FlowLine {
+  class SignalParticle {
     constructor() {
       this.reset();
     }
     reset() {
       this.x = Math.random() * width;
-      this.y = Math.random() * height;
-      this.length = Math.random() * 80 + 20;
-      this.speed = Math.random() * 0.5 + 0.1;
-      this.opacity = Math.random() * 0.3 + 0.1;
-      this.color = Math.random() > 0.5 ? '168, 85, 247' : '34, 211, 238'; // purple or cyan
+      this.y = height + Math.random() * 100;
+      this.speed = 0.2 + Math.random() * 0.7;
+      this.size = 1 + Math.random() * 2;
+      this.opacity = 0.05 + Math.random() * 0.15;
+      this.wobble = Math.random() * Math.PI * 2;
+      this.wobbleSpeed = 0.01 + Math.random() * 0.02;
+      this.color = Math.random() > 0.5 ? '168, 85, 247' : '34, 211, 238';
     }
     update() {
       this.y -= this.speed;
-      if (this.y < -this.length) {
-        this.reset();
-        this.y = height + this.length;
-      }
+      this.wobble += this.wobbleSpeed;
+      this.x += Math.sin(this.wobble) * 0.3;
+
+      if (this.y < -10) this.reset();
+    }
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${this.color}, ${this.opacity})`;
+      ctx.fill();
+    }
+  }
+
+  class SignalStream {
+    constructor() {
+      this.reset();
+    }
+    reset() {
+      this.x = Math.random() * width;
+      this.y = height + 50;
+      this.length = 30 + Math.random() * 120;
+      this.speed = 0.3 + Math.random() * 0.6;
+      this.opacity = 0.08 + Math.random() * 0.12;
+      this.thickness = 1 + Math.random() * 1.5;
+      this.color = Math.random() > 0.5 ? '168, 85, 247' : '34, 211, 238';
+      this.pulse = Math.random() * Math.PI * 2;
+    }
+    update() {
+      this.y -= this.speed;
+      this.pulse += 0.02;
+      if (this.y < -this.length) this.reset();
     }
     draw() {
       const grad = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.length);
-      grad.addColorStop(0, `rgba(${this.color}, ${this.opacity})`);
+      const pulseAlpha = this.opacity * (0.7 + 0.3 * Math.sin(this.pulse));
+
+      grad.addColorStop(0, `rgba(${this.color}, 0)`);
+      grad.addColorStop(0.3, `rgba(${this.color}, ${pulseAlpha})`);
       grad.addColorStop(1, `rgba(${this.color}, 0)`);
-      
+
       ctx.strokeStyle = grad;
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = this.thickness;
       ctx.beginPath();
       ctx.moveTo(this.x, this.y);
       ctx.lineTo(this.x, this.y + this.length);
@@ -51,26 +83,27 @@ function initAIAnimation() {
     }
   }
 
-  for (let i = 0; i < 40; i++) lines.push(new FlowLine());
+  // Spawn particles
+  for (let i = 0; i < 120; i++) particles.push(new SignalParticle());
+  for (let i = 0; i < 30; i++) signals.push(new SignalStream());
 
   function animate() {
     ctx.clearRect(0, 0, width, height);
-    
-    // Subtle background glow
-    const gradient = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, width/1.5);
-    gradient.addColorStop(0, 'rgba(8, 8, 20, 0)');
-    gradient.addColorStop(1, 'rgba(168, 85, 247, 0.05)');
-    ctx.fillStyle = gradient;
+
+    // Ambient gradient glow
+    const centerGlow = ctx.createRadialGradient(width/2, height/3, 0, width/2, height/3, width/1.3);
+    centerGlow.addColorStop(0, 'rgba(168, 85, 247, 0.08)');
+    centerGlow.addColorStop(0.5, 'rgba(34, 211, 238, 0.03)');
+    centerGlow.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = centerGlow;
     ctx.fillRect(0, 0, width, height);
 
-    lines.forEach(line => {
-      line.update();
-      line.draw();
-    });
+    particles.forEach(p => { p.update(); p.draw(); });
+    signals.forEach(s => { s.update(); s.draw(); });
 
     requestAnimationFrame(animate);
   }
-  
+
   animate();
 }
 
@@ -181,6 +214,61 @@ function initSmoothScroll() {
   });
 }
 
+// --- Auto Fetch Latest GitHub Version ---
+async function initLatestVersion() {
+  const versionElement = document.querySelector('.hero-badge span:nth-child(2)');
+  const tagElement = document.querySelector('.hero-badge .badge-tag');
+  const textElement = document.querySelector('.hero-badge .badge-text');
+  if (!versionElement) return;
+
+  try {
+    const res = await fetch('https://api.github.com/repos/fajarhide/omni/releases/latest', {
+      cache: 'no-cache'
+    });
+    if (!res.ok) return;
+
+    const data = await res.json();
+    const tagName = data.tag_name;
+    const latestVersion = tagName.replace(/^v/, '');
+
+    // Auto detect release type from version tag
+    let releaseStatus = 'Stable Release';
+    let statusColor = '#22c55e';
+
+    if (tagName.includes('-rc')) {
+      releaseStatus = 'Release Candidate';
+      statusColor = '#f59e0b';
+    } else if (tagName.includes('-beta')) {
+      releaseStatus = 'Beta';
+      statusColor = '#a855f7';
+    } else if (tagName.includes('-alpha')) {
+      releaseStatus = 'Alpha';
+      statusColor = '#ef4444';
+    }
+
+    // Smooth transition update
+    versionElement.style.opacity = '0';
+    versionElement.style.transform = 'translateY(-4px)';
+
+    setTimeout(() => {
+      versionElement.textContent = `v${latestVersion}`;
+      if (tagElement) {
+        tagElement.textContent = releaseStatus;
+        tagElement.style.background = `rgba(${statusColor === '#22c55e' ? '34,197,94' : statusColor === '#f59e0b' ? '245,158,11' : statusColor === '#a855f7' ? '168,85,247' : '239,68,68'}, 0.15)`;
+        tagElement.style.color = statusColor;
+      }
+      if (textElement) textElement.remove();
+
+      versionElement.style.opacity = '1';
+      versionElement.style.transform = 'translateY(0)';
+    }, 200);
+
+  } catch (err) {
+    // Fail silently, keep hardcoded version as fallback
+    console.debug('Could not fetch latest version:', err);
+  }
+}
+
 // Update the DOMContentLoaded listener
 document.addEventListener('DOMContentLoaded', () => {
   initCopyButtons();
@@ -189,4 +277,5 @@ document.addEventListener('DOMContentLoaded', () => {
   initAIAnimation(); // Replaced initStarfield with AI animation
   initSmoothScroll();
   initMobileMenu();
+  initLatestVersion();
 });
