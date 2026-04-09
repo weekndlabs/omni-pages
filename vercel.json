@@ -12,11 +12,5 @@
       "destination": "https://raw.githubusercontent.com/fajarhide/omni/main/scripts/install.ps1",
       "permanent": true
     }
-  ],
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/$1"
-    }
   ]
 }
