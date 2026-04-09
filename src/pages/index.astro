@@ -85,11 +85,11 @@ try {
 					<div class="bento-card card-danger">
 						<div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
 						<h3>The Problem: Noise & Cost</h3>
-						<p>A simple <code>npm install</code> dumps ~15,000 tokens of useless warning logs and loading bars into your AI's context.</p>
+						<p>When autonomous AI agents read your terminal, they read *everything*. A simple <code>npm install</code> dumps ~15,000 tokens of useless junk into your AI's context.</p>
 						<ul class="bullet-list">
-							<li><strong>Extremely Expensive:</strong> You pay real money for every junk token.</li>
+							<li><strong>Extremely Expensive:</strong> You pay real money for every single token of junk output.</li>
 							<li><strong>Diluted Reasoning:</strong> Critical errors get buried. The AI becomes "dumb" trying to sift through garbage.</li>
-							<li><strong>Model Lock-in:</strong> You're forced to use flagship models just to have a context window big enough.</li>
+							<li><strong>Model Lock-in:</strong> You're forced to use the most expensive flagship models just to have a context window big enough.</li>
 						</ul>
 					</div>
 
@@ -97,15 +97,15 @@ try {
 					<div class="bento-card card-success">
 						<div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
 						<h3>The Solution: Pure Signal</h3>
-						<p>OMNI intercepts terminal output and filters the garbage, feeding your AI only the highly-focused marrow.</p>
+						<p>OMNI acts as a smart sieve between your terminal and the AI, feeding it only the highly-focused, straight-to-the-point marrow.</p>
 						<ul class="bullet-list">
-							<li><strong>~90% Token Reduction:</strong> Drastically cut your agentic API bills instantly.</li>
-							<li><strong>Higher Quality Answers:</strong> With no distractions, the agent zeroes in on exactly the right problem.</li>
-							<li><strong>Affordable Models Win:</strong> Even cheaper API models perform on-par with flagships when fed pure signal.</li>
+							<li><strong>90% Token Reduction:</strong> Drastically cut your agentic API bills instantly.</li>
+							<li><strong>Higher Quality Answers:</strong> With no distractions, even affordable models perform on-par with flagships.</li>
+							<li><strong>Contextual Quality:</strong> The AI's response is better because its context window is laser-focused on the real problem.</li>
 						</ul>
 					</div>
 					
-					<div class="bento-item span-2" style="grid-column: span 2; display: flex; flex-direction: column; align-items: center; justify-content: center; background: transparent; box-shadow: none; border: none;">
+					<div class="bento-item span-2" style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: transparent; box-shadow: none; border: none;">
 						 <img src="/media/omni_token_savings_graphic.png" alt="OMNI Token Savings Strategy" style="max-width: 100%; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid var(--border-subtle);">
 					</div>
 				</div>
@@ -158,7 +158,7 @@ error: could not compile `omni` (bin "omni") due to 1 previous error</div>
 							<div class="term-title">With OMNI Semantic Engine (132 Tokens)</div>
 						</div>
 						<div class="term-body">
-							<div class="cli-line"><span class="prompt">$</span> cargo check</div>
+							<div class="cli-line"><span class="prompt">$</span> cargo check | omni</div>
 							<div class="cli-output highlight">
 <span class="omni-prefix">[OMNI: Signal Distilled. Dropped 2,784 noisy lines.]</span>
 error[E0308]: mismatched types
@@ -188,10 +188,11 @@ error: could not compile `omni` (bin "omni") due to 1 previous error
 
 				<div class="bento-grid reveal">
 					
+					<!-- RewindStore -->
 					<div class="bento-item span-2">
 						<div class="bento-content">
 							<div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg></div>
-							<h3>Zero Information Loss</h3>
+							<h3>RewindStore™: Zero Signal Loss</h3>
 							<p>Worried OMNI filtered something important? Built-in <strong>RewindStore</strong> saves raw output locally via SHA-256. If the AI actually needs the full log, it can retrieve it instantly.</p>
 						</div>
 						<div class="bento-visual align-bottom">
@@ -199,33 +200,54 @@ error: could not compile `omni` (bin "omni") due to 1 previous error
 						</div>
 					</div>
 
+					<!-- Native Performance -->
 					<div class="bento-item span-1">
+						<div class="bento-content">
+							<div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
+							<h3>Native Rust Core</h3>
+							<p>Single binary. Under 5MB. Zero Python or Node dependencies. Incredibly fast sub-millisecond execution times.</p>
+						</div>
+					</div>
+
+					<!-- Distill Monitor -->
+					<div class="bento-item span-1">
+						<div class="bento-content">
+							<div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></div>
+							<h3>Distill Monitor</h3>
+							<p>Run <code>omni stats</code> to track lifetime token savings and ROI across all your projects.</p>
+						</div>
+						<div class="bento-visual align-bottom">
+							<img src="/media/omni-stats.png" alt="Visual Impact Analytics" style="width: 100%; max-width: 400px; border-radius: 8px; border: 1px solid var(--border-subtle); display: block; margin: 0 auto;">
+					   </div>
+					</div>
+
+					<!-- Session Intelligence -->
+					<div class="bento-item span-2">
 						<div class="bento-content">
 							<div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
 							<h3>Session Intelligence</h3>
-							<p>OMNI tracks hot files and active errors across your workspace. It remembers what the AI knows, injecting contextual continuity into every invocation.</p>
+							<p>OMNI tracks hot files and active errors across your workspace. It remembers what the AI knows, injecting contextual continuity into every invocation to save even more tokens.</p>
 						</div>
 						<div class="bento-visual align-bottom">
 							 <img src="/media/omni-session-status.png" alt="Session Tracking" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-subtle);">
 						</div>
 					</div>
 
+					<!-- Universal Support -->
 					<div class="bento-item span-1">
 						<div class="bento-content">
-							<div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
-							<h3>Native Rust Core</h3>
-							<p>Single binary. Under 5MB. Zero Python dependencies. Incredibly fast sub-millisecond execution times.</p>
+							<div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+							<h3>Universal Support</h3>
+							<p>Interprets Unix (macOS/Linux) and Windows (PowerShell) output fluently. One tool, all environments.</p>
 						</div>
 					</div>
 
+					<!-- Heimsense Duo -->
 					<div class="bento-item span-2">
 						<div class="bento-content">
-							<div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></div>
-							<h3>Visual Impact Analytics</h3>
-							<p>Prove your ROI. Run <code>omni stats</code> to track lifetime token savings and dollar cost reductions across your workspace projects.</p>
-						</div>
-						<div class="bento-visual align-bottom">
-							 <img src="/media/omni-stats.png" alt="Visual Impact Analytics" style="width: 100%; max-width: 400px; border-radius: 8px; border: 1px solid var(--border-subtle); display: block; margin: 0 auto;">
+							<div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"/></svg></div>
+							<h3>The Heimsense Duo</h3>
+							<p>Pair Omni with **Heimsense** to run top-tier agent frameworks like Claude Code using affordable, free, or local models with pinpoint accuracy.</p>
 						</div>
 					</div>
 					
@@ -242,29 +264,56 @@ error: could not compile `omni` (bin "omni") due to 1 previous error
 				</header>
 
 				<div class="pipeline-diagram reveal">
-					 <div class="pipe-node">
-						 <div class="node-title">CLI Invocation</div>
-						 <div class="node-desc">You or the Agent runs a command</div>
-					 </div>
-					 
-					 <svg class="pipe-arrow" viewBox="0 0 24 24" style="margin: 16px 0;"><line x1="12" y1="2" x2="12" y2="22"/><polyline points="5 15 12 22 19 15"/></svg>
-					 
-					 <div class="pipe-node engine">
-						 <div class="node-title">OMNI Semantic Engine</div>
-						 <div class="node-desc">Classifier → Scorer → Composer</div>
-						 <div class="node-sub">Native Hooks & Distiller</div>
-					 </div>
-					 
-					 <svg class="pipe-arrow" viewBox="0 0 24 24" style="margin: 16px 0;"><line x1="12" y1="2" x2="12" y2="22"/><polyline points="5 15 12 22 19 15"/></svg>
-					 
-					 <div class="pipe-node split">
-						 <div class="node-split-item">
-							 <span class="label">Pure Signal</span>
-							 <span class="dest">To AI Agent</span>
+					 <!-- Input -->
+					 <div class="pipe-node hover-elevate">
+						 <div class="icon-wrap-small"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div>
+						 <div>
+							 <div class="node-title">CLI Invocation</div>
+							 <div class="node-desc">You or the Agent runs a command</div>
 						 </div>
-						 <div class="node-split-item muted">
-							 <span class="label">Raw Noise</span>
-							 <span class="dest">To RewindStore</span>
+					 </div>
+					 
+					 <svg class="pipe-arrow anim-flow" viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="22"/><polyline points="5 15 12 22 19 15"/></svg>
+					 
+					 <!-- Engine Processing -->
+					 <div class="pipe-node engine glow-border hover-elevate">
+						 <div class="engine-header">
+							 <div>
+								 <div class="node-title text-gradient">OMNI Semantic Engine</div>
+								 <div class="node-sub">Native Interception & Distillation Hooks</div>
+							 </div>
+						 </div>
+						 
+						 <div class="engine-steps">
+							 <div class="step-box">Classifier</div>
+							 <svg class="step-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+							 <div class="step-box">Collapse</div>
+							 <svg class="step-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+							 <div class="step-box highlight">Scorer</div>
+							 <svg class="step-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+							 <div class="step-box">Distiller</div>
+							 <svg class="step-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+							 <div class="step-box">Composer</div>
+						 </div>
+					 </div>
+					 
+					 <svg class="pipe-arrow anim-flow" viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="22"/><polyline points="5 15 12 22 19 15"/></svg>
+					 
+					 <!-- Output Split -->
+					 <div class="pipe-node split">
+						 <div class="node-split-item output-signal hover-elevate">
+							 <div class="icon-wrap-small green-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></div>
+							 <div>
+								 <span class="label">Pure Signal</span>
+								 <span class="dest">To AI Agent</span>
+							 </div>
+						 </div>
+						 <div class="node-split-item output-noise hover-elevate">
+							 <div class="icon-wrap-small muted-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+							 <div>
+								 <span class="label">Raw Noise</span>
+								 <span class="dest">To RewindStore & Auto-Learn</span>
+							 </div>
 						 </div>
 					 </div>
 				</div>
