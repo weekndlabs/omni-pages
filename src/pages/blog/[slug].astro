@@ -1,0 +1,72 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const blogEntries = await getCollection('blog');
+  return blogEntries.map(entry => ({
+    params: { slug: entry.id }, props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+
+// Calculate approximate read time
+const bodyContent = entry.body || '';
+const wordCount = bodyContent.trim().split(/\s+/).length || 1;
+const readTime = Math.ceil(wordCount / 200) || 1;
+
+const dateStr = entry.data.date.toLocaleDateString('en-US', { 
+    month: 'long', day: 'numeric', year: 'numeric' 
+});
+---
+
+<Layout title={entry.data.title} description={entry.data.description}>
+	<main style="padding-top: 140px;">
+		<!-- Reading Progress Bar -->
+		<div class="reading-progress-container">
+			<div class="reading-progress-bar" id="reading-progress"></div>
+		</div>
+
+		<article class="blog-article container">
+			<header class="article-header reveal visible">
+				{entry.data.tag && <span class="blog-tag">{entry.data.tag}</span>}
+				<h1 class="article-title">{entry.data.title}</h1>
+				
+				<div class="article-meta">
+					<div class="article-author-avatar">
+						{entry.data.author ? entry.data.author.charAt(0) : 'O'}
+					</div>
+					<div class="article-author-info">
+						<span class="article-author-name">{entry.data.author || 'OMNI Core Team'}</span>
+						<span class="article-date-read">
+							{dateStr} &middot; {readTime} min read
+						</span>
+					</div>
+				</div>
+			</header>
+
+			<div class="article-content reveal visible delay-1">
+				<Content />
+			</div>
+			
+			<div class="article-footer">
+				<a href="/blog" class="nav-sponsor blog-back">← Back to Developer Journal</a>
+			</div>
+		</article>
+	</main>
+
+	<script>
+		// Reading progress bar logic
+		window.addEventListener('scroll', () => {
+			const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+			const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+			const scrolled = (winScroll / height) * 100;
+			const progressBar = document.getElementById('reading-progress');
+			if(progressBar) {
+				progressBar.style.width = scrolled + '%';
+			}
+		});
+	</script>
+</Layout>

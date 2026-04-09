@@ -1,0 +1,59 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const allPosts = await getCollection('blog');
+const sortedPosts = allPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+// Find featured post if any
+const featuredPost = sortedPosts.find(post => post.data.featured);
+const regularPosts = sortedPosts.filter(post => !post.data.featured);
+---
+
+<Layout 
+	title="Developer Blog & Updates — OMNI Agentic AI"
+	description="Read the latest updates, algorithmic breakthroughs, and patch notes for the OMNI Semantic Signal Engine."
+>
+	<main style="padding-top: 140px; min-height: 80vh;">
+		<div class="container blog-list">
+			<header class="section-header reveal visible">
+				<h1 class="section-title">Developer <span class="text-gradient">Journal</span></h1>
+				<p class="section-subtitle">Deep architectural dives, philosophy, and patch notes for the OMNI Engine.</p>
+			</header>
+			
+			<div class="blog-grid reveal visible delay-1">
+                {featuredPost && (
+                    <div class="blog-card featured">
+                        <div class="blog-meta">
+                            {featuredPost.data.tag && <span class="blog-tag">{featuredPost.data.tag}</span>}
+                            <span class="blog-date">
+                                {featuredPost.data.date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                            </span>
+                        </div>
+                        <a href={`/blog/${featuredPost.id}`}>
+                            <h2 class="blog-title">{featuredPost.data.title}</h2>
+                        </a>
+                        <p class="blog-excerpt">{featuredPost.data.description}</p>
+                        <a href={`/blog/${featuredPost.id}`} class="blog-readmore">Read the story</a>
+                    </div>
+                )}
+
+				{regularPosts.map((post) => (
+					<div class="blog-card">
+						<div class="blog-meta">
+							{post.data.tag && <span class="blog-tag">{post.data.tag}</span>}
+							<span class="blog-date">
+                                {post.data.date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                            </span>
+						</div>
+						<a href={`/blog/${post.id}`}>
+							<h2 class="blog-title">{post.data.title}</h2>
+						</a>
+						<p class="blog-excerpt">{post.data.description}</p>
+						<a href={`/blog/${post.id}`} class="blog-readmore">Read the story</a>
+					</div>
+				))}
+			</div>
+		</div>
+	</main>
+</Layout>

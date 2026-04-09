@@ -1,0 +1,372 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+// Helper to determine version label
+const getVersionLabel = (version) => {
+	if (version.includes('-rc')) return 'Release Candidate';
+	if (version.includes('-alpha')) return 'Alpha Release';
+	if (version.includes('-beta')) return 'Beta Release';
+	return 'Stable';
+};
+
+// Fetch the latest version from GitHub at build time
+let latestVersion = 'v0.5.5'; // Fallback
+let versionLabel = getVersionLabel(latestVersion);
+
+try {
+	const response = await fetch('https://api.github.com/repos/fajarhide/omni/releases/latest');
+	if (response.ok) {
+		const data = await response.json();
+		latestVersion = data.tag_name;
+		versionLabel = getVersionLabel(latestVersion);
+	}
+} catch (e) {
+	console.error('Failed to fetch latest OMNI version:', e);
+}
+---
+
+<Layout 
+	title="OMNI — Semantic Signal Engine for Agentic AI"
+	description="Less noise. More signal. Cut your AI token consumption by up to 90% with the first context-aware semantic signal engine."
+>
+	<!-- Ambient Glow Background -->
+	<div class="ambient-bg" aria-hidden="true">
+		<div class="glow-orb primary"></div>
+		<div class="glow-orb secondary"></div>
+	</div>
+
+	<main>
+		<!-- HERO SECTION -->
+		<section class="hero">
+			<canvas id="hero-canvas"></canvas>
+			<div class="hero-content">
+				<div class="badge-pill reveal">
+					<span class="badge-dot pulse"></span>
+					<span class="badge-version" id="omni-version" data-initial-version={latestVersion}>{latestVersion}</span>
+					<span class="badge-divider"></span>
+					<span class="badge-label" id="omni-status" data-status={versionLabel.toLowerCase().replace(' ', '-')}>{versionLabel}</span>
+				</div>
+				
+				<h1 class="reveal delay-1">
+					Less noise.<br/>
+					<span class="text-gradient">More signal.</span>
+				</h1>
+				
+				<p class="hero-desc reveal delay-2">
+					OMNI is a smart terminal interceptor that filters out useless command output before it reaches your AI agent. Cut token consumption by <strong>up to 90%</strong> and give your AI the pure context it needs to reason brilliantly.
+				</p>
+
+				<div class="hero-cta reveal delay-3">
+					<div class="terminal-install">
+						<span class="prompt">$</span>
+						<code>brew install fajarhide/tap/omni</code>
+						<button class="copy-btn" data-copy="brew install fajarhide/tap/omni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+					</div>
+					<div class="secondary-installs">
+						<span class="text-muted">Or use:</span>
+						<button class="text-link" data-copy="curl -fsSL omni.weekndlabs.com/install | bash">Universal Installer</button>
+						<span class="text-muted">·</span>
+						<button class="text-link" data-copy="irm omni.weekndlabs.com/install.ps1 | iex">Windows</button>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- PROBLEM VS SOLUTION -->
+		<section id="problem-solution" class="section">
+			<div class="container container-md">
+				<header class="section-header reveal">
+					<h2 class="section-title">The Philosophy of <span class="text-gradient">Context Quality</span></h2>
+					<p class="section-subtitle">AI agents like Claude are only as smart as the context you feed them.</p>
+				</header>
+
+				<div class="comparison-bento reveal">
+					<!-- The Problem -->
+					<div class="bento-card card-danger">
+						<div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
+						<h3>The Problem: Noise & Cost</h3>
+						<p>A simple <code>npm install</code> dumps ~15,000 tokens of useless warning logs and loading bars into your AI's context.</p>
+						<ul class="bullet-list">
+							<li><strong>Extremely Expensive:</strong> You pay real money for every junk token.</li>
+							<li><strong>Diluted Reasoning:</strong> Critical errors get buried. The AI becomes "dumb" trying to sift through garbage.</li>
+							<li><strong>Model Lock-in:</strong> You're forced to use flagship models just to have a context window big enough.</li>
+						</ul>
+					</div>
+
+					<!-- The Solution -->
+					<div class="bento-card card-success">
+						<div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
+						<h3>The Solution: Pure Signal</h3>
+						<p>OMNI intercepts terminal output and filters the garbage, feeding your AI only the highly-focused marrow.</p>
+						<ul class="bullet-list">
+							<li><strong>~90% Token Reduction:</strong> Drastically cut your agentic API bills instantly.</li>
+							<li><strong>Higher Quality Answers:</strong> With no distractions, the agent zeroes in on exactly the right problem.</li>
+							<li><strong>Affordable Models Win:</strong> Even cheaper API models perform on-par with flagships when fed pure signal.</li>
+						</ul>
+					</div>
+					
+					<div class="bento-item span-2" style="grid-column: span 2; display: flex; flex-direction: column; align-items: center; justify-content: center; background: transparent; box-shadow: none; border: none;">
+						 <img src="/media/omni_token_savings_graphic.png" alt="OMNI Token Savings Strategy" style="max-width: 100%; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid var(--border-subtle);">
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- BEFORE / AFTER TERMINAL VISUAL -->
+		<section class="section alt-bg">
+			<div class="container">
+				<header class="section-header reveal">
+					<h2 class="section-title">Feel the <span class="text-gradient">Difference</span></h2>
+					<p class="section-subtitle">See exactly how much semantic space you save.</p>
+				</header>
+
+				<div class="terminal-showcase reveal">
+					<div class="term-window before">
+						<div class="term-header">
+							<div class="term-dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+							<div class="term-title">Before OMNI (~18,400 Tokens)</div>
+						</div>
+						<div class="term-body">
+							<div class="cli-line"><span class="prompt">$</span> cargo check</div>
+							<div class="cli-output dim">		Updating crates.io index
+		Downloading crates ...
+		Downloaded serde v1.0.210
+		Downloaded regex v1.10.6
+		... (482 more downloads) ...
+	 Compiling proc-macro2 v1.0.86
+	 Compiling unicode-ident v1.0.12
+	 Compiling serde v1.0.210
+warning: unused variable: `idx`
+	--> src/parser.rs:42:9
+	 |
+42 |     let idx = 0;
+	 |         ^^^ help: if this is intentional, prefix it with an underscore: `_idx`
+	 Compiling ryu v1.0.18
+... (2,300 lines of compilation logs) ...
+error[E0308]: mismatched types
+	--> src/main.rs:12:30
+	 |
+12 |     let result: String = 100i32;
+	 |                          ^^^^^^ expected `String`, found `i32`
+error: could not compile `omni` (bin "omni") due to 1 previous error</div>
+						</div>
+					</div>
+
+					<div class="term-window after">
+						<div class="term-header">
+							<div class="term-dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+							<div class="term-title">With OMNI Semantic Engine (132 Tokens)</div>
+						</div>
+						<div class="term-body">
+							<div class="cli-line"><span class="prompt">$</span> cargo check</div>
+							<div class="cli-output highlight">
+<span class="omni-prefix">[OMNI: Signal Distilled. Dropped 2,784 noisy lines.]</span>
+error[E0308]: mismatched types
+	--> src/main.rs:12:30
+	 |
+12 |     let result: String = 100i32;
+	 |                          ^^^^^^ expected `String`, found `i32`
+error: could not compile `omni` (bin "omni") due to 1 previous error
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="diff-visual reveal" style="text-align: center; margin-top: 64px;">
+					 <img src="/media/omni-diff.png" alt="OMNI Diff Comparison" style="width: 100%; max-width: 900px; border-radius: 16px; border: 1px solid var(--border-subtle); box-shadow: 0 20px 40px rgba(0,0,0,0.6);">
+				</div>
+			</div>
+		</section>
+
+		<!-- BENTO FEATURES -->
+		<section id="features" class="section">
+			<div class="container">
+				<header class="section-header reveal">
+					<h2 class="section-title">The <span class="text-gradient">Breakthrough</span> Layer</h2>
+					<p class="section-subtitle">A native, invisible utility belt explicitly built for the Agentic AI era.</p>
+				</header>
+
+				<div class="bento-grid reveal">
+					
+					<div class="bento-item span-2">
+						<div class="bento-content">
+							<div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg></div>
+							<h3>Zero Information Loss</h3>
+							<p>Worried OMNI filtered something important? Built-in <strong>RewindStore</strong> saves raw output locally via SHA-256. If the AI actually needs the full log, it can retrieve it instantly.</p>
+						</div>
+						<div class="bento-visual align-bottom">
+							 <img src="/media/omni-rewind-list.png" alt="RewindStore" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-subtle);">
+						</div>
+					</div>
+
+					<div class="bento-item span-1">
+						<div class="bento-content">
+							<div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+							<h3>Session Intelligence</h3>
+							<p>OMNI tracks hot files and active errors across your workspace. It remembers what the AI knows, injecting contextual continuity into every invocation.</p>
+						</div>
+						<div class="bento-visual align-bottom">
+							 <img src="/media/omni-session-status.png" alt="Session Tracking" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-subtle);">
+						</div>
+					</div>
+
+					<div class="bento-item span-1">
+						<div class="bento-content">
+							<div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div>
+							<h3>Native Rust Core</h3>
+							<p>Single binary. Under 5MB. Zero Python dependencies. Incredibly fast sub-millisecond execution times.</p>
+						</div>
+					</div>
+
+					<div class="bento-item span-2">
+						<div class="bento-content">
+							<div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></div>
+							<h3>Visual Impact Analytics</h3>
+							<p>Prove your ROI. Run <code>omni stats</code> to track lifetime token savings and dollar cost reductions across your workspace projects.</p>
+						</div>
+						<div class="bento-visual align-bottom">
+							 <img src="/media/omni-stats.png" alt="Visual Impact Analytics" style="width: 100%; max-width: 400px; border-radius: 8px; border: 1px solid var(--border-subtle); display: block; margin: 0 auto;">
+						</div>
+					</div>
+					
+				</div>
+			</div>
+		</section>
+
+		<!-- ARCHITECTURE PIPELINE -->
+		<section id="how-it-works" class="section">
+			<div class="container">
+				<header class="section-header reveal">
+					<h2 class="section-title">Transparent <span class="text-gradient">Architecture</span></h2>
+					<p class="section-subtitle">An invisible native hook layer. No changes to your daily workflow needed.</p>
+				</header>
+
+				<div class="pipeline-diagram reveal">
+					 <div class="pipe-node">
+						 <div class="node-title">CLI Invocation</div>
+						 <div class="node-desc">You or the Agent runs a command</div>
+					 </div>
+					 
+					 <svg class="pipe-arrow" viewBox="0 0 24 24" style="margin: 16px 0;"><line x1="12" y1="2" x2="12" y2="22"/><polyline points="5 15 12 22 19 15"/></svg>
+					 
+					 <div class="pipe-node engine">
+						 <div class="node-title">OMNI Semantic Engine</div>
+						 <div class="node-desc">Classifier → Scorer → Composer</div>
+						 <div class="node-sub">Native Hooks & Distiller</div>
+					 </div>
+					 
+					 <svg class="pipe-arrow" viewBox="0 0 24 24" style="margin: 16px 0;"><line x1="12" y1="2" x2="12" y2="22"/><polyline points="5 15 12 22 19 15"/></svg>
+					 
+					 <div class="pipe-node split">
+						 <div class="node-split-item">
+							 <span class="label">Pure Signal</span>
+							 <span class="dest">To AI Agent</span>
+						 </div>
+						 <div class="node-split-item muted">
+							 <span class="label">Raw Noise</span>
+							 <span class="dest">To RewindStore</span>
+						 </div>
+					 </div>
+				</div>
+			</div>
+		</section>
+	</main>
+    
+    <script>
+        // Hero canvas animation (from script.js)
+        const canvas = document.getElementById('hero-canvas') as HTMLCanvasElement;
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            let particles: Array<{x: number, y: number, radius: number, vx: number, vy: number, alpha: number}> = [];
+            
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            for (let i = 0; i < 50; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 2,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5,
+                    alpha: Math.random() * 0.5
+                });
+            }
+
+            function draw() {
+                if (!ctx) return;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#a1a1aa';
+                particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                    if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                    
+                    ctx.globalAlpha = p.alpha;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+
+        // Copy button logic
+        document.querySelectorAll('.copy-btn, .text-link').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const target = e.currentTarget as HTMLElement;
+                const text = target.getAttribute('data-copy');
+                if (text) {
+                    navigator.clipboard.writeText(text);
+                    const original = target.innerHTML;
+                    if (target.classList.contains('copy-btn')) {
+                        target.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+                        setTimeout(() => target.innerHTML = original, 2000);
+                    } else {
+                        target.style.color = 'var(--accent-green)';
+                        target.innerText = 'Copied!';
+                        setTimeout(() => {
+                            target.style.color = '';
+                            target.innerText = original;
+                        }, 2000);
+                    }
+                }
+            });
+        });
+
+        // Dynamic Version Sync (Client-side)
+        async function syncVersion() {
+            const getLabel = (v) => {
+                if (v.includes('-rc')) return 'Release Candidate';
+                if (v.includes('-alpha')) return 'Alpha Release';
+                if (v.includes('-beta')) return 'Beta Release';
+                return 'Stable';
+            };
+            
+            try {
+                const res = await fetch('https://api.github.com/repos/fajarhide/omni/releases/latest');
+                if (res.ok) {
+                    const data = await res.json();
+                    const versionEl = document.getElementById('omni-version');
+                    const statusEl = document.getElementById('omni-status');
+                    
+                    if (versionEl && data.tag_name !== versionEl.innerText) {
+                        versionEl.innerText = data.tag_name;
+                        if (statusEl) {
+                            const newLabel = getLabel(data.tag_name);
+                            statusEl.innerText = newLabel;
+                            statusEl.setAttribute('data-status', newLabel.toLowerCase().replace(' ', '-'));
+                        }
+                    }
+                }
+            } catch (e) {}
+        }
+        syncVersion();
+    </script>
+</Layout>
