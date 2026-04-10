@@ -222,7 +222,7 @@ a {
 
 /* --- Hero --- */
 .hero {
-  min-height: 100vh;
+  min-height: 100svh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1000,6 +1000,10 @@ a {
 
 /* --- Responsive Mobile --- */
 @media (max-width: 768px) {
+  .hero {
+    padding-top: 80px;
+    padding-bottom: 40px;
+  }
   .hero h1 { font-size: 3rem; }
   .comparison-bento { grid-template-columns: 1fr; }
   .terminal-showcase { grid-template-columns: 1fr; }

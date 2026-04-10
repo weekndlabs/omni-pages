@@ -6,7 +6,7 @@ tag: Release Note
 author: OMNI Core Team
 ---
 
-An AI context interceptor is only as intelligent as its parser coverage. You can build the most elegant distillation architecture in the world, but if it does not understand the output format of Playwright, or Prisma, or Terraform, then it is just a generic text compressor with a fancy name. OMNI v0.4.5 is our most aggressive ecosystem expansion to date, shipping over sixty new highly specialized semantic filters that span the entire modern development landscape.
+An AI context filter is only as intelligent as its parser coverage. You can build the most elegant distillation architecture in the world, but if it does not understand the output format of Playwright, or Prisma, or Terraform, then it is just a generic text compressor with a fancy name. OMNI v0.4.5 is our most aggressive ecosystem expansion to date, shipping over sixty new highly specialized semantic filters that span the entire modern development landscape.
 
 ### The Polyglot Expansion
 

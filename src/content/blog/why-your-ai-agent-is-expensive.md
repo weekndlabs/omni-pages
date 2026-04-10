@@ -27,7 +27,7 @@ The compounding effect is even more devastating. As the context window fills wit
 
 What a high-performance agent needs is not naive regex compression. It needs **Semantic Distillation** — an intelligent layer that understands the *meaning* of terminal output and retains only the dense, actionable insights.
 
-OMNI is an intelligent, high-performance terminal interceptor that sits transparently between your shell and your AI agent. Rather than blindly chopping strings or truncating from the top, the OMNI engine classifies the command that produced the output, activates domain-specific extraction rules, and returns only the semantically relevant content — the "Marrow" — back to your agent's context window.
+OMNI is an intelligent, high-performance signal layer that sits transparently between your shell and your AI agent. Rather than blindly chopping strings or truncating from the top, the OMNI engine classifies the command that produced the output, activates domain-specific extraction rules, and returns only the semantically relevant content — the "Marrow" — back to your agent's context window.
 
 ### The Results Speak
 
