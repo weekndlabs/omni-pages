@@ -262,65 +262,76 @@ error: could not compile `omni` (bin "omni") due to 1 previous error
 		<!-- ARCHITECTURE PIPELINE -->
 		<section id="how-it-works" class="section">
 			<div class="container">
-				<header class="section-header reveal">
-					<h2 class="section-title">Transparent <span class="text-gradient">Architecture</span></h2>
-					<p class="section-subtitle">An invisible native hook layer. No changes to your daily workflow needed.</p>
-				</header>
+					<header class="section-header reveal">
+						<h2 class="section-title">Command-First <span class="text-gradient">Architecture</span></h2>
+						<p class="section-subtitle">The world's first context-aware terminal signal pipeline. Built for the Agentic era.</p>
+					</header>
 
-				<div class="pipeline-diagram reveal">
-					 <!-- Input -->
-					 <div class="pipe-node hover-elevate">
-						 <div class="icon-wrap-small"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div>
-						 <div>
-							 <div class="node-title">CLI Invocation</div>
-							 <div class="node-desc">You or the Agent runs a command</div>
-						 </div>
-					 </div>
-					 
-					 <svg class="pipe-arrow anim-flow" viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="22"/><polyline points="5 15 12 22 19 15"/></svg>
-					 
-					 <!-- Engine Processing -->
-					 <div class="pipe-node engine glow-border hover-elevate">
-						 <div class="engine-header">
+					<div class="pipeline-diagram reveal">
+						 <!-- Input -->
+						 <div class="pipe-node hover-elevate">
+							 <div class="icon-wrap-small"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div>
 							 <div>
-								 <div class="node-title text-gradient">OMNI Semantic Engine</div>
-								 <div class="node-sub">Native Interception & Distillation Hooks</div>
+								 <div class="node-title">Command Execution</div>
+								 <div class="node-desc">Any terminal command gets intercepted</div>
 							 </div>
 						 </div>
-						 
-						 <div class="engine-steps">
-							 <div class="step-box">Classifier</div>
-							 <svg class="step-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-							 <div class="step-box">Collapse</div>
-							 <svg class="step-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-							 <div class="step-box highlight">Scorer</div>
-							 <svg class="step-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-							 <div class="step-box">Distiller</div>
-							 <svg class="step-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-							 <div class="step-box">Composer</div>
-						 </div>
-					 </div>
-					 
-					 <svg class="pipe-arrow anim-flow" viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="22"/><polyline points="5 15 12 22 19 15"/></svg>
-					 
-					 <!-- Output Split -->
-					 <div class="pipe-node split">
-						 <div class="node-split-item output-signal hover-elevate">
-							 <div class="icon-wrap-small green-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></div>
+
+						 <svg class="pipe-arrow anim-flow" viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="22"/><polyline points="5 15 12 22 19 15"/></svg>
+
+						 <!-- Magic Pipe Detection V2 -->
+						 <div class="pipe-node hover-elevate">
+							 <div class="icon-wrap-small"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
 							 <div>
-								 <span class="label">Pure Signal</span>
-								 <span class="dest">To AI Agent</span>
+								 <div class="node-title">Magic Pipe Detection V2</div>
+								 <div class="node-desc">Process tree & fd context analysis. 99.4% accurate.</div>
 							 </div>
 						 </div>
-						 <div class="node-split-item output-noise hover-elevate">
-							 <div class="icon-wrap-small muted-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-							 <div>
-								 <span class="label">Raw Noise</span>
-								 <span class="dest">To RewindStore & Auto-Learn</span>
+
+						 <svg class="pipe-arrow anim-flow" viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="22"/><polyline points="5 15 12 22 19 15"/></svg>
+
+						 <!-- Command-First Engine -->
+						 <div class="pipe-node engine glow-border hover-elevate">
+							 <div class="engine-header">
+								 <div>
+									 <div class="node-title text-gradient">Command-First Engine</div>
+									 <div class="node-sub">Domain-Aware Semantic Distillation Pipeline</div>
+								 </div>
+							 </div>
+
+							 <div class="engine-steps">
+								 <div class="step-box">Command</div>
+								 <svg class="step-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+								 <div class="step-box">Heuristic Router</div>
+								 <svg class="step-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+								 <div class="step-box highlight">Token Scorer</div>
+								 <svg class="step-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+								 <div class="step-box">Soft Distiller</div>
+								 <svg class="step-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+								 <div class="step-box">ROI Metrics</div>
 							 </div>
 						 </div>
-					 </div>
-				</div>
+
+						 <svg class="pipe-arrow anim-flow" viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="22"/><polyline points="5 15 12 22 19 15"/></svg>
+
+						 <!-- Output Split -->
+						 <div class="pipe-node split">
+							 <div class="node-split-item output-signal hover-elevate">
+								 <div class="icon-wrap-small green-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></div>
+								 <div>
+									 <span class="label">Pure Semantic Signal</span>
+									 <span class="dest">To AI Agent / LLM</span>
+								 </div>
+							 </div>
+							 <div class="node-split-item output-noise hover-elevate">
+								 <div class="icon-wrap-small muted-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+								 <div>
+									 <span class="label">Raw Terminal Noise</span>
+									 <span class="dest">RewindStore + Auto Learn</span>
+								 </div>
+							 </div>
+						 </div>
+					</div>
 			</div>
 		</section>
 	</main>
