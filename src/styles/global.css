@@ -406,7 +406,7 @@ a {
 /* --- Features (Grid Bento box) --- */
 .bento-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   grid-auto-rows: minmax(300px, auto);
   gap: 24px;
 }
@@ -492,7 +492,7 @@ a {
 .formula-item { font-weight: 600; font-size: 1.1rem;}
 .formula-item small { display: block; font-size: 0.75rem; color: var(--text-muted); font-weight: 400;}
 .formula-plus, .formula-equals { font-size: 1.5rem; color: var(--text-muted); }
-.formula-result { background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700; font-size: 1.2rem; }
+.formula-result { background: var(--gradient-brand); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700; font-size: 1.2rem; }
 
 /* --- Architecture Pipeline --- */
 .pipeline-diagram {
@@ -693,6 +693,7 @@ a {
   margin-bottom: 24px;
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   flex-grow: 1;
@@ -701,6 +702,7 @@ a {
 .blog-card.featured .blog-excerpt {
   font-size: 1.15rem;
   -webkit-line-clamp: 4;
+  line-clamp: 4;
   max-width: 800px;
 }
 
