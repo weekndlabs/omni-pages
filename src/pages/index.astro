@@ -26,8 +26,8 @@ try {
 ---
 
 <Layout 
-	title="OMNI — Semantic Signal Engine for Agentic AI | Maximize Context Fidelity"
-	description="Cut your AI token consumption by up to 98% with OMNI. The first context-aware semantic signal engine for Claude, Cursor, Copilot, and 12+ other agents."
+	title="OMNI — The Context Operating System for AI Agents"
+	description="Cut your AI token consumption by up to 90% with OMNI. The Context Operating System for AI Agents. Less noise. More signal."
 >
 	<!-- Ambient Glow Background -->
 	<div class="ambient-bg" aria-hidden="true">
@@ -178,6 +178,37 @@ error: could not compile `omni` (bin "omni") due to 1 previous error
 
 				<div class="diff-visual reveal" style="text-align: center; margin-top: 64px;">
 					 <img src="/media/omni-diff.png" alt="OMNI Diff Comparison" style="width: 100%; max-width: 900px; border-radius: 16px; border: 1px solid var(--border-subtle); box-shadow: 0 20px 40px rgba(0,0,0,0.6);">
+				</div>
+			</div>
+		</section>
+
+		<!-- REAL-WORLD USE CASES -->
+		<section id="use-cases" class="section">
+			<div class="container container-md">
+				<header class="section-header reveal">
+					<h2 class="section-title">Real-World <span class="text-gradient">Use Cases</span></h2>
+					<p class="section-subtitle">How OMNI solves the daily frustrations of Agentic AI developers.</p>
+				</header>
+
+				<div class="comparison-bento reveal">
+					<div class="bento-card card-danger">
+						<div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+						<h3>The "Infinite Loop of Death"</h3>
+						<p><strong>Scenario:</strong> AI gets distracted by 20,000 lines of <code>npm install</code> warnings, missing the actual build error at the end.</p>
+						<p><strong>OMNI's Fix:</strong> Mutes all peer dependency warnings and surfaces only the exact <code>Build Error</code> with its stack trace. AI fixes the code instantly.</p>
+					</div>
+					<div class="bento-card card-success">
+						<div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+						<h3>The "Silent Hallucination"</h3>
+						<p><strong>Scenario:</strong> AI reads a 3,000-line file via <code>cat</code>, struggles to keep it in working memory, and starts hallucinating.</p>
+						<p><strong>OMNI's Fix:</strong> Replaces raw <code>cat</code> with a Structured Outline. Shows only imports, public APIs, and risk markers—reducing output by 80%.</p>
+					</div>
+					<div class="bento-card card-success" style="grid-column: span 2;">
+						<div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+						<h3>Multi-Agent Collaboration</h3>
+						<p><strong>Scenario:</strong> Cursor IDE and Claude CLI run simultaneously, executing redundant commands and wasting tokens.</p>
+						<p><strong>OMNI's Fix:</strong> Acts as a shared memory layer. Cursor and Claude share the same filtered memory streams, active errors, and environment.</p>
+					</div>
 				</div>
 			</div>
 		</section>
