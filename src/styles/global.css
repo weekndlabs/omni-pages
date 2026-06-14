@@ -1007,6 +1007,7 @@ a {
     padding-bottom: 40px;
   }
   .hero h1 { font-size: 3rem; }
+  .hero-desc { font-size: 1.05rem; margin-bottom: 32px; padding: 0 16px; }
   .comparison-bento { grid-template-columns: 1fr; }
   .terminal-showcase { grid-template-columns: 1fr; }
   .bento-grid { grid-template-columns: 1fr; }
