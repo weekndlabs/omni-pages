@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 24 24">
+  <defs>
+    <linearGradient id="omni-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a855f7" />
+      <stop offset="100%" stop-color="#06b6d4" />
+    </linearGradient>
+  </defs>
+  <circle cx="12" cy="12" r="10" stroke="url(#omni-gradient)" stroke-width="2"/>
+  <circle cx="12" cy="12" r="4" stroke="url(#omni-gradient)" stroke-width="2"/>
+</svg>
