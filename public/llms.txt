@@ -1,0 +1,28 @@
+# OMNI Context OS
+
+> OMNI is the Context Operating System for Autonomous AI Agents. It intercepts noisy terminal outputs, distills them, and feeds pure signal back to the AI.
+
+## Tool Summary
+
+OMNI is a CLI tool and MCP (Model Context Protocol) server designed to dramatically improve token efficiency (by up to 90%) and reduce hallucinations for AI agents such as Claude Code, Cursor, and Copilot. It operates as a high-performance semantic filter between the terminal and LLMs.
+
+### Key Features
+- **Token Efficiency & Massive ROI**: Mutes noisy build outputs, test runners, and infrastructure logs to only show relevant failures and summaries.
+- **Zero Hallucinations & High Fidelity**: Retains essential context by permanently pinning critical files (like `AGENTS.md`) and tracking dependency graph impacts.
+- **RewindStore**: 100% context safety. The full raw logs are always saved locally and can be accessed if needed.
+- **Omni Learn**: Uses machine learning to detect noisy patterns and generate semantic TOML filters for your tech stack.
+- **Autonomous Loops**: Uses Maker-Checker verification and enforces predictive token constraints via `OMNI_LOOP_BUDGET`.
+
+### Installation
+Terminal prompt:
+$ brew install fajarhide/tap/omni
+
+Universal Installer:
+$ curl -fsSL omni.weekndlabs.com/install | bash
+
+Windows:
+$ irm omni.weekndlabs.com/install.ps1 | iex
+
+### Usage
+Pipe any command to omni to distil the output:
+$ cargo check | omni
