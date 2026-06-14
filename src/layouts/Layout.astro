@@ -7,9 +7,17 @@ interface Props {
 	title: string;
     description: string;
     image?: string;
+    author?: string;
+    publishDate?: string;
 }
 
-const { title, description, image = '/media/hero.png' } = Astro.props;
+const { 
+    title, 
+    description, 
+    image = '/media/hero.png',
+    author = 'Fajar Hidayat',
+    publishDate = '2026-06-01T00:00:00Z'
+} = Astro.props;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://omni.weekndlabs.com');
 ---
 
@@ -30,7 +38,8 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://omni.wee
 
 		<!-- SEO Keywords & Meta -->
 		<meta name="keywords" content="AI, LLM, Agentic AI, Token Optimization, Context Window, Developer Tools, OMNI, Context OS, CLI, Terminal, Cursor, Claude Code" />
-		<meta name="author" content="WeekndLabs" />
+		<meta name="author" content={author} />
+		<meta name="publish_date" property="og:publish_date" content={publishDate} />
 		<meta name="theme-color" content="#0d1117" />
 		<meta name="robots" content="index, follow" />
 
@@ -40,6 +49,8 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://omni.wee
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
 		<meta property="og:image" content={new URL(image, Astro.site || 'https://omni.weekndlabs.com')} />
+		<meta property="article:author" content={author} />
+		<meta property="article:published_time" content={publishDate} />
 
 		<!-- Twitter -->
 		<meta property="twitter:card" content="summary_large_image" />
@@ -57,14 +68,15 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://omni.wee
 			"applicationCategory": "DeveloperApplication",
 			"description": description,
 			"url": Astro.url.toString(),
+			"datePublished": publishDate,
 			"offers": {
 				"@type": "Offer",
 				"price": "0",
 				"priceCurrency": "USD"
 			},
 			"author": {
-				"@type": "Organization",
-				"name": "WeekndLabs"
+				"@type": "Person",
+				"name": author
 			}
 		})} />
 
