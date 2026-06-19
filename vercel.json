@@ -1,6 +1,6 @@
 {
   "name": "omni-landing",
-  "public": true,
+  "cleanUrls": true,
   "redirects": [
     {
       "source": "/install",

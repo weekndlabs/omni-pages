@@ -1,6 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
+const GITHUB_REPO = 'https://github.com/fajarhide/omni';
+const GITHUB_RELEASES = `${GITHUB_REPO}/releases`;
+
 // Helper to determine version label
 const getVersionLabel = (version) => {
 	if (version.includes('-rc')) return 'Release Candidate';
@@ -23,6 +26,114 @@ try {
 } catch (e) {
 	console.error('Failed to fetch latest OMNI version:', e);
 }
+
+const featureGroups = [
+	{
+		category: 'Core Engine',
+		title: 'Semantic Distillation',
+		items: [
+			'Shows only error lines and stack traces — blocks dependency logs and spinners.',
+			'Up to 90% token reduction on noisy terminal output.',
+			'Adaptive compression that softens when agents retrieve omitted output.',
+			'Smart bypass for small outputs under 2,000 tokens.',
+		],
+	},
+	{
+		category: 'Context Safety',
+		title: 'Factual Guards & RewindStore',
+		items: [
+			'Raw output saved locally — retrieve anything via omni_retrieve.',
+			'Anti-hallucination warnings only when OMNI has hard facts.',
+			'Explicit omission labels so agents know what was filtered.',
+		],
+	},
+	{
+		category: 'Multi-Agent',
+		title: 'Workspace Intelligence',
+		items: [
+			'Native MCP server with stdio — no subprocess latency.',
+			'Shared memory streams across Cursor, Claude Code, and Hermes.',
+			'Structured ReadFile and Grep instead of raw dumps.',
+			'Lightweight dependency graph warns on high-impact file edits.',
+		],
+	},
+	{
+		category: 'Session Recovery',
+		title: 'Context Fidelity',
+		items: [
+			'Proactive context pressure warnings before the window crashes.',
+			'Engrams: automatic subtask snapshots without extra LLM calls.',
+			'Priority-aware compaction — pinned files and active errors first.',
+			'Session handoffs when switching between agents.',
+		],
+	},
+	{
+		category: 'Loop Engineering',
+		title: 'Autonomous Loops',
+		items: [
+			'OMNI_LOOP_BUDGET and OMNI_LOOP_GOAL for iterative agent runs.',
+			'Maker-Checker verification through the multi-agent session store.',
+			'Goal-driven distillation — debug keeps errors, refactor compresses traces.',
+		],
+	},
+	{
+		category: 'Monitoring',
+		title: 'Observability & Debug',
+		items: [
+			'omni session --health for context pressure and engram status.',
+			'omni stats, omni_budget, and omni_history for ROI tracking.',
+			'omni diff to compare raw output vs filtered signal side-by-side.',
+			'OMNI_PASSTHROUGH=1 to bypass distillation when needed.',
+		],
+	},
+];
+
+const benchmarks = [
+	{ command: 'docker build', input: '9.2 KB', output: '49 bytes', savings: '99.5%' },
+	{ command: 'cargo test', input: '16.5 KB', output: '4.3 KB', savings: '78.0%' },
+	{ command: 'git status', input: '496 bytes', output: '113 bytes', savings: '77.2%' },
+	{ command: 'kubectl get pods', input: '840 bytes', output: '762 bytes', savings: '10.0%' },
+	{ command: 'git diff', input: '397 bytes', output: '220 bytes', savings: '50.0%' },
+];
+
+const showcaseScreens = [
+	{
+		src: '/media/omni-stats.png',
+		title: 'Token analytics',
+		caption: 'Track lifetime savings and ROI with omni stats.',
+		layout: 'wide',
+	},
+	{
+		src: '/media/omni-session-status.png',
+		title: 'Session health',
+		caption: 'Monitor context pressure, engrams, and active errors.',
+		layout: 'wide',
+	},
+	{
+		src: '/media/omni-rewind-list.png',
+		title: 'RewindStore',
+		caption: 'Recover any omitted output through omni_retrieve.',
+		layout: 'normal',
+	},
+	{
+		src: '/media/omni-learn-status.png',
+		title: 'Noise discovery',
+		caption: 'omni learn generates TOML filters from your terminal history.',
+		layout: 'normal',
+	},
+	{
+		src: '/media/omni-doctor.png',
+		title: 'Diagnostics',
+		caption: 'omni doctor validates hooks, MCP, and filter performance.',
+		layout: 'normal',
+	},
+	{
+		src: '/media/omni-terminal-hook-indikator.png',
+		title: 'Transparent hooks',
+		caption: 'OMNI intercepts commands invisibly — no workflow changes required.',
+		layout: 'full',
+	},
+];
 ---
 
 <Layout 
@@ -53,14 +164,38 @@ try {
 				</h1>
 				
 				<p class="hero-desc reveal delay-2">
-					<strong>OMNI is the Context Operating System for Autonomous AI Agents.</strong>
-					<br/><br/>
-					It acts as a high-performance semantic filter between your terminal and LLMs like Claude Code, Cursor, and Copilot. Intelligently distill noisy logs, cache states, and enforce strict token budgets to ensure your agents execute complex loops flawlessly.
-					<br/><br/>
-					<em>Cut your AI tokens costs by up to 90%. Start building with pure signal.</em>
+					The Context Operating System for autonomous AI agents. OMNI filters noisy terminal output, enforces token budgets, and keeps long-running agent loops focused on pure signal.
 				</p>
 
-				<div class="hero-cta reveal delay-3">
+				<div class="hero-metrics reveal delay-2">
+					<div class="metric">
+						<span class="metric-value text-gradient">90%</span>
+						<span class="metric-label">Token reduction</span>
+					</div>
+					<div class="metric-divider" aria-hidden="true"></div>
+					<div class="metric">
+						<span class="metric-value">15+</span>
+						<span class="metric-label">AI agents supported</span>
+					</div>
+					<div class="metric-divider" aria-hidden="true"></div>
+					<div class="metric">
+						<span class="metric-value">MIT</span>
+						<span class="metric-label">Open source</span>
+					</div>
+				</div>
+
+				<div class="hero-actions reveal delay-3">
+					<a href={GITHUB_REPO} class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+						View on GitHub
+					</a>
+					<a href={`${GITHUB_REPO}#readme`} class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+						Read the Docs
+					</a>
+				</div>
+
+				<div class="hero-cta reveal delay-4">
+					<p class="install-label">Quick install</p>
 					<div class="terminal-install">
 						<span class="prompt">$</span>
 						<code>brew install fajarhide/tap/omni</code>
@@ -76,6 +211,22 @@ try {
 			</div>
 		</section>
 
+		<section class="compatibility-strip" aria-label="Supported AI agents">
+			<div class="container">
+				<p class="strip-label">Works with your favorite agent stack</p>
+				<div class="strip-logos">
+					<span>Cursor</span>
+					<span>Claude Code</span>
+					<span>Copilot</span>
+					<span>Cline</span>
+					<span>Pi</span>
+					<span>Antigravity</span>
+					<span>OpenClaw</span>
+					<span>Hermes Agent</span>
+				</div>
+			</div>
+		</section>
+
 		<!-- PROBLEM VS SOLUTION -->
 		<section id="problem-solution" class="section">
 			<div class="container container-md">
@@ -85,32 +236,31 @@ try {
 				</header>
 
 				<div class="comparison-bento reveal">
-					<!-- Pillar 1 -->
 					<div class="bento-card card-success">
-						<div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
-						<h3>1. Token Efficiency & Massive ROI</h3>
-						<p>Every byte in the context window costs money. OMNI acts as a smart sieve, guaranteeing zero tokens are wasted on useless loading bars or dependency logs. <strong>Save $35+ per developer every month.</strong></p>
+						<p class="feature-category">Token Efficiency</p>
+						<h3>Cut costs without losing signal</h3>
+						<p>Every byte in the context window costs money. OMNI strips loading bars, dependency logs, and passing tests — keeping only what your agent needs to act.</p>
 						<ul class="bullet-list">
-							<li><strong>Build Outputs:</strong> Compresses a 3,000 token compile error into just 80 tokens of pure signal.</li>
-							<li><strong>Test Runners:</strong> Filters out 4,000 tokens of passing tests to show only exact assertion failures.</li>
-							<li><strong>DevOps & Infra:</strong> Transforms thousands of lines of Terraform/Kubectl output into concise status summaries.</li>
+							<li>Build outputs compressed from thousands of tokens to focused error reports.</li>
+							<li>Test runners surface failures only, not hundreds of passing cases.</li>
+							<li>DevOps output reduced to concise status summaries.</li>
 						</ul>
 					</div>
 
-					<!-- Pillar 2 -->
 					<div class="bento-card card-success">
-						<div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-						<h3>2. Zero Hallucinations & High Fidelity</h3>
-						<p>High compression is dangerous if the AI loses facts. OMNI's multi-agent architecture ensures your agent never loses its train of thought, even after 4 hours of autonomous coding.</p>
+						<p class="feature-category">Context Quality</p>
+						<h3>Higher fidelity, fewer hallucinations</h3>
+						<p>Compression is safe when facts are preserved. OMNI keeps agents grounded with factual guards, dependency warnings, and proactive context pressure alerts.</p>
 						<ul class="bullet-list">
-							<li><strong>Context Pressure Management:</strong> Proactively warns the AI before the context window crashes.</li>
-							<li><strong>Critical File Pinning:</strong> Permanently pins <code>AGENTS.md</code> or <code>.cursorrules</code> so core instructions are never forgotten.</li>
-							<li><strong>Dependency Graph Indexer:</strong> Warns agents when they mutate high-impact, frequently imported files.</li>
+							<li>Warns before the context window hits critical thresholds.</li>
+							<li>Tracks hot files and active errors across long sessions.</li>
+							<li>Dependency graph flags high-impact edits before they spread.</li>
 						</ul>
 					</div>
 					
-					<div class="bento-item span-2" style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: transparent; box-shadow: none; border: none;">
-						 <img src="/media/performance.png" alt="OMNI Token Savings Strategy" style="max-width: 100%; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid var(--border-subtle);">
+					<div class="showcase-frame reveal span-2">
+						<img src="/media/performance.png" alt="OMNI token savings across build, test, and DevOps workflows" loading="lazy" />
+						<p class="showcase-caption">Real compression across build, test, and infrastructure commands.</p>
 					</div>
 				</div>
 			</div>
@@ -176,8 +326,9 @@ error: could not compile `omni` (bin "omni") due to 1 previous error
 					</div>
 				</div>
 
-				<div class="diff-visual reveal" style="text-align: center; margin-top: 64px;">
-					 <img src="/media/omni-diff.png" alt="OMNI Diff Comparison" style="width: 100%; max-width: 900px; border-radius: 16px; border: 1px solid var(--border-subtle); box-shadow: 0 20px 40px rgba(0,0,0,0.6);">
+				<div class="showcase-frame reveal showcase-frame-centered">
+					<img src="/media/omni-diff.png" alt="Side-by-side comparison of raw terminal output vs OMNI filtered signal" loading="lazy" />
+					<p class="showcase-caption">omni diff — raw output vs distilled signal, side by side.</p>
 				</div>
 			</div>
 		</section>
@@ -192,144 +343,126 @@ error: could not compile `omni` (bin "omni") due to 1 previous error
 
 				<div class="comparison-bento reveal">
 					<div class="bento-card card-danger">
-						<div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-						<h3>The "Infinite Loop of Death"</h3>
-						<p><strong>Scenario:</strong> AI gets distracted by 20,000 lines of <code>npm install</code> warnings, missing the actual build error at the end.</p>
-						<p><strong>OMNI's Fix:</strong> Mutes all peer dependency warnings and surfaces only the exact <code>Build Error</code> with its stack trace. AI fixes the code instantly.</p>
+						<p class="feature-category">Use Case</p>
+						<h3>The infinite loop of death</h3>
+						<p><strong>Scenario:</strong> AI gets distracted by 20,000 lines of npm install warnings, missing the build error at the end.</p>
+						<p><strong>OMNI fix:</strong> Mutes peer dependency noise and surfaces only the exact build error with its stack trace.</p>
 					</div>
 					<div class="bento-card card-success">
-						<div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-						<h3>The "Silent Hallucination"</h3>
-						<p><strong>Scenario:</strong> AI reads a 3,000-line file via <code>cat</code>, struggles to keep it in working memory, and starts hallucinating.</p>
-						<p><strong>OMNI's Fix:</strong> Replaces raw <code>cat</code> with a Structured Outline. Shows only imports, public APIs, and risk markers—reducing output by 80%.</p>
+						<p class="feature-category">Use Case</p>
+						<h3>The silent hallucination</h3>
+						<p><strong>Scenario:</strong> AI reads a 3,000-line file via cat and starts hallucinating function signatures.</p>
+						<p><strong>OMNI fix:</strong> Returns a structured outline — imports, public API, and risk markers — with an impact warning.</p>
 					</div>
 					<div class="bento-card card-success span-2">
-						<div class="card-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-						<h3>Multi-Agent Collaboration</h3>
-						<p><strong>Scenario:</strong> Cursor IDE and Claude CLI run simultaneously, executing redundant commands and wasting tokens.</p>
-						<p><strong>OMNI's Fix:</strong> Acts as a shared memory layer. Cursor and Claude share the same filtered memory streams, active errors, and environment.</p>
+						<p class="feature-category">Use Case</p>
+						<h3>Multi-agent collaboration</h3>
+						<p><strong>Scenario:</strong> Cursor and Claude Code run simultaneously, executing redundant commands and wasting tokens.</p>
+						<p><strong>OMNI fix:</strong> Acts as a shared memory layer via omni_agents and local SQLite — same filtered streams, errors, and environment.</p>
 					</div>
 				</div>
 			</div>
 		</section>
 
-		<!-- BENTO FEATURES -->
+		<!-- BENCHMARKS -->
+		<section id="benchmarks" class="section alt-bg">
+			<div class="container container-md">
+				<header class="section-header reveal">
+					<p class="section-eyebrow">Performance</p>
+					<h2 class="section-title">Measured on the <span class="text-gradient">release binary</span></h2>
+					<p class="section-subtitle">Built in Rust for sub-100ms pipeline latency and ruthless efficiency. Run omni stats to see your own savings.</p>
+				</header>
+
+				<div class="benchmark-table-wrap reveal">
+					<table class="benchmark-table">
+						<thead>
+							<tr>
+								<th>Command</th>
+								<th>Input</th>
+								<th>Output</th>
+								<th>Savings</th>
+							</tr>
+						</thead>
+						<tbody>
+							{benchmarks.map((row) => (
+								<tr>
+									<td><code>{row.command}</code></td>
+									<td>{row.input}</td>
+									<td>{row.output}</td>
+									<td class="savings-cell">{row.savings}</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+
+				<div class="benchmark-stats reveal">
+					<div class="benchmark-stat">
+						<span class="benchmark-stat-value text-gradient">&lt; 100ms</span>
+						<span class="benchmark-stat-label">Pipeline latency</span>
+					</div>
+					<div class="benchmark-stat">
+						<span class="benchmark-stat-value">97.3%</span>
+						<span class="benchmark-stat-label">Average session reduction</span>
+					</div>
+					<div class="benchmark-stat">
+						<span class="benchmark-stat-value">$35+</span>
+						<span class="benchmark-stat-label">Saved per dev / month</span>
+					</div>
+				</div>
+
+				<div class="showcase-frame reveal showcase-frame-centered benchmark-visual">
+					<img src="/media/omni_token_savings_graphic.png" alt="OMNI token savings breakdown chart" loading="lazy" />
+				</div>
+			</div>
+		</section>
+
+		<!-- FEATURES -->
 		<section id="features" class="section">
 			<div class="container">
 				<header class="section-header reveal">
-					<h2 class="section-title">The <span class="text-gradient">Breakthrough</span> Context Layer</h2>
-					<p class="section-subtitle">A native, invisible utility belt explicitly built for the Agentic AI era.</p>
+					<p class="section-eyebrow">Platform</p>
+					<h2 class="section-title">Everything your agents need to <span class="text-gradient">stay focused</span></h2>
+					<p class="section-subtitle">Six capability layers that turn noisy terminal output into dense, actionable context.</p>
 				</header>
 
-				<div class="bento-grid reveal">	
-					<!-- Distill Monitor -->
-					<div class="bento-item">
-						<div class="bento-content">
-							<div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></div>
-							<h3>Real-Time ROI & Token Analytics</h3>
-							<p>Run <code>omni stats</code> to track lifetime token savings, optimization percentages, and financial ROI across all your workspaces in beautiful terminal charts.</p>
-						</div>
-					   <div class="bento-visual align-bottom">
-							 <img  src="/media/omni-stats.png" alt="Visual Impact Analytics" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-subtle);">
-						</div>
-					</div>
+				<div class="feature-grid reveal">
+					{featureGroups.map((group) => (
+						<article class="feature-card">
+							<p class="feature-category">{group.category}</p>
+							<h3>{group.title}</h3>
+							<ul class="feature-list">
+								{group.items.map((item) => (
+									<li>{item}</li>
+								))}
+							</ul>
+						</article>
+					))}
+				</div>
+			</div>
+		</section>
 
-					<!-- Session Intelligence -->
-					<div class="bento-item">
-						<div class="bento-content">
-							<div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-							<h3>Persistent Session Memory</h3>
-							<p>OMNI tracks hot files and active errors across your workspace. It natively understands what the AI already knows, injecting contextual continuity into every tool invocation.</p>
-						</div>
-						<div class="bento-visual align-bottom">
-							 <img src="/media/omni-session-status.png" alt="Session Tracking" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-subtle);">
-						</div>
-					</div>
+		<!-- PRODUCT SHOWCASE -->
+		<section id="showcase" class="section alt-bg">
+			<div class="container">
+				<header class="section-header reveal">
+					<p class="section-eyebrow">Product</p>
+					<h2 class="section-title">Built for the <span class="text-gradient">terminal workflow</span></h2>
+					<p class="section-subtitle">Every screenshot is a real CLI surface — analytics, session health, recovery, and diagnostics you run locally.</p>
+				</header>
 
-					<!-- RewindStore -->
-					<div class="bento-item">
-						<div class="bento-content">
-							<div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg></div>
-							<h3>RewindStore: 100% Context Safety</h3>
-							<p>Worried OMNI filtered something important? Our built-in <strong>RewindStore</strong> saves raw output locally via SHA-256. If the AI needs the full log, it automatically retrieves it via MCP.</p>
-						</div>
-						<div class="bento-visual align-bottom">
-							 <img src="/media/omni-rewind-list.png" alt="RewindStore" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-subtle);">
-						</div>
-					</div>
-
-					<!-- Omni Learn -->
-					<div class="bento-item">
-						<div class="bento-content">
-							<div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v8"/><path d="m16.2 3.8-4.2 4.2"/><path d="M21 12h-8"/><path d="m16.2 20.2-4.2-4.2"/><path d="M12 22v-8"/><path d="m7.8 20.2 4.2-4.2"/><path d="M3 12h8"/><path d="m7.8 3.8 4.2 4.2"/></svg></div>
-							<h3>Machine Learning Noise Discovery</h3>
-							<p>The <code>omni learn</code> engine automatically analyzes your terminal history to identify repetitive noise patterns, instantly generating optimized semantic TOML filters for your exact tech stack.</p>
-						</div>
-						<div class="bento-visual align-bottom">
-							 <img src="/media/omni-learn-status.png" alt="Omni Learn Discovery" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-subtle);">
-						</div>
-					</div>
-
-					<!-- Omni Doctor -->
-					<div class="bento-item">
-						<div class="bento-content">
-							<div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
-							<h3>Self-Healing Diagnostic Tools</h3>
-							<p>Never worry about broken integrations. The proactive <code>omni doctor</code> utility scans your hooks, MCP configs, and filter performance, offering instant 1-click <code>--fix</code> solutions.</p>
-						</div>
-						<div class="bento-visual align-bottom">
-							 <img src="/media/omni-doctor.png" alt="Omni Doctor Diagnostics" style="width: 100%; border-radius: 8px; border: 1px solid var(--border-subtle);">
-						</div>
-					</div>
-
-					<!-- Universal Support -->
-					<div class="bento-item">
-						<div class="bento-content">
-							<div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="22" y2="7"/><line x1="2" y1="17" x2="22" y2="17"/></svg></div>
-							<h3>Native Integration for 15+ AI Agents</h3>
-							<p>Powered by a <strong>Rust Core</strong> for sub-millisecond execution. OMNI seamlessly integrates with Claude Code, Cursor, Cline, Pi, Copilot, Antigravity, and OpenClaw while exposing 12 dynamic MCP Tools.</p>
-						</div>
-						<div class="bento-visual align-bottom" style="opacity: 0.4;">
-							<div class="mock-ui">
-								<div class="ui-line"><span class="success">●</span> Supported Agents: 15</div>
-								<div class="ui-line"><span class="success">●</span> Tool Filters: 30+ Tools</div>
-								<div class="ui-line"><span class="success">●</span> MCP Tools Exposed: 12</div>
+				<div class="showcase-grid reveal">
+					{showcaseScreens.map((screen) => (
+						<figure class={`showcase-card layout-${screen.layout}`}>
+							<div class="showcase-frame">
+								<img src={screen.src} alt={screen.title} loading="lazy" />
 							</div>
-						</div>
-					</div>
-
-					<!-- Autonomous Loops -->
-					<div class="bento-item">
-						<div class="bento-content">
-							<div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.92-5.27l-3.46-1"/></svg></div>
-							<h3>Production-Grade Autonomous Loops</h3>
-							<p>Scale multi-agent tasks cleanly with the Maker-Checker verification pattern. OMNI enforces predictive token constraints (via <code>OMNI_LOOP_BUDGET</code>) and natively orchestrates complex iterative loops.</p>
-						</div>
-						<div class="bento-visual align-bottom" style="opacity: 0.4;">
-							<div class="mock-ui">
-								<div class="ui-line"><span class="success">●</span> <span class="text-gradient">OMNI_LOOP_BUDGET</span></div>
-								<div class="ui-line"><span class="success">●</span> <span class="text-gradient">OMNI_LOOP_GOAL</span></div>
-								<div class="ui-line"><span class="success">●</span> Maker-Checker Validated</div>
-							</div>
-						</div>
-					</div>
-
-					<!-- Engrams -->
-					<div class="bento-item">
-						<div class="bento-content">
-							<div class="icon-wrap"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-							<h3>Engrams: Cure AI Context Amnesia</h3>
-							<p>OMNI automatically detects when a milestone subtask is completed and generates highly compressed state snapshots. Your agent will never suffer from "context amnesia" during long coding sessions.</p>
-						</div>
-						<div class="bento-visual align-bottom" style="opacity: 0.4;">
-							<div class="mock-ui">
-								<div class="ui-line"><span class="success">✓</span> Fix: Compiler Error Resolved</div>
-								<div class="ui-line"><span class="success">✓</span> Commit: Created schema</div>
-								<div class="ui-line"><span class="success">✓</span> State Snapshot Saved</div>
-							</div>
-						</div>
-					</div>
-					
+							<figcaption>
+								<strong>{screen.title}</strong>
+								<span>{screen.caption}</span>
+							</figcaption>
+						</figure>
+					))}
 				</div>
 			</div>
 		</section>
@@ -407,6 +540,27 @@ error: could not compile `omni` (bin "omni") due to 1 previous error
 							 </div>
 						 </div>
 					</div>
+			</div>
+		</section>
+
+		<!-- GITHUB CTA -->
+		<section id="get-started" class="section cta-section">
+			<div class="container container-md">
+				<div class="cta-card reveal">
+					<h2 class="section-title">Open Source. <span class="text-gradient">Built for Agents.</span></h2>
+					<p class="cta-desc">
+						OMNI is MIT-licensed and actively maintained. Explore the codebase, read the docs, or grab the latest release and start filtering noisy tokens today.
+					</p>
+					<div class="cta-actions">
+						<a href={GITHUB_REPO} class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+							<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+							Explore on GitHub
+						</a>
+						<a href={GITHUB_RELEASES} class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+							Latest Release
+						</a>
+					</div>
+				</div>
 			</div>
 		</section>
 	</main>
