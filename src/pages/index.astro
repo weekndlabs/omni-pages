@@ -1,6 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
+const GITHUB_REPO = 'https://github.com/fajarhide/omni';
+const GITHUB_RELEASES = `${GITHUB_REPO}/releases`;
+
 // Helper to determine version label
 const getVersionLabel = (version) => {
 	if (version.includes('-rc')) return 'Release Candidate';
@@ -53,14 +56,38 @@ try {
 				</h1>
 				
 				<p class="hero-desc reveal delay-2">
-					<strong>OMNI is the Context Operating System for Autonomous AI Agents.</strong>
-					<br/><br/>
-					It acts as a high-performance semantic filter between your terminal and LLMs like Claude Code, Cursor, and Copilot. Intelligently distill noisy logs, cache states, and enforce strict token budgets to ensure your agents execute complex loops flawlessly.
-					<br/><br/>
-					<em>Cut your AI tokens costs by up to 90%. Start building with pure signal.</em>
+					The Context Operating System for autonomous AI agents. OMNI filters noisy terminal output, enforces token budgets, and keeps long-running agent loops focused on pure signal.
 				</p>
 
-				<div class="hero-cta reveal delay-3">
+				<div class="hero-metrics reveal delay-2">
+					<div class="metric">
+						<span class="metric-value text-gradient">90%</span>
+						<span class="metric-label">Token reduction</span>
+					</div>
+					<div class="metric-divider" aria-hidden="true"></div>
+					<div class="metric">
+						<span class="metric-value">15+</span>
+						<span class="metric-label">AI agents supported</span>
+					</div>
+					<div class="metric-divider" aria-hidden="true"></div>
+					<div class="metric">
+						<span class="metric-value">MIT</span>
+						<span class="metric-label">Open source</span>
+					</div>
+				</div>
+
+				<div class="hero-actions reveal delay-3">
+					<a href={GITHUB_REPO} class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+						View on GitHub
+					</a>
+					<a href={`${GITHUB_REPO}#readme`} class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+						Read the Docs
+					</a>
+				</div>
+
+				<div class="hero-cta reveal delay-4">
+					<p class="install-label">Quick install</p>
 					<div class="terminal-install">
 						<span class="prompt">$</span>
 						<code>brew install fajarhide/tap/omni</code>
@@ -72,6 +99,21 @@ try {
 						<span class="text-muted">·</span>
 						<button class="text-link" data-copy="irm omni.weekndlabs.com/install.ps1 | iex">Windows</button>
 					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="compatibility-strip" aria-label="Supported AI agents">
+			<div class="container">
+				<p class="strip-label">Works with your favorite agent stack</p>
+				<div class="strip-logos">
+					<span>Cursor</span>
+					<span>Claude Code</span>
+					<span>Copilot</span>
+					<span>Cline</span>
+					<span>Pi</span>
+					<span>Antigravity</span>
+					<span>OpenClaw</span>
 				</div>
 			</div>
 		</section>
@@ -407,6 +449,27 @@ error: could not compile `omni` (bin "omni") due to 1 previous error
 							 </div>
 						 </div>
 					</div>
+			</div>
+		</section>
+
+		<!-- GITHUB CTA -->
+		<section id="get-started" class="section cta-section">
+			<div class="container container-md">
+				<div class="cta-card reveal">
+					<h2 class="section-title">Open Source. <span class="text-gradient">Built for Agents.</span></h2>
+					<p class="cta-desc">
+						OMNI is MIT-licensed and actively maintained. Explore the codebase, read the docs, or grab the latest release and start filtering noisy tokens today.
+					</p>
+					<div class="cta-actions">
+						<a href={GITHUB_REPO} class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+							<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+							Explore on GitHub
+						</a>
+						<a href={GITHUB_RELEASES} class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
+							Latest Release
+						</a>
+					</div>
+				</div>
 			</div>
 		</section>
 	</main>
