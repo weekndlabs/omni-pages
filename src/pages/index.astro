@@ -95,6 +95,45 @@ const benchmarks = [
 	{ command: 'kubectl get pods', input: '840 bytes', output: '762 bytes', savings: '10.0%' },
 	{ command: 'git diff', input: '397 bytes', output: '220 bytes', savings: '50.0%' },
 ];
+
+const showcaseScreens = [
+	{
+		src: '/media/omni-stats.png',
+		title: 'Token analytics',
+		caption: 'Track lifetime savings and ROI with omni stats.',
+		layout: 'wide',
+	},
+	{
+		src: '/media/omni-session-status.png',
+		title: 'Session health',
+		caption: 'Monitor context pressure, engrams, and active errors.',
+		layout: 'wide',
+	},
+	{
+		src: '/media/omni-rewind-list.png',
+		title: 'RewindStore',
+		caption: 'Recover any omitted output through omni_retrieve.',
+		layout: 'normal',
+	},
+	{
+		src: '/media/omni-learn-status.png',
+		title: 'Noise discovery',
+		caption: 'omni learn generates TOML filters from your terminal history.',
+		layout: 'normal',
+	},
+	{
+		src: '/media/omni-doctor.png',
+		title: 'Diagnostics',
+		caption: 'omni doctor validates hooks, MCP, and filter performance.',
+		layout: 'normal',
+	},
+	{
+		src: '/media/omni-terminal-hook-indikator.png',
+		title: 'Transparent hooks',
+		caption: 'OMNI intercepts commands invisibly — no workflow changes required.',
+		layout: 'full',
+	},
+];
 ---
 
 <Layout 
@@ -183,6 +222,7 @@ const benchmarks = [
 					<span>Pi</span>
 					<span>Antigravity</span>
 					<span>OpenClaw</span>
+					<span>Hermes Agent</span>
 				</div>
 			</div>
 		</section>
@@ -218,8 +258,9 @@ const benchmarks = [
 						</ul>
 					</div>
 					
-					<div class="bento-item span-2" style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: transparent; box-shadow: none; border: none;">
-						 <img src="/media/performance.png" alt="OMNI Token Savings Strategy" style="max-width: 100%; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid var(--border-subtle);">
+					<div class="showcase-frame reveal span-2">
+						<img src="/media/performance.png" alt="OMNI token savings across build, test, and DevOps workflows" loading="lazy" />
+						<p class="showcase-caption">Real compression across build, test, and infrastructure commands.</p>
 					</div>
 				</div>
 			</div>
@@ -285,8 +326,9 @@ error: could not compile `omni` (bin "omni") due to 1 previous error
 					</div>
 				</div>
 
-				<div class="diff-visual reveal" style="text-align: center; margin-top: 64px;">
-					 <img src="/media/omni-diff.png" alt="OMNI Diff Comparison" style="width: 100%; max-width: 900px; border-radius: 16px; border: 1px solid var(--border-subtle); box-shadow: 0 20px 40px rgba(0,0,0,0.6);">
+				<div class="showcase-frame reveal showcase-frame-centered">
+					<img src="/media/omni-diff.png" alt="Side-by-side comparison of raw terminal output vs OMNI filtered signal" loading="lazy" />
+					<p class="showcase-caption">omni diff — raw output vs distilled signal, side by side.</p>
 				</div>
 			</div>
 		</section>
@@ -368,6 +410,10 @@ error: could not compile `omni` (bin "omni") due to 1 previous error
 						<span class="benchmark-stat-label">Saved per dev / month</span>
 					</div>
 				</div>
+
+				<div class="showcase-frame reveal showcase-frame-centered benchmark-visual">
+					<img src="/media/omni_token_savings_graphic.png" alt="OMNI token savings breakdown chart" loading="lazy" />
+				</div>
 			</div>
 		</section>
 
@@ -391,6 +437,31 @@ error: could not compile `omni` (bin "omni") due to 1 previous error
 								))}
 							</ul>
 						</article>
+					))}
+				</div>
+			</div>
+		</section>
+
+		<!-- PRODUCT SHOWCASE -->
+		<section id="showcase" class="section alt-bg">
+			<div class="container">
+				<header class="section-header reveal">
+					<p class="section-eyebrow">Product</p>
+					<h2 class="section-title">Built for the <span class="text-gradient">terminal workflow</span></h2>
+					<p class="section-subtitle">Every screenshot is a real CLI surface — analytics, session health, recovery, and diagnostics you run locally.</p>
+				</header>
+
+				<div class="showcase-grid reveal">
+					{showcaseScreens.map((screen) => (
+						<figure class={`showcase-card layout-${screen.layout}`}>
+							<div class="showcase-frame">
+								<img src={screen.src} alt={screen.title} loading="lazy" />
+							</div>
+							<figcaption>
+								<strong>{screen.title}</strong>
+								<span>{screen.caption}</span>
+							</figcaption>
+						</figure>
 					))}
 				</div>
 			</div>
