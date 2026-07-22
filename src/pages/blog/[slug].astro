@@ -1,18 +1,20 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { getCollection, render } from 'astro:content';
+import { RC_SLUG, wordsIn, relatedFor } from '../../lib/blog.js';
 
 export async function getStaticPaths() {
-  const blogEntries = await getCollection('blog');
-  return blogEntries.map(entry => ({
-    params: { slug: entry.id }, props: { entry },
+  const all = await getCollection('blog');
+  return all.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry, all },
   }));
 }
 
-const { entry } = Astro.props;
+const { entry, all } = Astro.props;
 const { Content } = await render(entry);
 
-const wordCount = (entry.body || '').trim().split(/\s+/).length || 1;
+const wordCount = wordsIn(entry);
 const readTime = Math.ceil(wordCount / 200) || 1;
 
 const dateStr = entry.data.date.toLocaleDateString('en-US', {
@@ -22,8 +24,21 @@ const iso = entry.data.date.toISOString();
 const author = entry.data.author || 'Fajar Hidayat';
 const url = new URL(`/blog/${entry.id}`, Astro.site || 'https://omni.weekndlabs.com').toString();
 
-// Was inheriting SoftwareApplication schema with a hardcoded publish date, so
-// every post claimed to be the same program shipped on the same day.
+const isReleaseCandidate = RC_SLUG.test(entry.id);
+
+/* There were zero links between any of the 42 posts, so nothing pointed at the
+   handful worth reading and no topical cluster could form. Every post now links
+   to three evergreen posts, rotated so the links spread rather than piling onto
+   the same three pages. */
+const related = relatedFor(entry, all);
+
+/* Date-adjacent neighbours, so a crawler can walk the archive without bouncing
+   back to the index between every post. */
+const ordered = [...all].sort((a, b) => a.data.date.valueOf() - b.data.date.valueOf());
+const i = ordered.findIndex((p) => p.id === entry.id);
+const prev = ordered[i - 1];
+const next = ordered[i + 1];
+
 const jsonLd = {
 	'@context': 'https://schema.org',
 	'@type': 'BlogPosting',
@@ -47,6 +62,7 @@ const jsonLd = {
 	author={author}
 	publishDate={iso}
 	jsonLd={jsonLd}
+	noindex={isReleaseCandidate}
 >
 	<article class="wrap article">
 		<header class="article-head">
@@ -59,12 +75,37 @@ const jsonLd = {
 			</div>
 		</header>
 
+		{isReleaseCandidate && (
+			<p class="rc-note">
+				This is a release candidate note, kept as project history. For what shipped, see the <a href="/blog">journal index</a> or the <a href="https://github.com/fajarhide/omni/releases" target="_blank" rel="noopener noreferrer">releases</a>.
+			</p>
+		)}
+
 		<div class="prose">
 			<Content />
 		</div>
 
-		<div class="article-foot">
-			<a href="/blog" class="btn btn-ghost btn-sm">Back to the journal</a>
-		</div>
+		<nav class="article-foot" aria-label="More from the journal">
+			{related.length > 0 && (
+				<div class="more">
+					<h2 class="more-h">Worth reading next</h2>
+					<dl class="rows">
+						{related.map((p) => (
+							<div class="row">
+								<dt class="row-k"><a href={`/blog/${p.id}`}>{p.data.title}</a></dt>
+								<dd class="row-v">{p.data.description}</dd>
+							</div>
+						))}
+					</dl>
+				</div>
+			)}
+
+			<div class="stepper">
+				{prev ? <a href={`/blog/${prev.id}`} class="step-prev">Earlier: {prev.data.title}</a> : <span />}
+				{next && <a href={`/blog/${next.id}`} class="step-next">Later: {next.data.title}</a>}
+			</div>
+
+			<a href="/blog" class="btn btn-ghost btn-sm">All posts</a>
+		</nav>
 	</article>
 </Layout>

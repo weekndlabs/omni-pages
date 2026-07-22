@@ -630,3 +630,59 @@ code {
     transition-delay: 0ms !important;
   }
 }
+
+/* --------------------------------------------------------------------------
+   Journal extras: release-candidate archive and post-to-post links
+   -------------------------------------------------------------------------- */
+
+.rc-note {
+  border-left: 2px solid var(--amber-ink);
+  padding: 10px 0 10px 16px;
+  margin-bottom: 26px;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+.rc-note a { border-bottom: 1px solid var(--rule-strong); }
+.rc-note a:hover { border-bottom-color: var(--amber-ink); }
+
+.rc-archive { margin: 56px 0 24px; padding-top: 26px; border-top: 1px solid var(--rule); }
+.rc-h { font-size: 1.05rem; margin-bottom: 6px; }
+.rc-archive .fine { margin-bottom: 16px; }
+.rc-list { list-style: none; }
+.rc-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--rule);
+  font-size: 0.88rem;
+}
+.rc-list a { color: var(--ink-soft); border-bottom: 1px solid transparent; }
+.rc-list a:hover { color: var(--ink); border-bottom-color: var(--ink); }
+.rc-list time { font-family: var(--font-mono); font-size: 0.78rem; color: var(--ink-soft); white-space: nowrap; }
+
+.more { margin-bottom: 32px; }
+.more-h { font-size: 1.05rem; margin-bottom: 14px; }
+.more .row-k a { border-bottom: 1px solid var(--rule-strong); }
+.more .row-k a:hover { border-bottom-color: var(--amber-ink); }
+
+.stepper {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 24px;
+  font-size: 0.88rem;
+}
+.stepper a { color: var(--ink-soft); max-width: 48%; border-bottom: 1px solid transparent; }
+.stepper a:hover { color: var(--ink); border-bottom-color: var(--ink); }
+.step-next { text-align: right; margin-left: auto; }
+
+@media (max-width: 720px) {
+  .stepper { flex-direction: column; gap: 12px; }
+  .stepper a { max-width: 100%; }
+  .step-next { text-align: left; margin-left: 0; }
+  .rc-list li { flex-direction: column; gap: 2px; }
+}

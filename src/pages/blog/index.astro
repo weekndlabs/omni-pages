@@ -1,12 +1,22 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
+import { RC_SLUG, wordsIn } from '../../lib/blog.js';
 
-const allPosts = await getCollection('blog');
-const sorted = allPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
-const lead = sorted.find((p) => p.data.featured);
-const rest = sorted.filter((p) => !p.data.featured);
+const all = await getCollection('blog');
+const sorted = all.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+/* Fourteen of the forty-two posts are release-candidate notes. Listed inline
+   they buried everything else, so they get their own compact group at the end.
+   They are noindexed too, see astro.config.mjs. */
+const posts = sorted.filter((p) => !RC_SLUG.test(p.id));
+const candidates = sorted.filter((p) => RC_SLUG.test(p.id));
+
+const lead = posts.find((p) => p.data.featured);
+const rest = posts.filter((p) => p !== lead);
+
 const fmt = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+const iso = (d) => d.toISOString();
 ---
 
 <Layout
@@ -23,7 +33,7 @@ const fmt = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric
 		<div class="posts">
 			{lead && (
 				<a href={`/blog/${lead.id}`} class="post-row is-lead">
-					<span class="post-when">{fmt(lead.data.date)}</span>
+					<time class="post-when" datetime={iso(lead.data.date)}>{fmt(lead.data.date)}</time>
 					<div>
 						{lead.data.tag && <span class="post-tag">{lead.data.tag}</span>}
 						<h2><span class="post-title">{lead.data.title}</span></h2>
@@ -34,7 +44,7 @@ const fmt = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric
 
 			{rest.map((post) => (
 				<a href={`/blog/${post.id}`} class="post-row">
-					<span class="post-when">{fmt(post.data.date)}</span>
+					<time class="post-when" datetime={iso(post.data.date)}>{fmt(post.data.date)}</time>
 					<div>
 						{post.data.tag && <span class="post-tag">{post.data.tag}</span>}
 						<h2><span class="post-title">{post.data.title}</span></h2>
@@ -43,5 +53,22 @@ const fmt = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric
 				</a>
 			))}
 		</div>
+
+		{candidates.length > 0 && (
+			<section class="rc-archive">
+				<h2 class="rc-h">Release candidates</h2>
+				<p class="fine">
+					Pre-release notes, kept as history. Not indexed, because nothing here is what finally shipped.
+				</p>
+				<ul class="rc-list">
+					{candidates.map((p) => (
+						<li>
+							<a href={`/blog/${p.id}`}>{p.data.title}</a>
+							<time datetime={iso(p.data.date)}>{fmt(p.data.date)}</time>
+						</li>
+					))}
+				</ul>
+			</section>
+		)}
 	</div>
 </Layout>

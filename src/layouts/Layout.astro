@@ -12,6 +12,8 @@ interface Props {
     publishDate?: string;
     /** Page-specific structured data. Without it the page describes the product. */
     jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+    /** Keep the page reachable and crawlable, but out of the index. */
+    noindex?: boolean;
 }
 
 const {
@@ -21,6 +23,7 @@ const {
     author = 'Fajar Hidayat',
     publishDate,
     jsonLd,
+    noindex = false,
 } = Astro.props;
 
 const SITE = 'https://omni.weekndlabs.com';
@@ -46,6 +49,12 @@ const defaultJsonLd = {
     author: { '@type': 'Person', name: author, url: 'https://github.com/fajarhide' },
 };
 
+// "follow" stays on noindex pages so link equity still flows out of them.
+// max-snippet:-1 lets AI Overviews quote a full passage rather than a clipped one.
+const robots = noindex
+    ? 'noindex, follow'
+    : 'index, follow, max-snippet:-1, max-image-preview:large';
+
 const structuredData = jsonLd ?? defaultJsonLd;
 ---
 
@@ -66,8 +75,7 @@ const structuredData = jsonLd ?? defaultJsonLd;
 
 		<meta name="author" content={author} />
 		<meta name="theme-color" content="#E3E4E0" />
-		<!-- max-snippet:-1 lets AI Overviews quote a full passage rather than a clipped one. -->
-		<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+		<meta name="robots" content={robots} />
 
 		<!-- Open Graph -->
 		<meta property="og:site_name" content="OMNI" />
