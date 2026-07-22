@@ -63,7 +63,7 @@ of the way everywhere else.
 ## Guarantees
 
 - Reversible. Everything cut is archived to local SQLite keyed by SHA-256, and
-  the agent retrieves it by hash.
+  the agent retrieves it by hash through the omni_retrieve MCP tool.
 - Never invents a result. See github.com/fajarhide/omni/issues/143.
 - Never hides a failure. See github.com/fajarhide/omni/issues/120.
 - Never mangles structured data.
@@ -72,7 +72,8 @@ of the way everywhere else.
 
 - \`omni goal\` restates your objective on every prompt so the agent stops drifting.
 - \`omni remember\` stores project rules and gotchas in local SQLite.
-- \`omni recall\` returns them by semantic search in under 10ms.
+- Retrieval is via MCP tools (omni_recall, omni_retrieve), not CLI subcommands.
+- \`omni_recall\` (MCP tool) returns them to the agent by semantic search.
 - Session summaries are injected when you switch editors, so a new agent starts current.
 
 ## Commands
@@ -81,10 +82,11 @@ of the way everywhere else.
 - \`omni doctor --fix\` checks hooks, MCP wiring and filter cost, then repairs.
 - \`omni stats\` reports what it saved on your machine. Takes --today, --week, --month.
 - \`omni session --status\` shows context pressure, engrams and open errors.
-- \`omni rewind list\` lists archived chunks. Pass a hash to read one back.
+- \`omni diff\` shows the last raw input beside what the agent received.
 - \`omni learn --discover\` reads shell history and proposes filters.
-- \`omni trust\` approves filters a project ships in .omni/signals/.
-- \`omni init --uninstall\` removes it.
+- \`omni goal\` pins the objective so the agent stops drifting.
+- \`omni remember\` stores a project rule or gotcha in local SQLite.
+- \`omni reset\` uninstalls cleanly, keeping a backup of your config.
 
 ## Install
 

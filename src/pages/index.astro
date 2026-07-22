@@ -81,7 +81,7 @@ const promises = [
 	{
 		k: 'Reversible',
 		v: 'Everything cut is archived to local SQLite keyed by SHA-256. Your agent gets the hash and calls it back when it wants the rest.',
-		proof: { label: 'omni rewind', href: `${GITHUB_REPO}#how-it-works` },
+		proof: { label: 'omni_retrieve', href: `${GITHUB_REPO}#how-it-works` },
 	},
 	{
 		k: 'Never invents',
@@ -109,7 +109,7 @@ const memory = [
 	{
 		k: 'Bug you already fixed',
 		was: 'The agent walks into the same framework quirk it solved yesterday, because nothing kept the answer.',
-		now: 'omni recall returns the stored fix in under 10ms.',
+		now: 'The agent pulls the stored fix back through omni_recall before it repeats the mistake.',
 	},
 	{
 		k: 'Cursor to Claude Code',
@@ -123,16 +123,24 @@ const memory = [
 	},
 ];
 
-/* Verified against docs/HOW_TO_USE.md in the omni repo. */
+/* Every entry below exists in BOTH the released binary and main.
+ *
+ * Do not add a command from docs/ without running `omni <cmd> --help` against an
+ * installed build first. Two entries here were wrong: `omni trust` is documented
+ * in HOW_TO_USE.md but the binary answers "unknown command", and `omni rewind`
+ * shipped in v0.6.3 then got deleted on main, so it would have broken at the
+ * next release. Retrieval is the omni_retrieve MCP tool, not a subcommand.
+ */
 const commands = [
 	{ k: 'omni init', v: 'Wire the hook into Claude Code, Cursor, Windsurf, Codex or Antigravity. Interactive.' },
 	{ k: 'omni doctor --fix', v: 'Check hooks, MCP wiring and filter cost, then repair whatever is broken.' },
 	{ k: 'omni stats', v: 'What it actually saved on your machine. Takes <code>--today</code>, <code>--week</code>, <code>--month</code>.' },
+	{ k: 'omni diff', v: 'The last raw input beside what the agent received. This is how you check its work.' },
 	{ k: 'omni session --status', v: 'Context pressure, stored engrams, and the errors still open in this session.' },
-	{ k: 'omni rewind list', v: 'Every chunk it archived. Pass a hash to read that one back in full.' },
 	{ k: 'omni learn --discover', v: 'Read your shell history and propose filters for your own internal tools.' },
-	{ k: 'omni trust', v: 'Review and approve the filters a project ships in <code>.omni/signals/</code>.' },
-	{ k: 'omni init --uninstall', v: 'Take it back out. One command, no residue.' },
+	{ k: 'omni goal', v: 'Set the objective once. OMNI restates it on every prompt so the agent stops drifting.' },
+	{ k: 'omni remember', v: 'Store a project rule or a gotcha in local SQLite. Recalled by semantic search later.' },
+	{ k: 'omni reset', v: 'Take it back out. Clean uninstall, keeping a backup of your config.' },
 ];
 
 /* Questions people actually ask before installing something that sits between
@@ -141,7 +149,7 @@ const commands = [
 const faq = [
 	{
 		q: 'Does OMNI delete my logs?',
-		a: 'No. Everything it cuts is compressed and archived to a local SQLite store, keyed by SHA-256. Your agent receives the hash and can pull the full original back at any time with omni rewind. Nothing is deleted and nothing leaves your machine.',
+		a: 'No. Everything it cuts is compressed and archived to a local SQLite store, keyed by SHA-256. Your agent receives the hash and pulls the full original back whenever it needs it, through the omni_retrieve MCP tool. Nothing is deleted and nothing leaves your machine.',
 	},
 	{
 		q: 'Will it slow down my terminal?',
@@ -161,11 +169,11 @@ const faq = [
 	},
 	{
 		q: 'Can I add filters for my own tools?',
-		a: 'Yes. Filters are TOML files in ~/.omni/signals/ that match a command and strip lines by pattern. omni learn --discover reads your shell history and drafts them for you, and omni trust approves filters a project ships in its own repository.',
+		a: 'Yes. Filters are TOML files in ~/.omni/signals/ that match a command by regex and strip lines by pattern. You can write them by hand, or run omni learn --discover to have OMNI read your shell history and draft them from the noise it already sees.',
 	},
 	{
 		q: 'What does OMNI cost?',
-		a: 'Nothing. It is MIT licensed with no paid tier, no account and no telemetry. If it saves you nothing, omni stats will tell you so and omni init --uninstall removes it.',
+		a: 'Nothing. It is MIT licensed with no paid tier, no account and no telemetry. If it saves you nothing, omni stats will tell you so and omni reset removes it.',
 	},
 ];
 
@@ -420,7 +428,7 @@ const pipeline = [
 			<div class="wrap">
 				<header class="band-head">
 					<span class="eyebrow">The CLI</span>
-					<h2 class="t-section">Eight commands, all of them local</h2>
+					<h2 class="t-section">Nine commands, all of them local</h2>
 					<p class="lede">
 						No dashboard and no account. Nothing about your machine leaves it.
 					</p>
@@ -484,7 +492,7 @@ const pipeline = [
 			<div class="wrap wrap-text">
 				<h2 class="t-section">A passion project, MIT licensed</h2>
 				<p class="lede" style="margin:14px 0 24px">
-					Built by one developer who got tired of paying to read progress bars. If it saves you nothing, <code>omni stats</code> will say so and <code>omni init --uninstall</code> removes it. That is the whole deal.
+					Built by one developer who got tired of paying to read progress bars. If it saves you nothing, <code>omni stats</code> will say so and <code>omni reset</code> removes it. That is the whole deal.
 				</p>
 				<div class="hero-actions" style="margin-bottom:0">
 					<a href={GITHUB_REPO} class="btn btn-solid" target="_blank" rel="noopener noreferrer">
