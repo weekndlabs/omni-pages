@@ -1,6 +1,6 @@
 ---
-title: "Real-World Use Cases: How OMNI Saves 90% of Your Context"
-description: "A look at actual data comparing raw terminal output versus OMNI's distilled signal across Cargo, Jest, Kubectl, and Docker workflows."
+title: "Real-World Use Cases: Where OMNI Actually Saves Context"
+description: "Raw terminal output beside OMNI's distilled signal across Cargo, Jest, Kubectl and Docker, with the cases where it saves nothing included."
 date: 2026-05-29
 tag: Engineering
 author: OMNI Core Team
@@ -8,7 +8,7 @@ author: OMNI Core Team
 
 Let's look at the numbers. How much context does an AI agent *actually* waste when running terminal commands? 
 
-Based on our internal analysis of over 30+ supported tools, OMNI consistently reduces token usage by 85% to 98% without losing actionable signal. Here are some real-world examples.
+Across 1,810 replayed real commands, OMNI cuts 58.9% of the bytes that reach the model. That average hides the important part: 63.6% of those commands saved nothing at all, and the entire saving comes from the noisy minority. The examples below are drawn from that minority, where the win is large. They are not typical of every command you run.
 
 ### 1. Build Output (Cargo, Rustc, Gradle)
 
@@ -62,4 +62,4 @@ Imagine an autonomous agent running a full CI-style pipeline: Build → Test →
 - **Without OMNI:** ~16,000 tokens consumed.
 - **With OMNI:** ~650 tokens consumed.
 
-That is a 95%+ reduction in context usage. This means faster responses, zero API rate limits, and the ability to use cheaper, faster models while retaining expert-level reasoning.
+On this particular mix of noisy commands the reduction is large. Pick a different mix, one heavy on `cat` and `grep`, and it drops close to nothing: measured across everything, `cat` saves 9.1% and `grep` saves 27.8%. The saving is real where the noise is real, and absent where it is not.

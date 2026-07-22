@@ -10,7 +10,7 @@ We are thrilled to announce the release of **OMNI v0.6.0**! This milestone relea
 
 ### Autonomous Loop Engineering
 
-OMNI now provides native support for iterative, autonomous agent loops using `OMNI_LOOP_BUDGET` and `OMNI_LOOP_GOAL` environment variables. This enables predictive goal-driven constraints that automatically scale distillation based on your task—letting you orchestrate long-running agents with complete confidence.
+OMNI now provides native support for iterative, autonomous agent loops using `OMNI_LOOP_BUDGET` and `OMNI_LOOP_GOAL` environment variables. This enables predictive goal-driven constraints that automatically scale distillation based on your task, so a debug loop keeps its errors while a refactor loop compresses traces.
 
 ### Maker-Checker Verification Pattern
 
@@ -28,4 +28,4 @@ Performance and stability remain at the core of OMNI:
 
 We have unified scattered templates into a cohesive `docs/LOOP_ENGINEERING.md` master guide, detailing the new multi-agent orchestration capabilities. Furthermore, our test suite has been modernized, renaming all sprint-based tests and achieving 100% coverage across 941 tests!
 
-Update to OMNI v0.6.0 today by running `omni update` and experience the ultimate Context Operating System.
+Update to OMNI v0.6.0 by running `omni update`.

@@ -1,19 +1,18 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { getBenchmarkStats, extremes } from '../lib/readme-stats.js';
 
 const GITHUB_REPO = 'https://github.com/fajarhide/omni';
 const GITHUB_RELEASES = `${GITHUB_REPO}/releases`;
 
-// Helper to determine version label
 const getVersionLabel = (version) => {
-	if (version.includes('-rc')) return 'Release Candidate';
-	if (version.includes('-alpha')) return 'Alpha Release';
-	if (version.includes('-beta')) return 'Beta Release';
+	if (version.includes('-rc')) return 'Release candidate';
+	if (version.includes('-alpha')) return 'Alpha';
+	if (version.includes('-beta')) return 'Beta';
 	return 'Stable';
 };
 
-// Fetch the latest version from GitHub at build time
-let latestVersion = 'v0.6.0'; // Fallback
+let latestVersion = 'v0.6.0';
 let versionLabel = getVersionLabel(latestVersion);
 
 try {
@@ -27,639 +26,548 @@ try {
 	console.error('Failed to fetch latest OMNI version:', e);
 }
 
-const featureGroups = [
+// Benchmark figures are read from the OMNI README on `main` at build time.
+// Do not hardcode them here. See src/lib/readme-stats.js.
+const stats = await getBenchmarkStats();
+const { best, worst } = extremes(stats.rows);
+const workingShare = (100 - parseFloat(stats.zeroSaveShare)).toFixed(1) + '%';
+
+/* Hero demo. Real `cargo test` shape, with the lines OMNI drops marked so the
+   block can subtract them in place. `n` is the noise flag. */
+const demo = [
+	{ t: '$ cargo test', prompt: true },
+	{ t: '   Compiling omni v0.6.0 (/Users/f/omni)', n: true },
+	{ t: '   Compiling serde v1.0.210', n: true },
+	{ t: '   Compiling regex v1.10.6', n: true },
+	{ t: '    Finished test profile in 41.20s', n: true },
+	{ t: '     Running unittests src/lib.rs', n: true },
+	{ t: 'test pipeline::score::keeps_stack_frames ... ok', n: true },
+	{ t: 'test pipeline::score::drops_progress_bars ... ok', n: true },
+	{ t: 'test pipeline::format::json_passthrough ... ok', n: true },
+	{ t: 'test rewind::store::roundtrip_sha256 ... ok', n: true },
+	{ t: 'test rewind::store::retrieve_by_hash ... ok', n: true },
+	{ t: '... 478 more passing tests ...', n: true },
+	{ t: 'test distill::cargo::parses_summary ... FAILED', keep: true },
+	{ t: '' },
+	{ t: 'failures:' },
+	{ t: '    thread panicked at src/distill/cargo.rs:118:9', keep: true },
+	{ t: '    assertion `left == right` failed' },
+	{ t: '      left: 490' },
+	{ t: '     right: 500' },
+	{ t: '' },
+	{ t: 'test result: FAILED. 490 passed; 10 failed', keep: true },
+];
+
+/* Limits first, then promises. Same row shape, so they read as one ledger. */
+const limits = [
 	{
-		category: 'Core Engine',
-		title: 'Semantic Distillation',
-		items: [
-			'Shows only error lines and stack traces — blocks dependency logs and spinners.',
-			'Up to 90% token reduction on noisy terminal output.',
-			'Adaptive compression that softens when agents retrieve omitted output.',
-			'Smart bypass for small outputs under 2,000 tokens.',
-		],
+		k: stats.zeroSaveShare,
+		sub: 'of all calls',
+		v: `saved nothing at all. Across ${stats.totalCalls} replayed executions close to two thirds went straight back, zero bytes added, zero removed. All of the ${stats.overallSaved} headline comes from the other ${workingShare}.`,
 	},
 	{
-		category: 'Context Safety',
-		title: 'Factual Guards & RewindStore',
-		items: [
-			'Raw output saved locally — retrieve anything via omni_retrieve.',
-			'Anti-hallucination warnings only when OMNI has hard facts.',
-			'Explicit omission labels so agents know what was filtered.',
-		],
+		k: '82 to 308 ms',
+		sub: 'per hooked command',
+		v: 'and the cost grows with your history. A 496 byte <code>git status</code> takes about 82ms against a fresh database and about 308ms against a 97 MB one. A 16.5 KB <code>cargo test</code> takes about 276ms. Budget for it.',
 	},
 	{
-		category: 'Multi-Agent',
-		title: 'Workspace Intelligence',
-		items: [
-			'Native MCP server with stdio — no subprocess latency.',
-			'Shared memory streams across Cursor, Claude Code, and Hermes.',
-			'Structured ReadFile and Grep instead of raw dumps.',
-			'Lightweight dependency graph warns on high-impact file edits.',
-		],
-	},
-	{
-		category: 'Session Recovery',
-		title: 'Context Fidelity',
-		items: [
-			'Proactive context pressure warnings before the window crashes.',
-			'Engrams: automatic subtask snapshots without extra LLM calls.',
-			'Priority-aware compaction — pinned files and active errors first.',
-			'Session handoffs when switching between agents.',
-		],
-	},
-	{
-		category: 'Loop Engineering',
-		title: 'Autonomous Loops',
-		items: [
-			'OMNI_LOOP_BUDGET and OMNI_LOOP_GOAL for iterative agent runs.',
-			'Maker-Checker verification through the multi-agent session store.',
-			'Goal-driven distillation — debug keeps errors, refactor compresses traces.',
-		],
-	},
-	{
-		category: 'Monitoring',
-		title: 'Observability & Debug',
-		items: [
-			'omni session --health for context pressure and engram status.',
-			'omni stats, omni_budget, and omni_history for ROI tracking.',
-			'omni diff to compare raw output vs filtered signal side-by-side.',
-			'OMNI_PASSTHROUGH=1 to bypass distillation when needed.',
-		],
+		k: 'exit != 0',
+		sub: 'never compressed',
+		v: 'Failing commands pass through whole, structured output is never touched, and a distiller that cannot parse its input stays quiet instead of guessing.',
 	},
 ];
 
-const benchmarks = [
-	{ command: 'docker build', input: '9.2 KB', output: '49 bytes', savings: '99.5%' },
-	{ command: 'cargo test', input: '16.5 KB', output: '4.3 KB', savings: '78.0%' },
-	{ command: 'git status', input: '496 bytes', output: '113 bytes', savings: '77.2%' },
-	{ command: 'kubectl get pods', input: '840 bytes', output: '762 bytes', savings: '10.0%' },
-	{ command: 'git diff', input: '397 bytes', output: '220 bytes', savings: '50.0%' },
+const promises = [
+	{
+		k: 'Reversible',
+		v: 'Everything cut is archived to local SQLite keyed by SHA-256. Your agent gets the hash and calls it back when it wants the rest.',
+		proof: { label: 'omni_retrieve', href: `${GITHUB_REPO}#how-it-works` },
+	},
+	{
+		k: 'Never invents',
+		v: 'A distiller that parsed no signal hands back the raw output. It will not write a green "no errors" line that nothing supports.',
+		proof: { label: 'issue 143', href: `${GITHUB_REPO}/issues/143` },
+	},
+	{
+		k: 'Never hides',
+		v: 'Any command that exits non-zero passes through untouched. A buried error costs more than an uncompressed one.',
+		proof: { label: 'issue 120', href: `${GITHUB_REPO}/issues/120` },
+	},
+	{
+		k: 'Never mangles',
+		v: 'JSON, YAML, NDJSON and CSV go through byte for byte, because a corrupted payload costs more than a missed compression.',
+		proof: { label: 'pipeline::format', href: `${GITHUB_REPO}/tree/main/src/pipeline` },
+	},
 ];
 
-const showcaseScreens = [
+const memory = [
 	{
-		src: '/media/omni-stats.png',
-		title: 'Token analytics',
-		caption: 'Track lifetime savings and ROI with omni stats.',
-		layout: 'wide',
+		k: 'New session',
+		was: 'You re-explain the project layout, which module is broken, and that it is Postgres rather than MySQL.',
+		now: 'The agent already has it. You carry on from where you stopped.',
 	},
 	{
-		src: '/media/omni-session-status.png',
-		title: 'Session health',
-		caption: 'Monitor context pressure, engrams, and active errors.',
-		layout: 'wide',
+		k: 'Bug you already fixed',
+		was: 'The agent walks into the same framework quirk it solved yesterday, because nothing kept the answer.',
+		now: 'The agent pulls the stored fix back through omni_recall before it repeats the mistake.',
 	},
 	{
-		src: '/media/omni-rewind-list.png',
-		title: 'RewindStore',
-		caption: 'Recover any omitted output through omni_retrieve.',
-		layout: 'normal',
+		k: 'Cursor to Claude Code',
+		was: 'New editor, new agent, no context. You start over.',
+		now: 'The session summary is injected on the way in. The new agent is current.',
 	},
 	{
-		src: '/media/omni-learn-status.png',
-		title: 'Noise discovery',
-		caption: 'omni learn generates TOML filters from your terminal history.',
-		layout: 'normal',
+		k: 'Agent drifts off task',
+		was: 'Three prompts later it is refactoring something you never asked about.',
+		now: 'omni goal restates the objective on every prompt.',
+	},
+];
+
+/* Every entry below exists in BOTH the released binary and main.
+ *
+ * Do not add a command from docs/ without running `omni <cmd> --help` against an
+ * installed build first. Two entries here were wrong: `omni trust` is documented
+ * in HOW_TO_USE.md but the binary answers "unknown command", and `omni rewind`
+ * shipped in v0.6.3 then got deleted on main, so it would have broken at the
+ * next release. Retrieval is the omni_retrieve MCP tool, not a subcommand.
+ */
+const commands = [
+	{ k: 'omni init', v: 'Wire the hook into Claude Code, Cursor, Windsurf, Codex or Antigravity. Interactive.' },
+	{ k: 'omni doctor --fix', v: 'Check hooks, MCP wiring and filter cost, then repair whatever is broken.' },
+	{ k: 'omni stats', v: 'What it actually saved on your machine. Takes <code>--today</code>, <code>--week</code>, <code>--month</code>.' },
+	{ k: 'omni diff', v: 'The last raw input beside what the agent received. This is how you check its work.' },
+	{ k: 'omni session --status', v: 'Context pressure, stored engrams, and the errors still open in this session.' },
+	{ k: 'omni learn --discover', v: 'Read your shell history and propose filters for your own internal tools.' },
+	{ k: 'omni goal', v: 'Set the objective once. OMNI restates it on every prompt so the agent stops drifting.' },
+	{ k: 'omni remember', v: 'Store a project rule or a gotcha in local SQLite. Recalled by semantic search later.' },
+	{ k: 'omni reset', v: 'Take it back out. Clean uninstall, keeping a backup of your config.' },
+];
+
+/* Questions people actually ask before installing something that sits between
+   their agent and their terminal. Answers are kept to roughly 40 to 60 words so
+   they survive extraction into an AI answer without losing their meaning. */
+const faq = [
+	{
+		q: 'Does OMNI delete my logs?',
+		a: 'No. Everything it cuts is compressed and archived to a local SQLite store, keyed by SHA-256. Your agent receives the hash and pulls the full original back whenever it needs it, through the omni_retrieve MCP tool. Nothing is deleted and nothing leaves your machine.',
 	},
 	{
-		src: '/media/omni-doctor.png',
-		title: 'Diagnostics',
-		caption: 'omni doctor validates hooks, MCP, and filter performance.',
-		layout: 'normal',
+		q: 'Will it slow down my terminal?',
+		a: `Yes, measurably. OMNI runs on every hooked command and the cost grows with your history. A 496 byte git status takes about 82ms against a fresh database and about 308ms against a 97 MB one. A 16.5 KB cargo test takes about 276ms.`,
 	},
 	{
-		src: '/media/omni-terminal-hook-indikator.png',
-		title: 'Transparent hooks',
-		caption: 'OMNI intercepts commands invisibly — no workflow changes required.',
-		layout: 'full',
+		q: 'How much does it actually save?',
+		a: `${stats.overallSaved} fewer bytes across ${stats.totalCalls} replayed real commands. That average hides a lot: ${stats.zeroSaveShare} of those commands saved nothing at all. The whole saving comes from the remaining ${workingShare}, mostly ${best.command} and other noisy tooling.`,
 	},
+	{
+		q: 'Can it hide an error from my agent?',
+		a: 'No. Any command that exits non-zero passes through verbatim, uncompressed. Structured output such as JSON, YAML, NDJSON and CSV is never touched. A distiller that cannot parse its input returns the raw output rather than summarising it.',
+	},
+	{
+		q: 'Which agents does it work with?',
+		a: 'Claude Code, Cursor, Windsurf, Roo Code, OpenAI Codex and Antigravity. It installs as a shell hook rather than a wrapper, so you keep typing the commands you already type and nothing about your workflow changes.',
+	},
+	{
+		q: 'Can I add filters for my own tools?',
+		a: 'Yes. Filters are TOML files in ~/.omni/signals/ that match a command by regex and strip lines by pattern. You can write them by hand, or run omni learn --discover to have OMNI read your shell history and draft them from the noise it already sees.',
+	},
+	{
+		q: 'What does OMNI cost?',
+		a: 'Nothing. It is MIT licensed with no paid tier, no account and no telemetry. If it saves you nothing, omni stats will tell you so and omni reset removes it.',
+	},
+];
+
+// Product plus FAQ. Both describe this page, so both belong in its graph.
+const jsonLd = [
+	{
+		'@context': 'https://schema.org',
+		'@type': 'SoftwareApplication',
+		name: 'OMNI',
+		alternateName: 'OMNI context engine',
+		applicationCategory: 'DeveloperApplication',
+		applicationSubCategory: 'Command line tool',
+		operatingSystem: 'macOS, Linux, Windows',
+		description: 'Noise-canceling context and long-term memory for AI coding agents. Cuts terminal noise before the agent reads it, and remembers your project between sessions.',
+		url: 'https://omni.weekndlabs.com',
+		downloadUrl: 'https://github.com/fajarhide/omni/releases',
+		codeRepository: 'https://github.com/fajarhide/omni',
+		programmingLanguage: 'Rust',
+		license: 'https://github.com/fajarhide/omni/blob/main/LICENSE',
+		softwareVersion: latestVersion.replace(/^v/, ''),
+		isAccessibleForFree: true,
+		offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+		author: { '@type': 'Person', name: 'Fajar Hidayat', url: 'https://github.com/fajarhide' },
+		featureList: [
+			'Distills noisy terminal output before it reaches the model',
+			'Archives everything it removes to a local SQLite store, retrievable by hash',
+			'Passes failing commands and structured data through untouched',
+			'Carries project memory across sessions and across editors',
+			'Runs as an MCP server and a shell hook',
+		],
+	},
+	{
+		'@context': 'https://schema.org',
+		'@type': 'FAQPage',
+		mainEntity: faq.map((f) => ({
+			'@type': 'Question',
+			name: f.q,
+			acceptedAnswer: { '@type': 'Answer', text: f.a },
+		})),
+	},
+];
+
+const pipeline = [
+	{ k: 'Read', v: 'A shell hook catches stdout on its way to the agent. Nothing about how you work changes.' },
+	{ k: 'Guard', v: 'Non-zero exit, or JSON, YAML, NDJSON, CSV? Straight through. <strong>This branch is taken more often than not.</strong>', quiet: true },
+	{ k: 'Score', v: 'Every line gets a weight. Stack frames and errors score high, progress bars and passing tests score low.' },
+	{ k: 'Collapse', v: 'Repetition folds. Four hundred passing tests become the runner\'s own summary line, never a paraphrase of it.' },
+	{ k: 'Distill', v: 'A command-specific reader runs. Returning the input is always allowed, inventing a summary is not.' },
+	{ k: 'Persist', v: 'Everything cut is hashed into local SQLite, so any of it comes back on demand.' },
 ];
 ---
 
-<Layout 
-	title="OMNI Context OS | Cut AI Agent Token Costs by 90%"
-	description="OMNI is the premier Context Operating System for Autonomous AI Agents. Stop hallucinations, manage token budgets, and cut API costs by 90% with our high-speed semantic filter."
+<Layout
+	title="OMNI, cut AI agent token costs by filtering terminal noise"
+	description={`OMNI is a free Rust CLI that cuts terminal noise before your AI coding agent reads it, ${stats.overallSaved} fewer bytes across ${stats.totalCalls} real commands, and remembers your project between sessions. Always reversible, never invents a result. Works with Claude Code, Cursor and Windsurf.`}
+	jsonLd={jsonLd}
 >
-	<!-- Ambient Glow Background -->
-	<div class="ambient-bg" aria-hidden="true">
-		<div class="glow-orb primary"></div>
-		<div class="glow-orb secondary"></div>
-	</div>
-
 	<main>
-		<!-- HERO SECTION -->
+		<!-- HERO -->
 		<section class="hero">
-			<canvas id="hero-canvas"></canvas>
-			<div class="hero-content">
-				<div class="badge-pill reveal">
-					<span class="badge-dot pulse"></span>
-					<span class="badge-version" id="omni-version" data-initial-version={latestVersion}>{latestVersion}</span>
-					<span class="badge-divider"></span>
-					<span class="badge-label" id="omni-status" data-status={versionLabel.toLowerCase().replace(' ', '-')}>{versionLabel}</span>
-				</div>
-				
-				<h1 class="reveal delay-1">
-					Stop Paying for<br/>
-					<span class="text-gradient">Noisy Tokens.</span>
-				</h1>
-				
-				<p class="hero-desc reveal delay-2">
-					The Context Operating System for autonomous AI agents. OMNI filters noisy terminal output, enforces token budgets, and keeps long-running agent loops focused on pure signal.
-				</p>
+			<div class="wrap">
+				<div class="hero-grid">
+					<div>
+						<h1 class="t-display">Claude is not expensive.<br />Your terminal is.</h1>
 
-				<div class="hero-metrics reveal delay-2">
-					<div class="metric">
-						<span class="metric-value text-gradient">90%</span>
-						<span class="metric-label">Token reduction</span>
-					</div>
-					<div class="metric-divider" aria-hidden="true"></div>
-					<div class="metric">
-						<span class="metric-value">15+</span>
-						<span class="metric-label">AI agents supported</span>
-					</div>
-					<div class="metric-divider" aria-hidden="true"></div>
-					<div class="metric">
-						<span class="metric-value">MIT</span>
-						<span class="metric-label">Open source</span>
-					</div>
-				</div>
+						<p class="lede">
+							OMNI sits on a shell hook and takes the noise out of command output before your agent reads it. It also remembers your project between sessions, so you stop re-explaining it. Lossy, always reversible, and it never invents a result.
+						</p>
 
-				<div class="hero-actions reveal delay-3">
-					<a href={GITHUB_REPO} class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-						<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-						View on GitHub
-					</a>
-					<a href={`${GITHUB_REPO}#readme`} class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
-						Read the Docs
-					</a>
-				</div>
-
-				<div class="hero-cta reveal delay-4">
-					<p class="install-label">Quick install</p>
-					<div class="terminal-install">
-						<span class="prompt">$</span>
-						<code>brew install fajarhide/tap/omni</code>
-						<button class="copy-btn" data-copy="brew install fajarhide/tap/omni"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
-					</div>
-					<div class="secondary-installs">
-						<span class="text-muted">Or use:</span>
-						<button class="text-link" data-copy="curl -fsSL omni.weekndlabs.com/install | bash">Universal Installer</button>
-						<span class="text-muted">·</span>
-						<button class="text-link" data-copy="irm omni.weekndlabs.com/install.ps1 | iex">Windows</button>
-					</div>
-				</div>
-			</div>
-		</section>
-
-		<section class="compatibility-strip" aria-label="Supported AI agents">
-			<div class="container">
-				<p class="strip-label">Works with your favorite agent stack</p>
-				<div class="strip-logos">
-					<span>Cursor</span>
-					<span>Claude Code</span>
-					<span>Copilot</span>
-					<span>Cline</span>
-					<span>Pi</span>
-					<span>Antigravity</span>
-					<span>OpenClaw</span>
-					<span>Hermes Agent</span>
-				</div>
-			</div>
-		</section>
-
-		<!-- PROBLEM VS SOLUTION -->
-		<section id="problem-solution" class="section">
-			<div class="container container-md">
-				<header class="section-header reveal">
-					<h2 class="section-title">The <span class="text-gradient">Context OS</span> Advantage</h2>
-					<p class="section-subtitle">Empower your AI agents to work autonomously for hours without token exhaustion or context amnesia.</p>
-				</header>
-
-				<div class="comparison-bento reveal">
-					<div class="bento-card card-success">
-						<p class="feature-category">Token Efficiency</p>
-						<h3>Cut costs without losing signal</h3>
-						<p>Every byte in the context window costs money. OMNI strips loading bars, dependency logs, and passing tests — keeping only what your agent needs to act.</p>
-						<ul class="bullet-list">
-							<li>Build outputs compressed from thousands of tokens to focused error reports.</li>
-							<li>Test runners surface failures only, not hundreds of passing cases.</li>
-							<li>DevOps output reduced to concise status summaries.</li>
-						</ul>
-					</div>
-
-					<div class="bento-card card-success">
-						<p class="feature-category">Context Quality</p>
-						<h3>Higher fidelity, fewer hallucinations</h3>
-						<p>Compression is safe when facts are preserved. OMNI keeps agents grounded with factual guards, dependency warnings, and proactive context pressure alerts.</p>
-						<ul class="bullet-list">
-							<li>Warns before the context window hits critical thresholds.</li>
-							<li>Tracks hot files and active errors across long sessions.</li>
-							<li>Dependency graph flags high-impact edits before they spread.</li>
-						</ul>
-					</div>
-					
-					<div class="showcase-frame reveal span-2">
-						<img src="/media/performance.png" alt="OMNI token savings across build, test, and DevOps workflows" loading="lazy" />
-						<p class="showcase-caption">Real compression across build, test, and infrastructure commands.</p>
-					</div>
-				</div>
-			</div>
-		</section>
-
-		<!-- BEFORE / AFTER TERMINAL VISUAL -->
-		<section class="section alt-bg">
-			<div class="container">
-				<header class="section-header reveal">
-					<h2 class="section-title">Feel the <span class="text-gradient">Difference</span></h2>
-					<p class="section-subtitle">Watch OMNI compress 18,400 tokens of raw logs into 132 tokens of actionable pure signal.</p>
-				</header>
-
-				<div class="terminal-showcase reveal">
-					<div class="term-window before">
-						<div class="term-header">
-							<div class="term-dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
-							<div class="term-title">Before OMNI (~18,400 Tokens)</div>
+						<div class="hero-actions">
+							<a href={GITHUB_REPO} class="btn btn-solid" target="_blank" rel="noopener noreferrer">
+								<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+								Read the source
+							</a>
+							<a href="#numbers" class="btn btn-ghost">See the numbers</a>
 						</div>
-						<div class="term-body">
-							<div class="cli-line"><span class="prompt">$</span> cargo check</div>
-							<div class="cli-output dim">		Updating crates.io index
-		Downloading crates ...
-		Downloaded serde v1.0.210
-		Downloaded regex v1.10.6
-		... (482 more downloads) ...
-	 Compiling proc-macro2 v1.0.86
-	 Compiling unicode-ident v1.0.12
-	 Compiling serde v1.0.210
-warning: unused variable: `idx`
-	--> src/parser.rs:42:9
-	 |
-42 |     let idx = 0;
-	 |         ^^^ help: if this is intentional, prefix it with an underscore: `_idx`
-	 Compiling ryu v1.0.18
-... (2,300 lines of compilation logs) ...
-error[E0308]: mismatched types
-	--> src/main.rs:12:30
-	 |
-12 |     let result: String = 100i32;
-	 |                          ^^^^^^ expected `String`, found `i32`
-error: could not compile `omni` (bin "omni") due to 1 previous error</div>
-						</div>
-					</div>
 
-					<div class="term-window after">
-						<div class="term-header">
-							<div class="term-dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
-							<div class="term-title">With OMNI Semantic Engine (132 Tokens)</div>
-						</div>
-						<div class="term-body">
-							<div class="cli-line"><span class="prompt">$</span> cargo check | omni</div>
-							<div class="cli-output highlight">
-<span class="omni-prefix">[OMNI: Signal Distilled. Dropped 2,784 noisy lines.]</span>
-error[E0308]: mismatched types
-	--> src/main.rs:12:30
-	 |
-12 |     let result: String = 100i32;
-	 |                          ^^^^^^ expected `String`, found `i32`
-error: could not compile `omni` (bin "omni") due to 1 previous error
+						<div class="install">
+							<div class="install-row">
+								<span class="sigil" aria-hidden="true">$</span>
+								<code>brew install fajarhide/tap/omni</code>
+								<button class="copy" data-copy="brew install fajarhide/tap/omni" aria-label="Copy the install command">
+									<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+								</button>
 							</div>
+							<p class="install-alt">
+								<span>Then <code>omni init</code>. Also on</span>
+								<button class="linkish" data-copy="curl -fsSL omni.weekndlabs.com/install | bash">curl</button>
+								<span>and</span>
+								<button class="linkish" data-copy="irm omni.weekndlabs.com/install.ps1 | iex">PowerShell</button>
+							</p>
 						</div>
 					</div>
-				</div>
 
-				<div class="showcase-frame reveal showcase-frame-centered">
-					<img src="/media/omni-diff.png" alt="Side-by-side comparison of raw terminal output vs OMNI filtered signal" loading="lazy" />
-					<p class="showcase-caption">omni diff — raw output vs distilled signal, side by side.</p>
-				</div>
-			</div>
-		</section>
+					<!-- SIGNATURE: the subtraction happens in front of you.
+					     The release badge sits here rather than above the headline,
+					     so nothing stands between the reader and the first line. -->
+					<div>
+						<p class="release">
+							<span class="release-dot" aria-hidden="true"></span>
+							<span id="omni-version">{latestVersion}</span>
+							<span aria-hidden="true">/</span>
+							<span id="omni-status" data-status={versionLabel.toLowerCase().replace(' ', '-')}>{versionLabel}</span>
+						</p>
 
-		<!-- REAL-WORLD USE CASES -->
-		<section id="use-cases" class="section">
-			<div class="container container-md">
-				<header class="section-header reveal">
-					<h2 class="section-title">Real-World <span class="text-gradient">Use Cases</span></h2>
-					<p class="section-subtitle">How top engineering teams use OMNI to scale multi-agent architectures and fix daily frustrations.</p>
-				</header>
-
-				<div class="comparison-bento reveal">
-					<div class="bento-card card-danger">
-						<p class="feature-category">Use Case</p>
-						<h3>The infinite loop of death</h3>
-						<p><strong>Scenario:</strong> AI gets distracted by 20,000 lines of npm install warnings, missing the build error at the end.</p>
-						<p><strong>OMNI fix:</strong> Mutes peer dependency noise and surfaces only the exact build error with its stack trace.</p>
-					</div>
-					<div class="bento-card card-success">
-						<p class="feature-category">Use Case</p>
-						<h3>The silent hallucination</h3>
-						<p><strong>Scenario:</strong> AI reads a 3,000-line file via cat and starts hallucinating function signatures.</p>
-						<p><strong>OMNI fix:</strong> Returns a structured outline — imports, public API, and risk markers — with an impact warning.</p>
-					</div>
-					<div class="bento-card card-success span-2">
-						<p class="feature-category">Use Case</p>
-						<h3>Multi-agent collaboration</h3>
-						<p><strong>Scenario:</strong> Cursor and Claude Code run simultaneously, executing redundant commands and wasting tokens.</p>
-						<p><strong>OMNI fix:</strong> Acts as a shared memory layer via omni_agents and local SQLite — same filtered streams, errors, and environment.</p>
+						<figure class="crt" id="demo">
+							<figcaption class="crt-bar">
+								<span>tests/fixtures / cargo test</span>
+								<span class="crt-meter" id="meter">{stats.fixture.input}</span>
+							</figcaption>
+							<div class="crt-body">
+								{demo.map((line) => (
+									<div class={`ln${line.n ? ' ln-noise' : ''}`}>
+										<span class="mark" aria-hidden="true">{line.n ? '−' : ' '}</span>
+										<span class={`txt${line.keep ? ' keep' : ''}${line.prompt ? ' prompt' : ''}`}>{line.t}</span>
+									</div>
+								))}
+							</div>
+							<div class="crt-foot">
+								<span>{stats.fixture.savings} smaller</span>
+								<span>nothing deleted, all of it hashed to disk</span>
+							</div>
+						</figure>
+						<p class="crt-cap">
+							Reproducible on <code>tests/fixtures/</code>: {stats.fixture.input} of output becomes {stats.fixture.output}. The verdict survives, the 478 passing tests never reach the model.
+						</p>
 					</div>
 				</div>
 			</div>
 		</section>
 
-		<!-- BENCHMARKS -->
-		<section id="benchmarks" class="section alt-bg">
-			<div class="container container-md">
-				<header class="section-header reveal">
-					<p class="section-eyebrow">Performance</p>
-					<h2 class="section-title">Measured on the <span class="text-gradient">release binary</span></h2>
-					<p class="section-subtitle">Built in Rust for sub-100ms pipeline latency and ruthless efficiency. Run omni stats to see your own savings.</p>
+		<!-- LIMITS AND PROMISES, one ledger -->
+		<section class="band band-sunk" id="limits">
+			<div class="wrap">
+				<header class="band-head">
+					<span class="eyebrow">Read this before installing</span>
+					<h2 class="t-section">Where it fails, then what it promises</h2>
+					<p class="lede">
+						A tool that asks to sit between you and your output should lead with the parts that go badly.
+					</p>
 				</header>
 
-				<div class="benchmark-table-wrap reveal">
-					<table class="benchmark-table">
+				<dl class="rows">
+					{limits.map((r) => (
+						<div class="row row-quiet">
+							<dt class="row-k is-mono">{r.k}<span class="sub">{r.sub}</span></dt>
+							<dd class="row-v" set:html={r.v} />
+						</div>
+					))}
+					{promises.map((r) => (
+						<div class="row">
+							<dt class="row-k">{r.k}</dt>
+							<dd class="row-v">
+								{r.v}
+								{' '}
+								<span class="receipt">
+									<a href={r.proof.href} target="_blank" rel="noopener noreferrer">{r.proof.label}</a>
+								</span>
+							</dd>
+						</div>
+					))}
+				</dl>
+
+				<p class="fine" style="margin-top:18px;max-width:660px">
+					Any tool claiming to save 90% of every command is telling you it summarised output you needed.
+				</p>
+			</div>
+		</section>
+
+		<!-- NUMBERS -->
+		<section class="band" id="numbers">
+			<div class="wrap">
+				<header class="band-head">
+					<span class="eyebrow">Benchmarks</span>
+					<h2 class="t-section">{stats.totalCalls} real commands, replayed on the release binary</h2>
+					<p class="lede">
+						One developer's actual usage over months, not a fixture set chosen to flatter the result. {stats.bytesIn} in, {stats.bytesOut} out.
+					</p>
+				</header>
+
+				<div class="ledger-wrap">
+					<table class="ledger">
+						<caption>Read from the README on main at build time, so the two cannot drift apart.</caption>
 						<thead>
 							<tr>
-								<th>Command</th>
-								<th>Input</th>
-								<th>Output</th>
-								<th>Savings</th>
+								<th scope="col">Command</th>
+								<th scope="col">Calls</th>
+								<th scope="col">In</th>
+								<th scope="col">Out</th>
+								<th scope="col">Saved</th>
 							</tr>
 						</thead>
 						<tbody>
-							{benchmarks.map((row) => (
+							{stats.rows.map((row) => (
 								<tr>
-									<td><code>{row.command}</code></td>
-									<td>{row.input}</td>
-									<td>{row.output}</td>
-									<td class="savings-cell">{row.savings}</td>
+									<th scope="row"><code>{row.command}</code></th>
+									<td class="n">{row.calls}</td>
+									<td class="n">{row.input}</td>
+									<td class="n">{row.output}</td>
+									<td class="saved"><span class="bar" style={`--w:${row.pct}%`}><span>{row.savings}</span></span></td>
 								</tr>
 							))}
 						</tbody>
 					</table>
 				</div>
 
-				<div class="benchmark-stats reveal">
-					<div class="benchmark-stat">
-						<span class="benchmark-stat-value text-gradient">&lt; 100ms</span>
-						<span class="benchmark-stat-label">Pipeline latency</span>
+				<div class="stats">
+					<div class="stat">
+						<span class="stat-n">{stats.overallSaved}</span>
+						<span class="stat-l">fewer bytes across the whole mix</span>
 					</div>
-					<div class="benchmark-stat">
-						<span class="benchmark-stat-value">97.3%</span>
-						<span class="benchmark-stat-label">Average session reduction</span>
+					<div class="stat">
+						<span class="stat-n">{best.savings}</span>
+						<span class="stat-l">best case, <code>{best.command}</code> over {best.calls} calls</span>
 					</div>
-					<div class="benchmark-stat">
-						<span class="benchmark-stat-value">$35+</span>
-						<span class="benchmark-stat-label">Saved per dev / month</span>
+					<div class="stat">
+						<span class="stat-n">{worst.savings}</span>
+						<span class="stat-l">worst case, <code>{worst.command}</code> over {worst.calls} calls</span>
 					</div>
 				</div>
 
-				<div class="showcase-frame reveal showcase-frame-centered benchmark-visual">
-					<img src="/media/omni_token_savings_graphic.png" alt="OMNI token savings breakdown chart" loading="lazy" />
-				</div>
+				<p class="fine" style="margin-top:20px;max-width:660px">
+					<code>{best.command}</code> carries the result and <code>{worst.command}</code> is close to a no-op. The weak row stays in the table, because quietly dropping the rows that look bad is how {stats.overallSaved} turns into a fake 90%. Run <code>omni stats</code> for your own.
+				</p>
 			</div>
 		</section>
 
-		<!-- FEATURES -->
-		<section id="features" class="section">
-			<div class="container">
-				<header class="section-header reveal">
-					<p class="section-eyebrow">Platform</p>
-					<h2 class="section-title">Everything your agents need to <span class="text-gradient">stay focused</span></h2>
-					<p class="section-subtitle">Six capability layers that turn noisy terminal output into dense, actionable context.</p>
+		<!-- MEMORY -->
+		<section class="band band-sunk" id="memory">
+			<div class="wrap">
+				<header class="band-head">
+					<span class="eyebrow">The other half</span>
+					<h2 class="t-section">Your agent also forgets everything overnight</h2>
 				</header>
 
-				<div class="feature-grid reveal">
-					{featureGroups.map((group) => (
-						<article class="feature-card">
-							<p class="feature-category">{group.category}</p>
-							<h3>{group.title}</h3>
-							<ul class="feature-list">
-								{group.items.map((item) => (
-									<li>{item}</li>
-								))}
-							</ul>
-						</article>
+				<dl class="rows">
+					{memory.map((m) => (
+						<div class="row">
+							<dt class="row-k">{m.k}</dt>
+							<dd class="row-v">
+								<span class="was">{m.was}</span>
+								<span class="now">{m.now}</span>
+							</dd>
+						</div>
 					))}
-				</div>
+				</dl>
 			</div>
 		</section>
 
-		<!-- PRODUCT SHOWCASE -->
-		<section id="showcase" class="section alt-bg">
-			<div class="container">
-				<header class="section-header reveal">
-					<p class="section-eyebrow">Product</p>
-					<h2 class="section-title">Built for the <span class="text-gradient">terminal workflow</span></h2>
-					<p class="section-subtitle">Every screenshot is a real CLI surface — analytics, session health, recovery, and diagnostics you run locally.</p>
-				</header>
-
-				<div class="showcase-grid reveal">
-					{showcaseScreens.map((screen) => (
-						<figure class={`showcase-card layout-${screen.layout}`}>
-							<div class="showcase-frame">
-								<img src={screen.src} alt={screen.title} loading="lazy" />
-							</div>
-							<figcaption>
-								<strong>{screen.title}</strong>
-								<span>{screen.caption}</span>
-							</figcaption>
-						</figure>
-					))}
-				</div>
-			</div>
-		</section>
-
-		<!-- ARCHITECTURE PIPELINE -->
-		<section id="how-it-works" class="section">
-			<div class="container">
-					<header class="section-header reveal">
-						<h2 class="section-title">Command-First <span class="text-gradient">Architecture</span></h2>
-						<p class="section-subtitle">The world's first context-aware terminal signal pipeline. Built for the Agentic era.</p>
-					</header>
-
-					<div class="pipeline-diagram reveal">
-						 <!-- Input -->
-						 <div class="pipe-node hover-elevate">
-							 <div class="icon-wrap-small"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg></div>
-							 <div>
-								 <div class="node-title">Command Execution</div>
-								 <div class="node-desc">Any terminal command gets intercepted</div>
-							 </div>
-						 </div>
-
-						 <svg class="pipe-arrow anim-flow" viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="22"/><polyline points="5 15 12 22 19 15"/></svg>
-
-						 <!-- Magic Pipe Detection V2 -->
-						 <div class="pipe-node hover-elevate">
-							 <div class="icon-wrap-small"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-primary)" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
-							 <div>
-								 <div class="node-title">Magic Pipe Detection V2</div>
-								 <div class="node-desc">Process tree & fd context analysis. 99.4% accurate.</div>
-							 </div>
-						 </div>
-
-						 <svg class="pipe-arrow anim-flow" viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="22"/><polyline points="5 15 12 22 19 15"/></svg>
-
-						 <!-- Command-First Engine -->
-						 <div class="pipe-node engine glow-border hover-elevate">
-							 <div class="engine-header">
-								 <div>
-									 <div class="node-title text-gradient">Command-First Engine</div>
-									 <div class="node-sub">Domain-Aware Semantic Distillation Pipeline</div>
-								 </div>
-							 </div>
-
-							 <div class="engine-steps">
-								 <div class="step-box">Command</div>
-								 <svg class="step-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-								 <div class="step-box">Heuristic Router</div>
-								 <svg class="step-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-								 <div class="step-box highlight">Token Scorer</div>
-								 <svg class="step-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-								 <div class="step-box">Soft Distiller</div>
-								 <svg class="step-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-								 <div class="step-box">ROI Metrics</div>
-							 </div>
-						 </div>
-
-						 <svg class="pipe-arrow anim-flow" viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="22"/><polyline points="5 15 12 22 19 15"/></svg>
-
-						 <!-- Output Split -->
-						 <div class="pipe-node split">
-							 <div class="node-split-item output-signal hover-elevate">
-								 <div class="icon-wrap-small green-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></div>
-								 <div>
-									 <span class="label">Pure Semantic Signal</span>
-									 <span class="dest">To AI Agent / LLM</span>
-								 </div>
-							 </div>
-							 <div class="node-split-item output-noise hover-elevate">
-								 <div class="icon-wrap-small muted-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-								 <div>
-									 <span class="label">Raw Terminal Noise</span>
-									 <span class="dest">RewindStore + Auto Learn</span>
-								 </div>
-							 </div>
-						 </div>
-					</div>
-			</div>
-		</section>
-
-		<!-- GITHUB CTA -->
-		<section id="get-started" class="section cta-section">
-			<div class="container container-md">
-				<div class="cta-card reveal">
-					<h2 class="section-title">Open Source. <span class="text-gradient">Built for Agents.</span></h2>
-					<p class="cta-desc">
-						OMNI is MIT-licensed and actively maintained. Explore the codebase, read the docs, or grab the latest release and start filtering noisy tokens today.
+		<!-- COMMANDS -->
+		<section class="band" id="cli">
+			<div class="wrap">
+				<header class="band-head">
+					<span class="eyebrow">The CLI</span>
+					<h2 class="t-section">Nine commands, all of them local</h2>
+					<p class="lede">
+						No dashboard and no account. Nothing about your machine leaves it.
 					</p>
-					<div class="cta-actions">
-						<a href={GITHUB_REPO} class="btn btn-primary" target="_blank" rel="noopener noreferrer">
-							<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-							Explore on GitHub
-						</a>
-						<a href={GITHUB_RELEASES} class="btn btn-secondary" target="_blank" rel="noopener noreferrer">
-							Latest Release
-						</a>
-					</div>
+				</header>
+
+				<dl class="rows">
+					{commands.map((c) => (
+						<div class="row">
+							<dt class="row-k is-mono">{c.k}</dt>
+							<dd class="row-v" set:html={c.v} />
+						</div>
+					))}
+				</dl>
+			</div>
+		</section>
+
+		<!-- PIPELINE -->
+		<section class="band band-sunk" id="how">
+			<div class="wrap">
+				<header class="band-head">
+					<span class="eyebrow">How it works</span>
+					<h2 class="t-section">Six stages, and the second one usually ends it</h2>
+				</header>
+
+				<dl class="rows">
+					{pipeline.map((s) => (
+						<div class={`row${s.quiet ? ' row-quiet' : ''}`}>
+							<dt class="row-k">{s.k}</dt>
+							<dd class="row-v" set:html={s.v} />
+						</div>
+					))}
+				</dl>
+
+				<p class="fine" style="margin-top:18px;max-width:660px">
+					If OMNI panics it fails open: the raw output passes through and your agent never notices. That is the design, not a safety net bolted on afterwards.
+				</p>
+			</div>
+		</section>
+
+		<!-- FAQ -->
+		<section class="band" id="faq">
+			<div class="wrap">
+				<header class="band-head">
+					<span class="eyebrow">Questions</span>
+					<h2 class="t-section">What people ask before installing it</h2>
+				</header>
+
+				<dl class="rows">
+					{faq.map((f) => (
+						<div class="row">
+							<dt class="row-k">{f.q}</dt>
+							<dd class="row-v">{f.a}</dd>
+						</div>
+					))}
+				</dl>
+			</div>
+		</section>
+
+		<!-- CLOSE -->
+		<section class="band band-sunk" id="start">
+			<div class="wrap wrap-text">
+				<h2 class="t-section">A passion project, MIT licensed</h2>
+				<p class="lede" style="margin:14px 0 24px">
+					Built by one developer who got tired of paying to read progress bars. If it saves you nothing, <code>omni stats</code> will say so and <code>omni reset</code> removes it. That is the whole deal.
+				</p>
+				<div class="hero-actions" style="margin-bottom:0">
+					<a href={GITHUB_REPO} class="btn btn-solid" target="_blank" rel="noopener noreferrer">
+						<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+						Read the source
+					</a>
+					<a href={GITHUB_RELEASES} class="btn btn-ghost" target="_blank" rel="noopener noreferrer">Releases</a>
 				</div>
 			</div>
 		</section>
 	</main>
-    
-    <script>
-        // Hero canvas animation (from script.js)
-        const canvas = document.getElementById('hero-canvas') as HTMLCanvasElement;
-        if (canvas) {
-            const ctx = canvas.getContext('2d');
-            let particles: Array<{x: number, y: number, radius: number, vx: number, vy: number, alpha: number}> = [];
-            
-            function resize() {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            }
-            window.addEventListener('resize', resize);
-            resize();
 
-            for (let i = 0; i < 50; i++) {
-                particles.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    radius: Math.random() * 2,
-                    vx: (Math.random() - 0.5) * 0.5,
-                    vy: (Math.random() - 0.5) * 0.5,
-                    alpha: Math.random() * 0.5
-                });
-            }
+	<script define:vars={{ fixtureOut: stats.fixture.output }}>
+		// The signature: run the subtraction once, when the block is on screen.
+		const demo = document.getElementById('demo');
+		const meter = document.getElementById('meter');
+		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-            function draw() {
-                if (!ctx) return;
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = '#a1a1aa';
-                particles.forEach(p => {
-                    p.x += p.vx;
-                    p.y += p.vy;
-                    if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
-                    if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
-                    
-                    ctx.globalAlpha = p.alpha;
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                    ctx.fill();
-                });
-                requestAnimationFrame(draw);
-            }
-            draw();
-        }
+		function subtract() {
+			demo.classList.add('cut');
+			if (meter) meter.textContent = fixtureOut;
+		}
 
-        // Copy button logic
-        document.querySelectorAll('.copy-btn, .text-link').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const target = e.currentTarget as HTMLElement;
-                const text = target.getAttribute('data-copy');
-                if (text) {
-                    navigator.clipboard.writeText(text);
-                    const original = target.innerHTML;
-                    if (target.classList.contains('copy-btn')) {
-                        target.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
-                        setTimeout(() => target.innerHTML = original, 2000);
-                    } else {
-                        target.style.color = 'var(--accent-green)';
-                        target.innerText = 'Copied!';
-                        setTimeout(() => {
-                            target.style.color = '';
-                            target.innerText = original;
-                        }, 2000);
-                    }
-                }
-            });
-        });
+		if (demo) {
+			if (reduced) {
+				subtract();
+			} else {
+				const io = new IntersectionObserver(
+					(entries) => {
+						entries.forEach((e) => {
+							if (!e.isIntersecting) return;
+							io.disconnect();
+							setTimeout(subtract, 900);
+						});
+					},
+					{ threshold: 0.35 }
+				);
+				io.observe(demo);
+			}
+		}
 
-        // Dynamic Version Sync (Client-side)
-        async function syncVersion() {
-            const getLabel = (v) => {
-                if (v.includes('-rc')) return 'Release Candidate';
-                if (v.includes('-alpha')) return 'Alpha Release';
-                if (v.includes('-beta')) return 'Beta Release';
-                return 'Stable';
-            };
-            
-            try {
-                const res = await fetch('https://api.github.com/repos/fajarhide/omni/releases/latest');
-                if (res.ok) {
-                    const data = await res.json();
-                    const versionEl = document.getElementById('omni-version');
-                    const statusEl = document.getElementById('omni-status');
-                    
-                    if (versionEl && data.tag_name !== versionEl.innerText) {
-                        versionEl.innerText = data.tag_name;
-                        if (statusEl) {
-                            const newLabel = getLabel(data.tag_name);
-                            statusEl.innerText = newLabel;
-                            statusEl.setAttribute('data-status', newLabel.toLowerCase().replace(' ', '-'));
-                        }
-                    }
-                }
-            } catch (e) {}
-        }
-        syncVersion();
-    </script>
+		// Copy buttons.
+		document.querySelectorAll('[data-copy]').forEach((btn) => {
+			btn.addEventListener('click', () => {
+				const text = btn.getAttribute('data-copy');
+				if (!text) return;
+				navigator.clipboard.writeText(text);
+				const original = btn.innerHTML;
+				btn.innerHTML = btn.classList.contains('copy')
+					? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>'
+					: 'Copied';
+				setTimeout(() => { btn.innerHTML = original; }, 1800);
+			});
+		});
+
+		// Keep the release badge current between deploys.
+		fetch('https://api.github.com/repos/fajarhide/omni/releases/latest')
+			.then((r) => (r.ok ? r.json() : null))
+			.then((data) => {
+				if (!data) return;
+				const v = document.getElementById('omni-version');
+				const s = document.getElementById('omni-status');
+				if (v && data.tag_name !== v.textContent) {
+					v.textContent = data.tag_name;
+					const tag = data.tag_name;
+					const label = tag.includes('-rc') ? 'Release candidate'
+						: tag.includes('-alpha') ? 'Alpha'
+						: tag.includes('-beta') ? 'Beta'
+						: 'Stable';
+					if (s) {
+						s.textContent = label;
+						s.setAttribute('data-status', label.toLowerCase().replace(' ', '-'));
+					}
+				}
+			})
+			.catch(() => {});
+	</script>
 </Layout>

@@ -1,59 +1,74 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
+import { RC_SLUG, wordsIn } from '../../lib/blog.js';
 
-const allPosts = await getCollection('blog');
-const sortedPosts = allPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const all = await getCollection('blog');
+const sorted = all.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 
-// Find featured post if any
-const featuredPost = sortedPosts.find(post => post.data.featured);
-const regularPosts = sortedPosts.filter(post => !post.data.featured);
+/* Fourteen of the forty-two posts are release-candidate notes. Listed inline
+   they buried everything else, so they get their own compact group at the end.
+   They are noindexed too, see astro.config.mjs. */
+const posts = sorted.filter((p) => !RC_SLUG.test(p.id));
+const candidates = sorted.filter((p) => RC_SLUG.test(p.id));
+
+const lead = posts.find((p) => p.data.featured);
+const rest = posts.filter((p) => p !== lead);
+
+const fmt = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+const iso = (d) => d.toISOString();
 ---
 
-<Layout 
-	title="Developer Blog & Updates — OMNI Agentic AI"
-	description="Read the latest updates, algorithmic breakthroughs, and patch notes for the OMNI Semantic Signal Engine."
+<Layout
+	title="OMNI journal, release notes and benchmark write-ups"
+	description="Release notes, architecture write-ups, and the benchmark work behind OMNI, the Rust CLI that cuts terminal noise before your AI coding agent reads it."
 >
-	<main style="padding-top: 140px; min-height: 80vh;">
-		<div class="container blog-list">
-			<header class="section-header reveal visible">
-				<h1 class="section-title">Developer <span class="text-gradient">Journal</span></h1>
-				<p class="section-subtitle">Deep architectural dives, philosophy, and patch notes for the OMNI Engine.</p>
-			</header>
-			
-			<div class="blog-grid reveal visible delay-1">
-                {featuredPost && (
-                    <div class="blog-card featured">
-                        <div class="blog-meta">
-                            {featuredPost.data.tag && <span class="blog-tag">{featuredPost.data.tag}</span>}
-                            <span class="blog-date">
-                                {featuredPost.data.date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                            </span>
-                        </div>
-                        <a href={`/blog/${featuredPost.id}`}>
-                            <h2 class="blog-title">{featuredPost.data.title}</h2>
-                        </a>
-                        <p class="blog-excerpt">{featuredPost.data.description}</p>
-                        <a href={`/blog/${featuredPost.id}`} class="blog-readmore">Read the story</a>
-                    </div>
-                )}
+	<div class="wrap">
+		<header class="page-head">
+			<span class="eyebrow">Journal</span>
+			<h1 class="t-section">What changed, and why</h1>
+			<p class="lede">Release notes, architecture write-ups, and the benchmark work behind the numbers on the front page.</p>
+		</header>
 
-				{regularPosts.map((post) => (
-					<div class="blog-card">
-						<div class="blog-meta">
-							{post.data.tag && <span class="blog-tag">{post.data.tag}</span>}
-							<span class="blog-date">
-                                {post.data.date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                            </span>
-						</div>
-						<a href={`/blog/${post.id}`}>
-							<h2 class="blog-title">{post.data.title}</h2>
-						</a>
-						<p class="blog-excerpt">{post.data.description}</p>
-						<a href={`/blog/${post.id}`} class="blog-readmore">Read the story</a>
+		<div class="posts">
+			{lead && (
+				<a href={`/blog/${lead.id}`} class="post-row is-lead">
+					<time class="post-when" datetime={iso(lead.data.date)}>{fmt(lead.data.date)}</time>
+					<div>
+						{lead.data.tag && <span class="post-tag">{lead.data.tag}</span>}
+						<h2><span class="post-title">{lead.data.title}</span></h2>
+						<p class="post-excerpt">{lead.data.description}</p>
 					</div>
-				))}
-			</div>
+				</a>
+			)}
+
+			{rest.map((post) => (
+				<a href={`/blog/${post.id}`} class="post-row">
+					<time class="post-when" datetime={iso(post.data.date)}>{fmt(post.data.date)}</time>
+					<div>
+						{post.data.tag && <span class="post-tag">{post.data.tag}</span>}
+						<h2><span class="post-title">{post.data.title}</span></h2>
+						<p class="post-excerpt">{post.data.description}</p>
+					</div>
+				</a>
+			))}
 		</div>
-	</main>
+
+		{candidates.length > 0 && (
+			<section class="rc-archive">
+				<h2 class="rc-h">Release candidates</h2>
+				<p class="fine">
+					Pre-release notes, kept as history. Not indexed, because nothing here is what finally shipped.
+				</p>
+				<ul class="rc-list">
+					{candidates.map((p) => (
+						<li>
+							<a href={`/blog/${p.id}`}>{p.data.title}</a>
+							<time datetime={iso(p.data.date)}>{fmt(p.data.date)}</time>
+						</li>
+					))}
+				</ul>
+			</section>
+		)}
+	</div>
 </Layout>
