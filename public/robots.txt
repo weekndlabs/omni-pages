@@ -1,4 +1,28 @@
 User-agent: *
 Allow: /
 
+# AI search crawlers are welcome. Blocking these would mean ChatGPT, Perplexity,
+# Claude and Gemini could not cite the project at all. Listed explicitly so that
+# a future broad Disallow does not silently take citation away.
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
 Sitemap: https://omni.weekndlabs.com/sitemap-index.xml

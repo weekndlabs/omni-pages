@@ -135,6 +135,79 @@ const commands = [
 	{ k: 'omni init --uninstall', v: 'Take it back out. One command, no residue.' },
 ];
 
+/* Questions people actually ask before installing something that sits between
+   their agent and their terminal. Answers are kept to roughly 40 to 60 words so
+   they survive extraction into an AI answer without losing their meaning. */
+const faq = [
+	{
+		q: 'Does OMNI delete my logs?',
+		a: 'No. Everything it cuts is compressed and archived to a local SQLite store, keyed by SHA-256. Your agent receives the hash and can pull the full original back at any time with omni rewind. Nothing is deleted and nothing leaves your machine.',
+	},
+	{
+		q: 'Will it slow down my terminal?',
+		a: `Yes, measurably. OMNI runs on every hooked command and the cost grows with your history. A 496 byte git status takes about 82ms against a fresh database and about 308ms against a 97 MB one. A 16.5 KB cargo test takes about 276ms.`,
+	},
+	{
+		q: 'How much does it actually save?',
+		a: `${stats.overallSaved} fewer bytes across ${stats.totalCalls} replayed real commands. That average hides a lot: ${stats.zeroSaveShare} of those commands saved nothing at all. The whole saving comes from the remaining ${workingShare}, mostly ${best.command} and other noisy tooling.`,
+	},
+	{
+		q: 'Can it hide an error from my agent?',
+		a: 'No. Any command that exits non-zero passes through verbatim, uncompressed. Structured output such as JSON, YAML, NDJSON and CSV is never touched. A distiller that cannot parse its input returns the raw output rather than summarising it.',
+	},
+	{
+		q: 'Which agents does it work with?',
+		a: 'Claude Code, Cursor, Windsurf, Roo Code, OpenAI Codex and Antigravity. It installs as a shell hook rather than a wrapper, so you keep typing the commands you already type and nothing about your workflow changes.',
+	},
+	{
+		q: 'Can I add filters for my own tools?',
+		a: 'Yes. Filters are TOML files in ~/.omni/signals/ that match a command and strip lines by pattern. omni learn --discover reads your shell history and drafts them for you, and omni trust approves filters a project ships in its own repository.',
+	},
+	{
+		q: 'What does OMNI cost?',
+		a: 'Nothing. It is MIT licensed with no paid tier, no account and no telemetry. If it saves you nothing, omni stats will tell you so and omni init --uninstall removes it.',
+	},
+];
+
+// Product plus FAQ. Both describe this page, so both belong in its graph.
+const jsonLd = [
+	{
+		'@context': 'https://schema.org',
+		'@type': 'SoftwareApplication',
+		name: 'OMNI',
+		alternateName: 'OMNI context engine',
+		applicationCategory: 'DeveloperApplication',
+		applicationSubCategory: 'Command line tool',
+		operatingSystem: 'macOS, Linux, Windows',
+		description: 'Noise-canceling context and long-term memory for AI coding agents. Cuts terminal noise before the agent reads it, and remembers your project between sessions.',
+		url: 'https://omni.weekndlabs.com',
+		downloadUrl: 'https://github.com/fajarhide/omni/releases',
+		codeRepository: 'https://github.com/fajarhide/omni',
+		programmingLanguage: 'Rust',
+		license: 'https://github.com/fajarhide/omni/blob/main/LICENSE',
+		softwareVersion: latestVersion.replace(/^v/, ''),
+		isAccessibleForFree: true,
+		offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+		author: { '@type': 'Person', name: 'Fajar Hidayat', url: 'https://github.com/fajarhide' },
+		featureList: [
+			'Distills noisy terminal output before it reaches the model',
+			'Archives everything it removes to a local SQLite store, retrievable by hash',
+			'Passes failing commands and structured data through untouched',
+			'Carries project memory across sessions and across editors',
+			'Runs as an MCP server and a shell hook',
+		],
+	},
+	{
+		'@context': 'https://schema.org',
+		'@type': 'FAQPage',
+		mainEntity: faq.map((f) => ({
+			'@type': 'Question',
+			name: f.q,
+			acceptedAnswer: { '@type': 'Answer', text: f.a },
+		})),
+	},
+];
+
 const pipeline = [
 	{ k: 'Read', v: 'A shell hook catches stdout on its way to the agent. Nothing about how you work changes.' },
 	{ k: 'Guard', v: 'Non-zero exit, or JSON, YAML, NDJSON, CSV? Straight through. <strong>This branch is taken more often than not.</strong>', quiet: true },
@@ -146,8 +219,9 @@ const pipeline = [
 ---
 
 <Layout
-	title="OMNI, noise-canceling context and memory for your AI agent"
-	description={`OMNI cuts terminal noise before your AI agent reads it, ${stats.overallSaved} fewer bytes across ${stats.totalCalls} real commands, and remembers your project between sessions. Lossy, always reversible, never invents a result. Rust, MIT, local only.`}
+	title="OMNI, cut AI agent token costs by filtering terminal noise"
+	description={`OMNI is a free Rust CLI that cuts terminal noise before your AI coding agent reads it, ${stats.overallSaved} fewer bytes across ${stats.totalCalls} real commands, and remembers your project between sessions. Always reversible, never invents a result. Works with Claude Code, Cursor and Windsurf.`}
+	jsonLd={jsonLd}
 >
 	<main>
 		<!-- HERO -->
@@ -386,8 +460,27 @@ const pipeline = [
 			</div>
 		</section>
 
+		<!-- FAQ -->
+		<section class="band" id="faq">
+			<div class="wrap">
+				<header class="band-head">
+					<span class="eyebrow">Questions</span>
+					<h2 class="t-section">What people ask before installing it</h2>
+				</header>
+
+				<dl class="rows">
+					{faq.map((f) => (
+						<div class="row">
+							<dt class="row-k">{f.q}</dt>
+							<dd class="row-v">{f.a}</dd>
+						</div>
+					))}
+				</dl>
+			</div>
+		</section>
+
 		<!-- CLOSE -->
-		<section class="band" id="start">
+		<section class="band band-sunk" id="start">
 			<div class="wrap wrap-text">
 				<h2 class="t-section">A passion project, MIT licensed</h2>
 				<p class="lede" style="margin:14px 0 24px">

@@ -8,17 +8,45 @@ interface Props {
     description: string;
     image?: string;
     author?: string;
+    /** ISO date. Only set on articles, so non-articles emit no article metadata. */
     publishDate?: string;
+    /** Page-specific structured data. Without it the page describes the product. */
+    jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
-const { 
-    title, 
-    description, 
+const {
+    title,
+    description,
     image = '/media/hero.png',
     author = 'Fajar Hidayat',
-    publishDate = '2026-06-01T00:00:00Z'
+    publishDate,
+    jsonLd,
 } = Astro.props;
-const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://omni.weekndlabs.com');
+
+const SITE = 'https://omni.weekndlabs.com';
+const canonicalURL = new URL(Astro.url.pathname, Astro.site || SITE);
+const isArticle = Boolean(publishDate);
+
+// Blog posts previously inherited SoftwareApplication schema and a hardcoded
+// 2026-06-01 publish date, so 43 URLs claimed to be the same piece of software
+// released on the same day. Pages now declare their own.
+const defaultJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'OMNI',
+    applicationCategory: 'DeveloperApplication',
+    operatingSystem: 'macOS, Linux, Windows',
+    description,
+    url: SITE,
+    license: 'https://github.com/fajarhide/omni/blob/main/LICENSE',
+    codeRepository: 'https://github.com/fajarhide/omni',
+    programmingLanguage: 'Rust',
+    isAccessibleForFree: true,
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    author: { '@type': 'Person', name: author, url: 'https://github.com/fajarhide' },
+};
+
+const structuredData = jsonLd ?? defaultJsonLd;
 ---
 
 <!doctype html>
@@ -34,51 +62,34 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://omni.wee
 		<!-- Canonical URL -->
 		<link rel="canonical" href={canonicalURL} />
 		<link rel="sitemap" href="/sitemap-index.xml" />
-		<link rel="llms-txt" href="/llms.txt" title="OMNI Context OS for AI Agents" />
+		<link rel="alternate" type="text/plain" href="/llms.txt" title="OMNI summary for AI systems" />
 
-		<!-- SEO Keywords & Meta -->
-		<meta name="keywords" content="AI, LLM, Agentic AI, Token Optimization, Context Window, Developer Tools, OMNI, CLI, Terminal, Cursor, Claude Code, Rust, MCP" />
 		<meta name="author" content={author} />
-		<meta name="publish_date" property="og:publish_date" content={publishDate} />
 		<meta name="theme-color" content="#E3E4E0" />
-		<meta name="robots" content="index, follow" />
+		<!-- max-snippet:-1 lets AI Overviews quote a full passage rather than a clipped one. -->
+		<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
 
-		<!-- Open Graph / Facebook -->
-		<meta property="og:type" content="website" />
-		<meta property="og:url" content={Astro.url} />
+		<!-- Open Graph -->
+		<meta property="og:site_name" content="OMNI" />
+		<meta property="og:type" content={isArticle ? 'article' : 'website'} />
+		<meta property="og:url" content={canonicalURL} />
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
-		<meta property="og:image" content={new URL(image, Astro.site || 'https://omni.weekndlabs.com')} />
-		<meta property="article:author" content={author} />
-		<meta property="article:published_time" content={publishDate} />
+		<meta property="og:image" content={new URL(image, Astro.site || SITE)} />
+		{isArticle && (
+			<Fragment>
+				<meta property="article:author" content={author} />
+				<meta property="article:published_time" content={publishDate} />
+			</Fragment>
+		)}
 
 		<!-- Twitter -->
-		<meta property="twitter:card" content="summary_large_image" />
-		<meta property="twitter:url" content={Astro.url} />
-		<meta property="twitter:title" content={title} />
-		<meta property="twitter:description" content={description} />
-		<meta property="twitter:image" content={new URL(image, Astro.site || 'https://omni.weekndlabs.com')} />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={new URL(image, Astro.site || SITE)} />
 
-		<!-- JSON-LD Structured Data for Rich Snippets -->
-		<script type="application/ld+json" set:html={JSON.stringify({
-			"@context": "https://schema.org",
-			"@type": "SoftwareApplication",
-			"name": "OMNI",
-			"operatingSystem": "macOS, Linux, Windows",
-			"applicationCategory": "DeveloperApplication",
-			"description": description,
-			"url": Astro.url.toString(),
-			"datePublished": publishDate,
-			"offers": {
-				"@type": "Offer",
-				"price": "0",
-				"priceCurrency": "USD"
-			},
-			"author": {
-				"@type": "Person",
-				"name": author
-			}
-		})} />
+		<script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
