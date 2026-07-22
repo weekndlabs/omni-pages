@@ -22,7 +22,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://omni.wee
 ---
 
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -37,10 +37,10 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://omni.wee
 		<link rel="llms-txt" href="/llms.txt" title="OMNI Context OS for AI Agents" />
 
 		<!-- SEO Keywords & Meta -->
-		<meta name="keywords" content="AI, LLM, Agentic AI, Token Optimization, Context Window, Developer Tools, OMNI, Context OS, CLI, Terminal, Cursor, Claude Code" />
+		<meta name="keywords" content="AI, LLM, Agentic AI, Token Optimization, Context Window, Developer Tools, OMNI, CLI, Terminal, Cursor, Claude Code, Rust, MCP" />
 		<meta name="author" content={author} />
 		<meta name="publish_date" property="og:publish_date" content={publishDate} />
-		<meta name="theme-color" content="#0d1117" />
+		<meta name="theme-color" content="#E3E4E0" />
 		<meta name="robots" content="index, follow" />
 
 		<!-- Open Graph / Facebook -->
@@ -63,7 +63,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://omni.wee
 		<script type="application/ld+json" set:html={JSON.stringify({
 			"@context": "https://schema.org",
 			"@type": "SoftwareApplication",
-			"name": "OMNI Context OS",
+			"name": "OMNI",
 			"operatingSystem": "macOS, Linux, Windows",
 			"applicationCategory": "DeveloperApplication",
 			"description": description,
@@ -82,34 +82,12 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://omni.wee
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 	</head>
 	<body>
 		<Navbar />
 		<slot />
         <Footer />
         
-        <script>
-            // Global scripts from script.js
-            // Navbar scroll effect
-            const navbar = document.getElementById('navbar');
-            if (navbar) {
-                window.addEventListener('scroll', () => {
-                    if (window.scrollY > 50) navbar.classList.add('scrolled');
-                    else navbar.classList.remove('scrolled');
-                });
-            }
-
-            // Reveal animations
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
-                    }
-                });
-            }, { threshold: 0.1 });
-
-            document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
-        </script>
 	</body>
 </html>

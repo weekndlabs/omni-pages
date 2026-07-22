@@ -2,47 +2,50 @@
 const GITHUB_REPO = 'https://github.com/fajarhide/omni';
 ---
 <nav class="navbar" id="navbar">
-  <div class="container">
+  <div class="wrap">
     <a href="/" class="nav-brand">
-      <img src="/logo.svg" alt="OMNI Logo">
-      <span class="text-gradient">OMNI</span>
+      <img src="/logo.svg" alt="" width="22" height="22" />
+      <span>OMNI</span>
     </a>
-    
-    <div class="nav-right-group">
-      <ul class="nav-links" id="nav-links">
-        <li><a href="/#problem-solution">Product</a></li>
-        <li><a href="/#features">Features</a></li>
-        <li><a href="/#showcase">Product</a></li>
-        <li><a href="/#how-it-works">How it works</a></li>
-        <li><a href="/blog">Blog</a></li>
-        <li class="nav-mobile-cta">
-          <a href={GITHUB_REPO} class="btn btn-primary btn-sm" target="_blank" rel="noopener noreferrer">View on GitHub</a>
-        </li>
-      </ul>
-      <div class="nav-right">
-        <a href={GITHUB_REPO} class="btn btn-primary btn-sm nav-cta" target="_blank" rel="noopener noreferrer">View on GitHub</a>
-        <a href="https://github.com/sponsors/fajarhide" class="nav-sponsor">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> 
-          <span class="sponsor-label">Sponsor</span>
-        </a>
-      </div>
-      <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle menu">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+
+    <ul class="nav-links" id="nav-links">
+      <li><a href="/#limits">Limits</a></li>
+      <li><a href="/#numbers">Numbers</a></li>
+      <li><a href="/#cli">The CLI</a></li>
+      <li><a href="/#how">How it works</a></li>
+      <li><a href="/blog">Journal</a></li>
+    </ul>
+
+    <div class="nav-end">
+      <a href={GITHUB_REPO} class="btn btn-ghost btn-sm" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Show navigation" aria-expanded="false" aria-controls="nav-links">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
     </div>
   </div>
 </nav>
 
 <script>
-  const toggle = document.getElementById('mobile-menu-toggle');
+  const toggle = document.getElementById('nav-toggle');
   const links = document.getElementById('nav-links');
   if (toggle && links) {
     toggle.addEventListener('click', () => {
-      links.classList.toggle('active');
+      const open = links.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.setAttribute('aria-label', open ? 'Hide navigation' : 'Show navigation');
     });
-    // Close menu when clicking a link
-    links.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => links.classList.remove('active'));
-    });
+    links.querySelectorAll('a').forEach((link) =>
+      link.addEventListener('click', () => {
+        links.classList.remove('open');
+        toggle.setAttribute('aria-expanded', 'false');
+      })
+    );
+  }
+
+  const navbar = document.getElementById('navbar');
+  if (navbar) {
+    const onScroll = () => navbar.classList.toggle('scrolled', window.scrollY > 8);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
   }
 </script>
