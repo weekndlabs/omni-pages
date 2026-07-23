@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseReadme, extremes, FALLBACK } from './readme-stats.js';
+import { parseReadme, extremes, FALLBACK, FIXTURE_KEYS } from './readme-stats.js';
 
 // Trimmed to the shapes the parser has to survive: a decoy `| Command` table
 // before the real one, bold cells, and the headline bullets.
@@ -21,6 +21,12 @@ executions** replayed from one developer's actual usage:
 | \`cargo\` | 29 | 424 KB | 13 KB | **96.8%** |
 | \`git\` | 256 | 5.9 MB | 509 KB | **91.3%** |
 | \`cat\` | 85 | 515 KB | 468 KB | **9.1%** |
+
+| Command / Context | Input | Output | Saved |
+|---|---|---|---|
+| \`cargo test\` (490 passed, 10 failed) | 16.5 KB | 1,100 B | **93.3%** |
+| \`git status\` (dirty) | 496 B | 113 B | **77.2%** |
+| \`docker build\` (heavy noise) | 9.2 KB | 5.8 KB | **37.2%** |
 
 Some trailing prose.
 `;
@@ -43,6 +49,18 @@ test('pulls the headline figures the page leads with', () => {
 	assert.equal(s.totalCalls, '1,810'); // spans a line break in the real README
 	assert.equal(s.bytesIn, '15.0 MB');
 	assert.equal(s.bytesOut, '6.2 MB');
+});
+
+test('pulls every hero fixture, and falls back per row when one is renamed', () => {
+	const s = parseReadme(README);
+	assert.deepEqual(Object.keys(s.fixtures), FIXTURE_KEYS);
+	assert.equal(s.fixtures['git status'].output, '113 B');
+	assert.equal(s.fixtures['docker build'].savings, '37.2%');
+
+	// One row renamed must not blank that panel of the hero.
+	const renamed = parseReadme(README.replace('`docker build` (heavy noise)', '`podman build`'));
+	assert.deepEqual(renamed.fixtures['docker build'], FALLBACK.fixtures['docker build']);
+	assert.equal(renamed.fixtures['git status'].output, '113 B');
 });
 
 test('rejects a README whose table vanished rather than half-parsing it', () => {

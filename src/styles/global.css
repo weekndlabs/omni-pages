@@ -187,7 +187,9 @@ code {
   font-size: 1.16rem;
   letter-spacing: 0.01em;
 }
-.nav-brand img { width: 22px; height: 22px; }
+/* The mark is wider than it is tall (bars, headphones, bars), so pin the height
+   and let the width follow. A square box would squash it. */
+.nav-brand img { height: 22px; width: auto; }
 .nav-links {
   display: flex;
   align-items: center;
@@ -309,6 +311,19 @@ code {
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
+/* The case label is the only part of the bar that can lose characters. The
+   phase and the meter are the reading, so they never shrink. */
+.crt-case { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crt-ctx { margin-left: 0.5ch; }
+.crt-read { display: flex; align-items: center; gap: 10px; flex: none; }
+.crt-phase {
+  color: var(--phosphor-dim);
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  padding: 1px 6px;
+  font-size: 0.64rem;
+}
+.crt-phase[data-on] { color: var(--phosphor); }
 .crt-meter { color: var(--phosphor); font-variant-numeric: tabular-nums; }
 .crt-body {
   padding: 14px;
@@ -316,7 +331,12 @@ code {
   line-height: 1.55;
   color: var(--phosphor);
   overflow-x: auto;
+  /* Hold the height of the longest listing in the reel. Neither the collapse nor
+     the switch to the next command may move anything else on the page, and the
+     space the collapse frees is the point. */
+  min-height: calc(var(--rows, 21) * 1.55em + 28px);
 }
+.reel[hidden] { display: none; }
 .crt-body .prompt { color: var(--phosphor-dim); }
 .crt-body .keep { color: var(--phosphor); }
 
@@ -333,13 +353,24 @@ code {
 .ln > .mark { color: var(--phosphor-dim); user-select: none; }
 .ln-noise > .txt { color: var(--phosphor-dim); }
 
-/* Fired once, when the block scrolls into view. */
+/* Two beats, looped while the block is on screen.
+   1. `scoring`: the strike walks down the noise one line at a time, so the
+      scoring pass is visible rather than instantaneous.
+   2. `cut`: the struck lines collapse, leaving the verdict. */
+.crt.scoring .ln-noise > .txt,
+.crt.scoring .ln-noise > .mark {
+  animation: strike 260ms ease forwards;
+  animation-delay: calc(var(--i) * 110ms);
+}
+@keyframes strike {
+  to { color: #6B4A00; text-decoration-line: line-through; }
+}
+
 .crt.cut .ln-noise {
   height: 0;
   opacity: 0;
-  text-decoration: line-through;
+  transition-delay: calc(var(--i) * 26ms);
 }
-.crt.cut .ln-noise > .mark { color: var(--amber-ink); }
 
 .crt-foot {
   border-top: 1px solid #1E1E20;
@@ -430,6 +461,21 @@ code {
 .row-v .also { display: block; margin-top: 5px; font-size: 0.87rem; }
 .row-quiet { background: var(--paper-sunk); }
 .band-sunk .row-quiet { background: var(--paper-sunk); }
+
+/* Same primitive, narrow column. Used beside the hero instrument, where 190px
+   of key would leave the value cell too thin to read. */
+.rows-tight { margin-top: 12px; }
+.rows-tight .row { grid-template-columns: 78px minmax(0, 1fr); gap: 14px; padding: 11px 14px; }
+.rows-tight .row-k { font-size: 0.87rem; }
+.rows-tight .row-v { font-size: 0.85rem; }
+/* Echoes the diff marker column inside the terminal, so the two blocks read as
+   one thought rather than a caption parked under a picture. */
+.gutter {
+  font-family: var(--font-mono);
+  color: var(--amber-ink);
+  display: inline-block;
+  width: 15px;
+}
 
 /* Receipts sit inline at the end of a value, not on their own line. */
 .receipt {
@@ -534,7 +580,7 @@ code {
 .posts { display: grid; }
 .post-row {
   display: grid;
-  grid-template-columns: 132px 1fr;
+  grid-template-columns: 132px minmax(0, 1fr);
   gap: 28px;
   padding: 26px 0;
   border-bottom: 1px solid var(--rule);
@@ -590,7 +636,10 @@ code {
    -------------------------------------------------------------------------- */
 
 @media (max-width: 900px) {
-  .hero-grid { grid-template-columns: 1fr; gap: 40px; }
+  /* minmax(0, ...), not a bare 1fr. A bare `1fr` is `minmax(auto, 1fr)`, and
+     that `auto` floor is the widest line in the terminal, which pushed the whole
+     hero to 493px inside a 390px viewport. */
+  .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 40px; }
   .stat + .stat { border-left: 0; padding-left: 0; }
 }
 
@@ -612,8 +661,11 @@ code {
   .nav-links a { padding: 12px 0; border-bottom: 1px solid var(--rule); }
   .nav-toggle { display: flex; }
   .nav-end .btn { display: none; }
-  .row { grid-template-columns: 1fr; gap: 5px; padding: 13px 15px; }
-  .post-row, .post-row.is-lead { grid-template-columns: 1fr; gap: 8px; padding: 22px 0; }
+  /* "1 of 3 · cargo test" fits. The "(490 passed, 10 failed)" behind it does
+     not, and half of it is worse than none of it. */
+  .crt-ctx { display: none; }
+  .row { grid-template-columns: minmax(0, 1fr); gap: 5px; padding: 13px 15px; }
+  .post-row, .post-row.is-lead { grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 22px 0; }
   .footer-links { gap: 32px; }
 }
 

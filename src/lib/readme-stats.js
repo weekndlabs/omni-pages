@@ -29,10 +29,19 @@ export const FALLBACK = {
 		{ command: 'grep', calls: '184', input: '534 KB', output: '385 KB', savings: '27.8%', pct: 27.8 },
 		{ command: 'cat', calls: '85', input: '515 KB', output: '468 KB', savings: '9.1%', pct: 9.1 },
 	],
-	// Single reproducible fixture, used by the hero demo so the meter counts a
-	// real measurement rather than a number chosen to look good.
-	fixture: { command: 'cargo test', input: '16.5 KB', output: '1,100 B', savings: '93.3%' },
+	// The three reproducible fixtures the hero demo cycles through, so every
+	// meter reading is a real measurement rather than a number chosen to look
+	// good. Deliberately spread across the range: one strong, one ordinary, one
+	// that barely pays for itself.
+	fixtures: {
+		'cargo test': { command: 'cargo test', input: '16.5 KB', output: '1,100 B', savings: '93.3%' },
+		'git status': { command: 'git status', input: '496 B', output: '113 B', savings: '77.2%' },
+		'docker build': { command: 'docker build', input: '9.2 KB', output: '5.8 KB', savings: '37.2%' },
+	},
 };
+
+/** Which fixture rows the hero needs. Keys match the README's first column. */
+export const FIXTURE_KEYS = Object.keys(FALLBACK.fixtures);
 
 /** Strip markdown emphasis and inline code so `**96.8%**` becomes `96.8%`. */
 const clean = (cell) => cell.replace(/[*`]/g, '').trim();
@@ -92,10 +101,14 @@ const grab = (md, re) => {
  */
 export function parseReadme(md) {
 	const rows = parseCommandTable(md);
+	// Each fixture falls back on its own, so one renamed row cannot blank the hero.
+	const fixtures = Object.fromEntries(
+		FIXTURE_KEYS.map((k) => [k, parseFixture(md, k) ?? FALLBACK.fixtures[k]])
+	);
 	const stats = {
 		source: 'README@main',
 		rows,
-		fixture: parseFixture(md, 'cargo test') ?? FALLBACK.fixture,
+		fixtures,
 		overallSaved: grab(md, /\*\*([\d.]+% fewer bytes)\*\*/)?.replace(' fewer bytes', ''),
 		zeroSaveShare: grab(md, /\*\*([\d.]+)% of those calls saved nothing/),
 		totalCalls: grab(md, /\*\*([\d,]+) real command\s*\n?\s*executions\*\*/),
