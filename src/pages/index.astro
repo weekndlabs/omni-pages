@@ -32,9 +32,13 @@ const stats = await getBenchmarkStats();
 const { best, worst } = extremes(stats.rows);
 const workingShare = (100 - parseFloat(stats.zeroSaveShare)).toFixed(1) + '%';
 
-/* Hero demo. Real `cargo test` shape, with the lines OMNI drops marked so the
-   block can subtract them in place. `n` is the noise flag. */
-const demo = [
+/* Hero demo. Three real command shapes, with the lines OMNI drops marked so the
+   block can subtract them in place. `n` is the noise flag, `keep` highlights the
+   part that survives. Every byte figure comes from the README fixture table, and
+   the three are chosen to span the range on purpose: a command that pays for
+   itself, an ordinary one, and one that barely does. A page arguing against fake
+   90% claims cannot show three 90% demos. */
+const cargoTest = [
 	{ t: '$ cargo test', prompt: true },
 	{ t: '   Compiling omni v0.6.0 (/Users/f/omni)', n: true },
 	{ t: '   Compiling serde v1.0.210', n: true },
@@ -48,15 +52,113 @@ const demo = [
 	{ t: 'test rewind::store::retrieve_by_hash ... ok', n: true },
 	{ t: '... 478 more passing tests ...', n: true },
 	{ t: 'test distill::cargo::parses_summary ... FAILED', keep: true },
-	{ t: '' },
+	{ t: '', n: true },
 	{ t: 'failures:' },
 	{ t: '    thread panicked at src/distill/cargo.rs:118:9', keep: true },
 	{ t: '    assertion `left == right` failed' },
 	{ t: '      left: 490' },
 	{ t: '     right: 500' },
-	{ t: '' },
+	{ t: '', n: true },
 	{ t: 'test result: FAILED. 490 passed; 10 failed', keep: true },
 ];
+
+/* The six hint lines git prints every single time, gone. What changed, stays. */
+const gitStatus = [
+	{ t: '$ git status', prompt: true },
+	{ t: 'On branch main' },
+	{ t: "Your branch is ahead of 'origin/main' by 2 commits." },
+	{ t: '  (use "git push" to publish your local commits)', n: true },
+	{ t: '', n: true },
+	{ t: 'Changes not staged for commit:' },
+	{ t: '  (use "git add <file>..." to update what will be committed)', n: true },
+	{ t: '  (use "git restore <file>..." to discard changes)', n: true },
+	{ t: '        modified:   src/pipeline/score.rs', keep: true },
+	{ t: '        modified:   src/distill/cargo.rs', keep: true },
+	{ t: '', n: true },
+	{ t: 'Untracked files:' },
+	{ t: '  (use "git add <file>..." to include in what will be committed)', n: true },
+	{ t: '        tests/fixtures/docker-build.txt', keep: true },
+	{ t: '', n: true },
+	{ t: 'no changes added to commit (use "git add" to track them)', n: true },
+];
+
+/* The honest one. A successful build is mostly layer bookkeeping, but the
+   bookkeeping is only a third of the bytes, so a third is all it saves. */
+const dockerBuild = [
+	{ t: '$ docker build -t omni:ci .', prompt: true },
+	{ t: '#1 [internal] load build definition from Dockerfile' },
+	{ t: '#1 transferring dockerfile: 412B done', n: true },
+	{ t: '#1 DONE 0.0s', n: true },
+	{ t: '#2 [internal] load .dockerignore' },
+	{ t: '#2 transferring context: 108B done', n: true },
+	{ t: '#2 DONE 0.0s', n: true },
+	{ t: '#3 [internal] load metadata for docker.io/library/rust:1.79' },
+	{ t: '#3 DONE 1.2s', n: true },
+	{ t: '#4 [builder 1/5] FROM docker.io/library/rust:1.79' },
+	{ t: '#4 CACHED' },
+	{ t: '#5 [internal] load build context' },
+	{ t: '#5 transferring context: 2.14MB done', n: true },
+	{ t: '#5 DONE 0.3s', n: true },
+	{ t: '#8 [builder 4/5] RUN cargo build --release' },
+	{ t: '#8 24.61 warning: unused import: `std::fmt`', keep: true },
+	{ t: '#8 24.61   --> src/rewind/store.rs:4:5', keep: true },
+	{ t: '#8 DONE 61.4s', n: true },
+	{ t: '#9 exporting to image' },
+	{ t: '#9 writing image sha256:9f2c1a3e8b04', keep: true },
+	{ t: '#9 naming to docker.io/library/omni:ci done', keep: true },
+];
+
+/* Noise lines get an ordinal so the strike can walk down the block one line at
+   a time. That walk is the whole point: it shows the scoring pass happening. */
+const reel = (lines) => {
+	let n = 0;
+	return lines.map((line) => ({ ...line, i: line.n ? n++ : null }));
+};
+
+const fx = stats.fixtures;
+
+/* One entry per command in the reel. `cap` is the measurement, `cut` and `kept`
+   are what the strike is doing while you watch it, so the block explains itself
+   instead of just looking busy. */
+const demos = [
+	{
+		fixture: fx['cargo test'],
+		lines: reel(cargoTest),
+		cap: `${fx['cargo test'].input} of test output becomes ${fx['cargo test'].output}, a ${fx['cargo test'].savings} cut.`,
+		cut: 'The compile log, the timing footer, and 478 passing tests. A test that passed tells your agent nothing it can act on.',
+		kept: 'The one test that failed, the panic and its file and line, and the runner\'s own result line. The count is copied, never recomputed.',
+	},
+	{
+		fixture: fx['git status'],
+		lines: reel(gitStatus),
+		cap: `${fx['git status'].input} becomes ${fx['git status'].output}, a ${fx['git status'].savings} cut on a command your agent runs constantly.`,
+		cut: 'The four hint lines git reprints identically on every single call, explaining add, restore and push to a reader who already knows.',
+		kept: 'The branch, how far ahead it is, both modified paths and the untracked file. Every byte that differs from the last run stays.',
+	},
+	{
+		fixture: fx['docker build'],
+		lines: reel(dockerBuild),
+		cap: `${fx['docker build'].input} becomes ${fx['docker build'].output}, a ${fx['docker build'].savings} cut, and that is the honest end of the range.`,
+		cut: 'Per layer bookkeeping: transferring context, DONE 0.0s, the timings nobody reads on a build that worked.',
+		kept: 'Every stage header, the compiler warning with its file and line, and the image digest. Two thirds of a green build is still worth reading.',
+	},
+];
+
+/* The bar names the case with the context string straight out of the README
+   fixture table ("490 passed, 10 failed", "dirty", "heavy noise"), so the label
+   is a parsed measurement rather than one more claim to keep true. The position
+   tells a reader who lands mid cycle that two more cases are coming. */
+demos.forEach((d, i) => {
+	// Split at the parenthetical so a narrow bar can drop the context rather than
+	// truncate it mid word. "1 of 3 · cargo test" survives on its own.
+	const [, cmd, ctx = ''] = d.fixture.command.match(/^([^(]+)(\(.*\))?$/);
+	d.label = `${i + 1} of ${demos.length} · ${cmd.trim()}`;
+	d.context = ctx;
+});
+
+/* The reel switches between blocks of different length, so the body is pinned to
+   the tallest. Nothing on the page may move while it plays. */
+const tallestReel = Math.max(...demos.map((d) => d.lines.length));
 
 /* Limits first, then promises. Same row shape, so they read as one ledger. */
 const limits = [
@@ -281,25 +383,48 @@ const pipeline = [
 
 						<figure class="crt" id="demo">
 							<figcaption class="crt-bar">
-								<span>tests/fixtures / cargo test</span>
-								<span class="crt-meter" id="meter">{stats.fixture.input}</span>
+								<span class="crt-case">
+								<span id="reel-label">{demos[0].label}</span>
+								<span class="crt-ctx" id="reel-ctx">{demos[0].context}</span>
+							</span>
+								<span class="crt-read">
+									<span class="crt-phase" id="phase">raw</span>
+									<span class="crt-meter" id="meter">{demos[0].fixture.input}</span>
+								</span>
 							</figcaption>
-							<div class="crt-body">
-								{demo.map((line) => (
-									<div class={`ln${line.n ? ' ln-noise' : ''}`}>
-										<span class="mark" aria-hidden="true">{line.n ? '−' : ' '}</span>
-										<span class={`txt${line.keep ? ' keep' : ''}${line.prompt ? ' prompt' : ''}`}>{line.t}</span>
+							<div class="crt-body" style={`--rows:${tallestReel}`}>
+								{demos.map((d, di) => (
+									<div class="reel" data-reel={di} hidden={di !== 0}>
+										{d.lines.map((line) => (
+											<div class={`ln${line.n ? ' ln-noise' : ''}`} style={line.i === null ? undefined : `--i:${line.i}`}>
+												<span class="mark" aria-hidden="true">{line.n ? '−' : ' '}</span>
+												<span class={`txt${line.keep ? ' keep' : ''}${line.prompt ? ' prompt' : ''}`}>{line.t}</span>
+											</div>
+										))}
 									</div>
 								))}
 							</div>
 							<div class="crt-foot">
-								<span>{stats.fixture.savings} smaller</span>
+								<span id="reel-saved">{demos[0].fixture.savings} smaller</span>
 								<span>nothing deleted, all of it hashed to disk</span>
 							</div>
 						</figure>
 						<p class="crt-cap">
-							Reproducible on <code>tests/fixtures/</code>: {stats.fixture.input} of output becomes {stats.fixture.output}. The verdict survives, the 478 passing tests never reach the model.
+							Reproducible on <code>tests/fixtures/</code>: <span id="reel-cap">{demos[0].cap}</span>
 						</p>
+
+						<!-- What the strike is actually doing, in the same row primitive
+						     the rest of the page uses. Changes with the reel. -->
+						<dl class="rows rows-tight">
+							<div class="row">
+								<dt class="row-k"><span class="gutter" aria-hidden="true">−</span>Cut</dt>
+								<dd class="row-v" id="reel-cut">{demos[0].cut}</dd>
+							</div>
+							<div class="row">
+								<dt class="row-k"><span class="gutter" aria-hidden="true">=</span>Kept</dt>
+								<dd class="row-v" id="reel-kept">{demos[0].kept}</dd>
+							</div>
+						</dl>
 					</div>
 				</div>
 			</div>
@@ -505,33 +630,65 @@ const pipeline = [
 		</section>
 	</main>
 
-	<script define:vars={{ fixtureOut: stats.fixture.output }}>
-		// The signature: run the subtraction once, when the block is on screen.
+	<script define:vars={{ reels: demos.map((d) => ({ ...d.fixture, label: d.label, context: d.context, cap: d.cap, cut: d.cut, kept: d.kept, noise: d.lines.filter((l) => l.n).length })) }}>
+		// The signature: the subtraction runs on a slow loop while the block is on
+		// screen, so a reader who arrives mid-cycle still sees it happen. Three
+		// commands take turns, because one 93% demo would misrepresent the tool.
 		const demo = document.getElementById('demo');
-		const meter = document.getElementById('meter');
+		const el = (id) => document.getElementById(id);
 		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-		function subtract() {
-			demo.classList.add('cut');
-			if (meter) meter.textContent = fixtureOut;
+		function setPhase(label, on) {
+			const phase = el('phase');
+			phase.textContent = label;
+			if (on) phase.setAttribute('data-on', '');
+			else phase.removeAttribute('data-on');
 		}
 
-		if (demo) {
-			if (reduced) {
-				subtract();
-			} else {
-				const io = new IntersectionObserver(
-					(entries) => {
-						entries.forEach((e) => {
-							if (!e.isIntersecting) return;
-							io.disconnect();
-							setTimeout(subtract, 900);
-						});
-					},
-					{ threshold: 0.35 }
-				);
-				io.observe(demo);
-			}
+		function show(i) {
+			demo.querySelectorAll('.reel').forEach((r) => {
+				r.hidden = Number(r.dataset.reel) !== i;
+			});
+			el('reel-label').textContent = reels[i].label;
+			el('reel-ctx').textContent = reels[i].context;
+			el('reel-saved').textContent = reels[i].savings + ' smaller';
+			el('reel-cap').textContent = reels[i].cap;
+			el('reel-cut').textContent = reels[i].cut;
+			el('reel-kept').textContent = reels[i].kept;
+			el('meter').textContent = reels[i].input;
+		}
+
+		if (demo && reduced) {
+			// No loop and no cycling. One command, shown already distilled.
+			demo.classList.add('scoring', 'cut');
+			setPhase('distilled', true);
+			el('meter').textContent = reels[0].output;
+		} else if (demo) {
+			let onScreen = false;
+			new IntersectionObserver(
+				(entries) => entries.forEach((e) => { onScreen = e.isIntersecting; }),
+				{ threshold: 0.25 }
+			).observe(demo);
+
+			const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+			(async () => {
+				for (let i = 0; ; i = (i + 1) % reels.length) {
+					while (!onScreen) await wait(400);
+					show(i);
+					setPhase('raw', false);
+					await wait(1600);                        // the output as the shell wrote it
+					demo.classList.add('scoring');
+					setPhase('scoring', true);
+					await wait(reels[i].noise * 110 + 400);  // the strike walks every noise line
+					demo.classList.add('cut');
+					setPhase('distilled', true);
+					el('meter').textContent = reels[i].output;
+					await wait(4200);                        // hold on what survived
+					demo.classList.remove('scoring', 'cut');
+					await wait(700);                         // let the lines come back up
+				}
+			})();
 		}
 
 		// Copy buttons.
