@@ -6,15 +6,15 @@ tag: Release Note
 author: OMNI Core Team
 ---
 
-Running bleeding-edge software is a deliberate trade-off: you accept instability in exchange for early access to features that will define the next generation. But there is one thing that should never be unstable on a pre-release build — the tooling that tells you *which version you are running* and *whether you are up to date*. In OMNI v0.5.4-rc2, we completely overhauled our version comparison semantics to give release candidate users the diagnostic precision they deserve.
+Running bleeding-edge software is a deliberate trade-off: you accept instability in exchange for early access to features that will define the next generation. But there is one thing that should never be unstable on a pre-release build, the tooling that tells you *which version you are running* and *whether you are up to date*. In OMNI v0.5.4-rc2, we completely overhauled our version comparison semantics to give release candidate users the diagnostic precision they deserve.
 
 ## The Pre-Release Paradox
 
-Before this fix, `omni doctor` and `omni update` had a fundamental blind spot. The version comparison logic used a naive string-based semver check that did not understand pre-release suffixes. This created a maddening paradox: if you were running `v0.5.4-rc1` and the latest stable release was `v0.5.3`, the tool would sometimes report that you were *behind* — suggesting a downgrade to the older stable version. Release candidate users were being punished for being early adopters.
+Before this fix, `omni doctor` and `omni update` had a fundamental blind spot. The version comparison logic used a naive string-based semver check that did not understand pre-release suffixes. This created a maddening paradox: if you were running `v0.5.4-rc1` and the latest stable release was `v0.5.3`, the tool would sometimes report that you were *behind*, suggesting a downgrade to the older stable version. Release candidate users were being punished for being early adopters.
 
 ## Three States of Version Truth
 
-The fix introduces a proper three-state version awareness system. When you run `omni doctor`, it now explicitly distinguishes between `[LATEST]` — you are running the current stable release, `[UPDATE]` — a newer stable version is available and you should upgrade, and `[AHEAD/RC]` — you are running a pre-release or development branch that is *ahead* of the latest stable. Each state is rendered with distinct visual styling in the terminal, making your version status instantly scannable without reading a single word of the diagnostic text.
+The fix introduces a proper three-state version awareness system. When you run `omni doctor`, it now explicitly distinguishes between `[LATEST]` for the current stable release, `[UPDATE]` when a newer stable version is available and you should upgrade, and `[AHEAD/RC]` when you are running a pre-release or development branch that is *ahead* of the latest stable. Each state is rendered with distinct visual styling in the terminal, making your version status instantly scannable without reading a single word of the diagnostic text.
 
 ## Correcting the Semantic Comparison Engine
 
@@ -26,4 +26,4 @@ Complementing the runtime improvements, the `bump_version.sh` release script was
 
 ## Why Precision Matters at the Edge
 
-This release might seem minor on the surface — two bug fixes and some diagnostic polish. But for the developers who choose to run release candidates, version precision is the difference between confidence and anxiety. When your tools accurately report your position in the version landscape, you can focus entirely on the features you are testing instead of worrying about whether your installation is corrupted. Accurate telemetry is the foundation of developer trust, and v0.5.4-rc2 ensures that trust extends to every edge of our release pipeline.
+This release might seem minor on the surface, two bug fixes and some diagnostic polish. But for the developers who choose to run release candidates, version precision is the difference between confidence and anxiety. When your tools accurately report your position in the version landscape, you can focus entirely on the features you are testing instead of worrying about whether your installation is corrupted. Accurate telemetry is the foundation of developer trust, and v0.5.4-rc2 ensures that trust extends to every edge of our release pipeline.

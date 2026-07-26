@@ -6,17 +6,17 @@ tag: Release Note
 author: OMNI Core Team
 ---
 
-Early-stage software development is inherently chaotic. Features ship fast, tests are sparse, and the line between prototype and production is dangerously blurred. OMNI v0.1.2 does not introduce new capabilities — it stabilizes the ones we already had. This is the unglamorous but essential work of stress-testing every code path under real-world conditions and fixing the failures that emerge.
+Early-stage software development is inherently chaotic. Features ship fast, tests are sparse, and the line between prototype and production is dangerously blurred. OMNI v0.1.2 does not introduce new capabilities. It stabilizes the ones we already had. This is the unglamorous but essential work of stress-testing every code path under real-world conditions and fixing the failures that emerge.
 
 ## The Concurrent IO Challenge
 
-The primary focus of this patch was resolving instability under heavy, concurrent terminal sessions. When multiple AI agent instances were running simultaneously — each piping terminal output through OMNI's distillation engine — we observed intermittent buffer corruption and occasional dropped output lines. The root cause was a shared buffer pool in the IO layer that was not properly synchronized for concurrent access.
+The primary focus of this patch was resolving instability under heavy, concurrent terminal sessions. When multiple AI agent instances were running simultaneously (each piping terminal output through OMNI's distillation engine), we observed intermittent buffer corruption and occasional dropped output lines. The root cause was a shared buffer pool in the IO layer that was not properly synchronized for concurrent access.
 
-The fix involved isolating the buffer pool per-invocation, ensuring that each distillation pipeline operates on its own private memory region. This eliminated the data race without introducing any locking overhead — a critical constraint for a tool that must add zero perceptible latency to every terminal command.
+The fix involved isolating the buffer pool per-invocation, ensuring that each distillation pipeline operates on its own private memory region. This eliminated the data race without introducing any locking overhead, a critical constraint for a tool that must add zero perceptible latency to every terminal command.
 
 ## Filter Capture Priority Tuning
 
-We also adjusted the priority ordering of filter capture rules for edge cases where multiple filters matched the same input with equal confidence. The previous behavior was nondeterministic — whichever filter happened to evaluate first would claim the input — which produced inconsistent results across runs. The new behavior applies a stable, deterministic tiebreaking rule based on filter specificity, ensuring that more specialized filters always win over generic ones.
+We also adjusted the priority ordering of filter capture rules for edge cases where multiple filters matched the same input with equal confidence. The previous behavior was nondeterministic (whichever filter happened to evaluate first would claim the input), which produced inconsistent results across runs. The new behavior applies a stable, deterministic tiebreaking rule based on filter specificity, ensuring that more specialized filters always win over generic ones.
 
 ## The Discipline of Patch Releases
 

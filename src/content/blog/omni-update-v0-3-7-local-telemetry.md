@@ -6,11 +6,11 @@ tag: Release Note
 author: OMNI Core Team
 ---
 
-If you cannot measure it, you cannot improve it — and you definitely cannot justify it to your engineering manager. Token optimization sounds compelling in theory, but when the monthly AI bill arrives and leadership asks "what exactly are we getting for this context engine subscription?", you need concrete numbers. OMNI v0.3.7 fundamentally upgrades local operational insights to give you those numbers, automatically, with zero configuration.
+If you cannot measure it, you cannot improve it, and you definitely cannot justify it to your engineering manager. Token optimization sounds compelling in theory, but when the monthly AI bill arrives and leadership asks "what exactly are we getting for this context engine subscription?", you need concrete numbers. OMNI v0.3.7 fundamentally upgrades local operational insights to give you those numbers, automatically, with zero configuration.
 
 ## The Local Metrics System
 
-Starting with this release, every `omni distill` invocation and every MCP tool call automatically records usage data to `~/.omni/metrics.csv`. This is a lightweight, local-first telemetry system — no data leaves your machine, no cloud analytics, no privacy concerns. Each record captures the timestamp, the command that was filtered, the input token count, the output token count, the savings percentage, and the processing time. Over days and weeks, this file builds into a comprehensive dataset that tells the complete story of OMNI's impact on your workflow.
+Starting with this release, every `omni distill` invocation and every MCP tool call automatically records usage data to `~/.omni/metrics.csv`. This is a lightweight, local-first telemetry system: no data leaves your machine, no cloud analytics, no privacy concerns. Each record captures the timestamp, the command that was filtered, the input token count, the output token count, the savings percentage, and the processing time. Over days and weeks, this file builds into a comprehensive dataset that tells the complete story of OMNI's impact on your workflow.
 
 ## The Report Engine
 
@@ -20,7 +20,7 @@ For teams running multiple AI agents, the `omni report --agent=claude-code` flag
 
 ## Agent Tagging Infrastructure
 
-To enable per-agent reporting, the `omni generate` command now includes `--agent=<name>` metadata in MCP configuration files. When an agent makes a tool call through the MCP protocol, the agent identifier is automatically recorded alongside the metrics data. This tagging happens transparently — no manual annotation required — and provides the foundation for increasingly sophisticated multi-agent analytics in future releases.
+To enable per-agent reporting, the `omni generate` command now includes `--agent=<name>` metadata in MCP configuration files. When an agent makes a tool call through the MCP protocol, the agent identifier is automatically recorded alongside the metrics data. This tagging happens transparently (no manual annotation required), and provides the foundation for increasingly sophisticated multi-agent analytics in future releases.
 
 ## Fixing the Installer Chain
 
@@ -32,11 +32,11 @@ Third, quoting issues in the installer script caused failures on systems where t
 
 ## The Symlink Problem
 
-The `omni setup` symlink creation logic was comprehensively rewritten. The previous implementation searched a single hardcoded path for the `index.js` entry point, which failed on non-standard installation locations and alternative package managers. The new implementation searches four candidate paths — covering Homebrew, npm global, yarn global, and manual installation — finds the correct entry point, removes any stale symlinks that exist from previous installations, and creates a fresh, verified symlink. This fix alone resolved the majority of "OMNI not found after installation" reports that had been accumulating in our issue tracker.
+The `omni setup` symlink creation logic was comprehensively rewritten. The previous implementation searched a single hardcoded path for the `index.js` entry point, which failed on non-standard installation locations and alternative package managers. The new implementation searches four candidate paths (covering Homebrew, npm global, yarn global, and manual installation), finds the correct entry point, removes any stale symlinks that exist from previous installations, and creates a fresh, verified symlink. This fix alone resolved the majority of "OMNI not found after installation" reports that had been accumulating in our issue tracker.
 
 ## Homebrew Sandbox Compliance
 
-The Homebrew formula received an important structural change. Our `post_install` hook was attempting to modify files in `$HOME` — specifically creating the `~/.omni` directory and configuration files — which violates Homebrew's sandbox policy. The sandbox prevents formulae from accessing the home directory during installation for security reasons. We replaced `post_install` with `caveats` — a display-only message that instructs users to run `omni setup` after installation — bringing us into full compliance with Homebrew's security model.
+The Homebrew formula received an important structural change. Our `post_install` hook was attempting to modify files in `$HOME` (specifically creating the `~/.omni` directory and configuration files), which violates Homebrew's sandbox policy. The sandbox prevents formulae from accessing the home directory during installation for security reasons. We replaced `post_install` with `caveats` (a display-only message that instructs users to run `omni setup` after installation), bringing us into full compliance with Homebrew's security model.
 
 ## Release Script Improvements
 

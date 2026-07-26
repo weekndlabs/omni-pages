@@ -6,15 +6,15 @@ tag: Release Note
 author: OMNI Core Team
 ---
 
-There is a critical flaw hiding in plain sight across every AI context filtering tool on the market: **the complete lack of memory**. Compressing raw text blindly — line by line, buffer by buffer — systematically destroys the continuity between commands. Your agent runs `cargo build`, gets a cryptic linker error, then runs `cargo test`, and the context engine treats these as two completely unrelated events. The reasoning chain is shattered before it even begins. OMNI v0.5.4 solves this problem at its architectural root with our most ambitious release yet: **Session-Aware Distillation**.
+There is a critical flaw hiding in plain sight across every AI context filtering tool on the market: **the complete lack of memory**. Compressing raw text blindly (line by line, buffer by buffer), systematically destroys the continuity between commands. Your agent runs `cargo build`, gets a cryptic linker error, then runs `cargo test`, and the context engine treats these as two completely unrelated events. The reasoning chain is shattered before it even begins. OMNI v0.5.4 solves this problem at its architectural root with our most ambitious release yet: **Session-Aware Distillation**.
 
 ## From Passive Filter to Stateful Engine
 
-The headline feature of this release is the injection of live tracking state directly into the distillation pipeline. Every distiller now inherently "remembers" the toolchain context of your current session. If you ran a Docker build three commands ago and now you are inspecting logs, the engine understands the relationship and preserves cross-command continuity in its output. This is not caching — this is genuine contextual intelligence built into the core processing loop.
+The headline feature of this release is the injection of live tracking state directly into the distillation pipeline. Every distiller now inherently "remembers" the toolchain context of your current session. If you ran a Docker build three commands ago and now you are inspecting logs, the engine understands the relationship and preserves cross-command continuity in its output. This is not caching. This is genuine contextual intelligence built into the core processing loop.
 
 ## Three New Domain Distillers
 
-Alongside the session layer, we shipped three entirely new engine distillers, each purpose-built for a high-noise domain. The **CloudDistiller** handles Docker, Kubernetes, and Terraform output with surgical precision, knowing exactly which infrastructure state transitions matter and which are repetitive boilerplate. The **SystemOpsDistiller** targets everyday shell tools like `ls`, `env`, `grep`, and `tree` — commands that produce massive output but where only a fraction carries diagnostic value. Finally, the **JsTsDistiller** is specifically tuned for ESLint and TypeScript Compiler output, preserving error chains while stripping the verbose configuration dumps that plague JavaScript monorepos.
+Alongside the session layer, we shipped three entirely new engine distillers, each purpose-built for a high-noise domain. The **CloudDistiller** handles Docker, Kubernetes, and Terraform output with surgical precision, knowing exactly which infrastructure state transitions matter and which are repetitive boilerplate. The **SystemOpsDistiller** targets everyday shell tools like `ls`, `env`, `grep`, and `tree`, commands that produce massive output but where only a fraction carries diagnostic value. Finally, the **JsTsDistiller** is specifically tuned for ESLint and TypeScript Compiler output, preserving error chains while stripping the verbose configuration dumps that plague JavaScript monorepos.
 
 ## The OMNI Filter Pack Expansion
 
@@ -26,11 +26,11 @@ Under the hood, we undertook a significant refactoring of the monolithic process
 
 ## Zero-Cost ANSI Processing
 
-Performance engineering received dedicated attention in this release. The `strip_ansi` function — called on every single line of input — was refactored to leverage Rust's `Cow<str>` memory strategy. The result is zero heap allocations for clean text that contains no ANSI escape codes, which accounts for roughly eighty percent of all input. For the remaining twenty percent, the allocation is minimal and precisely scoped. In benchmarks, this change alone reduced per-line processing overhead by forty percent.
+Performance engineering received dedicated attention in this release. The `strip_ansi` function (called on every single line of input) was refactored to leverage Rust's `Cow<str>` memory strategy. The result is zero heap allocations for clean text that contains no ANSI escape codes, which accounts for roughly eighty percent of all input. For the remaining twenty percent, the allocation is minimal and precisely scoped. In benchmarks, this change alone reduced per-line processing overhead by forty percent.
 
 ## Lessons Learned: Silent Exits and Security Hardening
 
-Several important bugs were resolved in this release. OMNI now terminates silently on completely blank piped inputs, eliminating the stderr pollution that was confusing automated CI pipelines. The security guardrail layer was updated to ensure all denylist environment variable queries are strictly case-insensitive — preventing a subtle bypass vector where `OMNI_PASSTHROUGH` could be evaded by setting `omni_passthrough`. We also expanded Windows CI coverage, matrix-testing across operating systems to catch platform-specific regressions before they ship.
+Several important bugs were resolved in this release. OMNI now terminates silently on completely blank piped inputs, eliminating the stderr pollution that was confusing automated CI pipelines. The security guardrail layer was updated to ensure all denylist environment variable queries are strictly case-insensitive, preventing a subtle bypass vector where `OMNI_PASSTHROUGH` could be evaded by setting `omni_passthrough`. We also expanded Windows CI coverage, matrix-testing across operating systems to catch platform-specific regressions before they ship.
 
 ## The Eradication of Undefined Behavior
 
@@ -38,4 +38,4 @@ Perhaps the most technically significant fix in this release is the eradication 
 
 ## What Comes Next
 
-With session awareness embedded in the engine's DNA, OMNI is no longer a stateless text filter — it is a contextual reasoning layer for your AI agent. The next frontier is predictive context: using session patterns to pre-fetch and pre-score relevant data before your agent even submits its next request. The stateless era is over.
+With session awareness embedded in the engine's DNA, OMNI is no longer a stateless text filter. It is a contextual reasoning layer for your AI agent. The next frontier is predictive context: using session patterns to pre-fetch and pre-score relevant data before your agent even submits its next request. The stateless era is over.

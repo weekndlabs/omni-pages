@@ -6,7 +6,7 @@ tag: Release Note
 author: OMNI Core Team
 ---
 
-Today we are shipping the first release candidate for OMNI v0.5.6, our most significant refinement to the distillation pipeline since the pure Rust rewrite. This release focuses on transparency, control, and measurable value — finally answering the question every developer asks: *how much money am I actually saving right now?*
+Today we are shipping the first release candidate for OMNI v0.5.6, our most significant refinement to the distillation pipeline since the pure Rust rewrite. This release focuses on transparency, control, and measurable value, finally answering the question every developer asks: *how much money am I actually saving right now?*
 
 ## Magic Pipe Detection V2
 
