@@ -1,0 +1,114 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import { getReleases, postFor, BULLET_CAP } from '../lib/changelog.js';
+import { RC_SLUG } from '../lib/blog.js';
+
+const GITHUB_REPO = 'https://github.com/fajarhide/omni';
+
+const { releases, source } = await getReleases();
+const posts = (await getCollection('blog')).filter((p) => !RC_SLUG.test(p.id));
+
+const fmt = (iso) =>
+	new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-US', {
+		day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC',
+	});
+
+/* Bullets arrive as markdown, and the only markup in a changelog lead is inline
+   code. Escape first, then put the backticks back as <code>, so a stray < in a
+   commit subject cannot inject anything. */
+const code = (s) =>
+	s
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+const latest = releases[0];
+
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'CollectionPage',
+	name: 'OMNI releases',
+	description: `Every shipped version of OMNI, newest first. Latest is v${latest.version}.`,
+	url: 'https://omni.weekndlabs.com/releases',
+	isPartOf: { '@type': 'WebSite', name: 'OMNI', url: 'https://omni.weekndlabs.com' },
+	about: {
+		'@type': 'SoftwareApplication',
+		name: 'OMNI',
+		applicationCategory: 'DeveloperApplication',
+		operatingSystem: 'macOS, Linux, Windows',
+		softwareVersion: latest.version,
+		codeRepository: GITHUB_REPO,
+	},
+};
+---
+
+<Layout
+	title="OMNI releases, every version and what changed"
+	description={`Every shipped version of OMNI, newest first, with what each one changed. Latest is v${latest.version}, released ${fmt(latest.date)}.`}
+	jsonLd={jsonLd}
+>
+	<div class="wrap wrap-doc">
+		<header class="page-head">
+			<span class="eyebrow">Releases</span>
+			<h1 class="t-section">Every version, and what changed</h1>
+			<p class="lede">
+				{releases.length} releases, newest first. Read straight from the project
+				changelog when this page was built, so it cannot say something the
+				repository does not.
+			</p>
+			<p class="fine">
+				Install with <code>brew install fajarhide/tap/omni</code>. Already have it:
+				<code>omni update</code>.
+			</p>
+		</header>
+
+		<dl class="rows rel-rows">
+			{releases.map((r, i) => {
+				const post = postFor(r.version, posts);
+				const hidden = r.total - Math.min(r.bullets.length, BULLET_CAP);
+				return (
+					<div class="row">
+						<dt class="row-k is-mono">
+							v{r.version}
+							<span class="sub">
+								<time datetime={r.date}>{fmt(r.date)}</time>
+								{i === 0 && <b class="rel-latest">Latest</b>}
+							</span>
+						</dt>
+						<dd class="row-v">
+							{r.bullets.length === 0 ? (
+								<p>Shipped, but nothing was written up for it in the changelog.</p>
+							) : (
+								<ul class="rel-list">
+									{r.bullets.slice(0, BULLET_CAP).map((b) => (
+										<li>
+											{b.label && <span class="rel-label">{b.label}</span>}
+											<span set:html={code(b.text)} />
+										</li>
+									))}
+								</ul>
+							)}
+							{hidden > 0 && (
+								<p class="rel-more">{hidden} more in the release notes.</p>
+							)}
+							<p class="rel-links">
+								<a href={`${GITHUB_REPO}/releases/tag/v${r.version}`} target="_blank" rel="noopener noreferrer">
+									Release notes
+								</a>
+								{post && <a href={`/blog/${post.id}`}>Why it changed</a>}
+							</p>
+						</dd>
+					</div>
+				);
+			})}
+		</dl>
+
+		<p class="fine rel-foot">
+			Release candidates are left out. They are kept in the
+			<a href="/blog">journal</a> as history, and none of them is what finally
+			shipped. Source: {source}.
+		</p>
+	</div>
+</Layout>

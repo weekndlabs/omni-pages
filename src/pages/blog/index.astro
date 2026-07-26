@@ -17,13 +17,34 @@ const rest = posts.filter((p) => p !== lead);
 
 const fmt = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 const iso = (d) => d.toISOString();
+
+/* Without this the index inherited the site-wide SoftwareApplication schema, so
+   the one page that is unambiguously a blog did not say it was one. Release
+   candidates are left out to match what the sitemap and the index already do. */
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'Blog',
+	name: 'OMNI Journal',
+	url: 'https://omni.weekndlabs.com/blog',
+	inLanguage: 'en',
+	publisher: { '@type': 'Organization', name: 'OMNI', url: 'https://omni.weekndlabs.com' },
+	blogPost: posts.map((p) => ({
+		'@type': 'BlogPosting',
+		headline: p.data.title,
+		description: p.data.description,
+		datePublished: iso(p.data.date),
+		url: `https://omni.weekndlabs.com/blog/${p.id}`,
+		author: { '@type': 'Person', name: p.data.author || 'Fajar Hidayat' },
+	})),
+};
 ---
 
 <Layout
 	title="OMNI journal, release notes and benchmark write-ups"
 	description="Release notes, architecture write-ups, and the benchmark work behind OMNI, the Rust CLI that cuts terminal noise before your AI coding agent reads it."
+	jsonLd={jsonLd}
 >
-	<div class="wrap">
+	<div class="wrap wrap-doc">
 		<header class="page-head">
 			<span class="eyebrow">Journal</span>
 			<h1 class="t-section">What changed, and why</h1>
@@ -35,7 +56,9 @@ const iso = (d) => d.toISOString();
 				<a href={`/blog/${lead.id}`} class="post-row is-lead">
 					<time class="post-when" datetime={iso(lead.data.date)}>{fmt(lead.data.date)}</time>
 					<div>
-						{lead.data.tag && <span class="post-tag">{lead.data.tag}</span>}
+						{/* The lead is pinned above a list sorted newest first, so its older
+						    date reads as a sorting bug unless the row says why it is there. */}
+						<span class="post-tag">Start here{lead.data.tag && ` · ${lead.data.tag}`}</span>
 						<h2><span class="post-title">{lead.data.title}</span></h2>
 						<p class="post-excerpt">{lead.data.description}</p>
 					</div>

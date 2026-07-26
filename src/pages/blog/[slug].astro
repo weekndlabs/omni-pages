@@ -26,6 +26,13 @@ const url = new URL(`/blog/${entry.id}`, Astro.site || 'https://omni.weekndlabs.
 
 const isReleaseCandidate = RC_SLUG.test(entry.id);
 
+/* Most post titles already say OMNI, so appending the brand pushed 18 of 50
+   titles past the ~60 characters a SERP shows and got them truncated. Only
+   append when the title does not name the product itself. */
+const pageTitle = /\bOMNI\b/i.test(entry.data.title)
+	? entry.data.title
+	: `${entry.data.title}, OMNI`;
+
 /* There were zero links between any of the 42 posts, so nothing pointed at the
    handful worth reading and no topical cluster could form. Every post now links
    to three evergreen posts, rotated so the links spread rather than piling onto
@@ -57,7 +64,7 @@ const jsonLd = {
 ---
 
 <Layout
-	title={`${entry.data.title}, OMNI`}
+	title={pageTitle}
 	description={entry.data.description}
 	author={author}
 	publishDate={iso}

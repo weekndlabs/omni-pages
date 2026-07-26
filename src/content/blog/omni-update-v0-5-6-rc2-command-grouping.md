@@ -8,7 +8,7 @@ author: OMNI Core Team
 
 Today we are releasing the second release candidate for v0.5.6, focusing on ecosystem integration and telemetry refinement. This update bridges the gap between OMNI's raw distillation power and the agent frameworks that consume it, starting with our most requested integration to date.
 
-### Native OpenClaw Support
+## Native OpenClaw Support
 
 The highlight of this release is the official **OpenClaw Integration Plugin**. OpenClaw has quickly become a favorite for developers building autonomous shell agents, and OMNI is now a first-class citizen in that ecosystem.
 
@@ -18,7 +18,7 @@ We've introduced two new tools designed specifically for the Agent Loop:
 
 This duo transforms OMNI from a simple terminal filter into a vital sensory organ for your AI agents.
 
-### Command Grouping & Aggregation
+## Command Grouping & Aggregation
 
 If you use `omni stats`, you know that repetitive commands can sometimes clutter your impact report. v0.5.6-rc2 introduces **Intelligent Command Grouping**.
 
@@ -26,13 +26,13 @@ The engine now understands structural similarity. Running `ls -la /src/component
 
 By aggregating these semantic patterns, you get a bird's-eye view of your project's noise profile that was previously impossible to see.
 
-### Refined Logic & UI Clarity
+## Refined Logic & UI Clarity
 
 As we move closer to the stable v0.5.6 release, we are polishing every interaction. We've renamed the `omni learn` flag `--status` to **`--discover`**. We realized "Status" was too generic; "Discover" accurately reflects the tool's power in identifying new noise patterns in your workflow.
 
 Under the hood, we've hardened our storage layer with null-safe telemetry handling and fully synchronized our release automation across both the core engine and the new OpenClaw plugin.
 
-### Looking Ahead
+## Looking Ahead
 
 With rc2, the infrastructure for a truly "Agent-Aware" OMNI is in place. We are spending the next few days listening to the OpenClaw community and refining the command grouping heuristics before we move to the final release phase.
 

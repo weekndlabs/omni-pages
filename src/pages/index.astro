@@ -330,7 +330,9 @@ const pipeline = [
 
 <Layout
 	title="OMNI, cut AI agent token costs by filtering terminal noise"
-	description={`OMNI is a free Rust CLI that cuts terminal noise before your AI coding agent reads it, ${stats.overallSaved} fewer bytes across ${stats.totalCalls} real commands, and remembers your project between sessions. Always reversible, never invents a result. Works with Claude Code, Cursor and Windsurf.`}
+	{/* Kept under 160 characters so the whole line survives the SERP. The
+	    numbers still come from the README, so the claim cannot drift. */}
+	description={`Free Rust CLI that cuts terminal noise before your AI coding agent reads it. ${stats.overallSaved} fewer bytes across ${stats.totalCalls} real commands. Always reversible.`}
 	jsonLd={jsonLd}
 >
 	<main>
