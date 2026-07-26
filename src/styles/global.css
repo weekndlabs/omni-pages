@@ -38,6 +38,12 @@
   --font-mono:    'IBM Plex Mono', ui-monospace, monospace;
 
   --measure: 1180px;
+  /* A page that is a list of records, not an instrument panel. The homepage
+     needs 1180 for the terminal beside the copy; the journal and the changelog
+     are documents, and a 1000px line of prose is not read, it is skimmed. */
+  --measure-doc: 900px;
+  /* One continuous reading column. 700px of text plus the wrap's own gutters. */
+  --measure-article: 748px;
   --measure-text: 660px;
   --gutter: 28px;   /* width of the diff marker column */
 }
@@ -125,6 +131,7 @@ code {
   padding: 0 24px;
 }
 .wrap-text { max-width: 820px; }
+.wrap-doc { max-width: var(--measure-doc); }
 
 .band { padding: 60px 0; border-top: 1px solid var(--rule); }
 .band:first-of-type { border-top: 0; }
@@ -187,9 +194,11 @@ code {
   font-size: 1.16rem;
   letter-spacing: 0.01em;
 }
-/* The mark is wider than it is tall (bars, headphones, bars), so pin the height
-   and let the width follow. A square box would squash it. */
-.nav-brand img { height: 22px; width: auto; }
+/* One square mark everywhere: navbar, favicon, README. Pin the height and let
+   the width follow, so a future non-square lockup still fits. The radius is the
+   site's own 5px rather than the icon's 22%, because at 22px the icon's corner
+   curve is too soft to read and a crisper chip sits better beside the wordmark. */
+.nav-brand img { height: 22px; width: auto; border-radius: 5px; }
 .nav-links {
   display: flex;
   align-items: center;
@@ -563,7 +572,7 @@ code {
 .footer-brand .mark { font-family: var(--font-display); font-weight: 700; font-size: 1.16rem; display: block; margin-bottom: 8px; }
 .footer-brand p { color: var(--ink-soft); }
 .footer-links { display: flex; gap: 56px; flex-wrap: wrap; }
-.link-group h4 { font-size: 0.74rem; font-family: var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); font-weight: 400; margin-bottom: 12px; }
+.link-group h3 { font-size: 0.74rem; font-family: var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); font-weight: 400; margin-bottom: 12px; }
 .link-group a { display: block; margin-bottom: 8px; color: var(--ink-soft); border-bottom: 1px solid transparent; width: fit-content; }
 .link-group a:hover { color: var(--ink); border-bottom-color: var(--ink); }
 .footer-bottom { margin-top: 44px; padding-top: 20px; border-top: 1px solid var(--rule); color: var(--ink-soft); font-size: 0.84rem; }
@@ -576,6 +585,8 @@ code {
 
 .page-head { padding: 72px 0 40px; border-bottom: 1px solid var(--rule); margin-bottom: 8px; }
 .page-head h1 { margin-bottom: 14px; }
+/* A second line under the lede is a separate thought, not its continuation. */
+.page-head .lede + .fine { margin-top: 14px; }
 
 .posts { display: grid; }
 .post-row {
@@ -602,11 +613,18 @@ code {
 .post-row.is-lead { padding: 34px 0; }
 .post-row.is-lead .post-title { font-size: 1.6rem; }
 
-.article { padding: 64px 0 88px; }
+/* The shorthand here used to be `64px 0 88px`, which beat `.wrap`'s `0 24px` on
+   source order and left every post's text flush against the screen edge on a
+   phone. Set the block padding only, so the gutter survives. The max-width puts
+   the head rule, the prose and the footer on one column instead of running the
+   rules to 1180 around a 700px measure. */
+.article { padding-block: 72px 88px; max-width: var(--measure-article); }
 .article-head { border-bottom: 1px solid var(--rule); padding-bottom: 26px; margin-bottom: 34px; }
 .article-head h1 { font-size: clamp(1.8rem, 4vw, 2.7rem); margin-bottom: 16px; }
 .article-meta { display: flex; flex-wrap: wrap; gap: 16px; font-family: var(--font-mono); font-size: 0.78rem; color: var(--ink-soft); }
-.prose { max-width: 700px; font-size: 1.02rem; line-height: 1.72; }
+/* The measure is the article column's now, so prose fills it rather than
+   sitting narrow inside a wider one. */
+.prose { font-size: 1.02rem; line-height: 1.72; }
 .prose > * + * { margin-top: 1.1em; }
 .prose h2 { font-size: 1.5rem; margin-top: 2em; }
 .prose h3 { font-size: 1.18rem; margin-top: 1.7em; }
@@ -713,10 +731,61 @@ code {
 .rc-list a:hover { color: var(--ink); border-bottom-color: var(--ink); }
 .rc-list time { font-family: var(--font-mono); font-size: 0.78rem; color: var(--ink-soft); white-space: nowrap; }
 
+/* --------------------------------------------------------------------------
+   Releases. The same dl/dt/dd row as everywhere else: version and date on the
+   left, what it changed on the right. No cards, no timeline rail.
+   -------------------------------------------------------------------------- */
+
+.rel-rows { margin: 28px 0 8px; }
+/* Narrower key than the default 190px: "v0.6.6 / JUL 26, 2026 / LATEST" needs
+   about 150, and the 40px back is 40px more of readable bullet. */
+.rel-rows .row { grid-template-columns: 150px minmax(0, 1fr); align-items: start; padding: 20px 18px; }
+.rel-rows .row-k { font-size: 1rem; }
+.rel-latest {
+  display: inline-block;
+  margin-left: 8px;
+  color: var(--amber-ink);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.rel-list { list-style: none; display: grid; gap: 7px; }
+/* Changelog leads quote real commands, and `python3 -c "..."` is one unbreakable
+   token. Without this it sets the grid's floor and blows the 390px layout out,
+   the same way a bare `1fr` track did in the hero. */
+.rel-list li { display: flex; gap: 10px; align-items: baseline; overflow-wrap: anywhere; }
+.rel-list code { font-size: 0.85em; }
+.rel-label {
+  flex: none;
+  width: 68px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--amber-ink);
+}
+
+.rel-more { margin-top: 9px; font-size: 0.87rem; color: var(--ink-soft); }
+.rel-links { display: flex; gap: 18px; margin-top: 12px; font-size: 0.87rem; }
+.rel-links a { border-bottom: 1px solid var(--rule-strong); }
+.rel-links a:hover { border-bottom-color: var(--amber-ink); }
+.rel-foot { margin: 22px 0 72px; max-width: var(--measure-text); }
+
+@media (max-width: 640px) {
+  /* Stacked, so the label needs air above it or each pair reads as one blob. */
+  .rel-list { gap: 14px; }
+  .rel-list li { display: block; }
+  .rel-label { display: block; width: auto; margin-bottom: 2px; }
+}
+
 .more { margin-bottom: 32px; }
 .more-h { font-size: 1.05rem; margin-bottom: 14px; }
+/* Same row primitive, stacked. The key here is a full post title, and a 190px
+   key column wrapped every one of them to three lines beside a one-line value. */
+.more .row { grid-template-columns: minmax(0, 1fr); gap: 5px; }
 .more .row-k a { border-bottom: 1px solid var(--rule-strong); }
 .more .row-k a:hover { border-bottom-color: var(--amber-ink); }
+.more .row-v { font-size: 0.89rem; }
 
 .stepper {
   display: flex;
@@ -728,6 +797,10 @@ code {
   margin-bottom: 24px;
   font-size: 0.88rem;
 }
+/* Both titles are full post titles, so without a cap they wrap into each other
+   across the middle of the row and it stops being clear which is which. */
+.stepper > * { max-width: 46%; }
+.step-next { text-align: right; }
 .stepper a { color: var(--ink-soft); max-width: 48%; border-bottom: 1px solid transparent; }
 .stepper a:hover { color: var(--ink); border-bottom-color: var(--ink); }
 .step-next { text-align: right; margin-left: auto; }
