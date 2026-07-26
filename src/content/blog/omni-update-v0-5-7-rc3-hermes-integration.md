@@ -14,7 +14,7 @@ We've added a new native plugin integration for the Hermes Agent. This features 
 
 ## Automated Doctor Fix Mode
 
-We've massively refactored our agent integrations—spanning Cline, Codex, Cursor, Gemini, and Antigravity—to support a standardized configuration path management. 
+We've massively refactored our agent integrations, spanning Cline, Codex, Cursor, Gemini, and Antigravity, to support a standardized configuration path management. 
 
 Running `omni doctor --fix` is now more powerful than ever, handling automated `--fix` operations flawlessly across disparate environments.
 

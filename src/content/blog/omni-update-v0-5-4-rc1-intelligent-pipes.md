@@ -10,11 +10,11 @@ Complex bash workflows are the silent killer of AI context quality. When your in
 
 ## Intelligent Shell Detection in `omni exec`
 
-The enhanced `omni exec` command now automatically detects when a command contains pipes, redirects, or semicolons and transparently routes it through `sh -c` for proper shell interpretation. This might sound trivial, but the implementation required careful handling of several edge cases. The command's native output is seamlessly piped through OMNI's semantic engine in real-time, so distillation happens as the command runs — not after it completes. Even more importantly, native exit codes are now correctly preserved and returned to the caller, enabling proper error handling in automated pipelines that previously broke when OMNI swallowed non-zero exit statuses.
+The enhanced `omni exec` command now automatically detects when a command contains pipes, redirects, or semicolons and transparently routes it through `sh -c` for proper shell interpretation. This might sound trivial, but the implementation required careful handling of several edge cases. The command's native output is seamlessly piped through OMNI's semantic engine in real-time, so distillation happens as the command runs, not after it completes. Even more importantly, native exit codes are now correctly preserved and returned to the caller, enabling proper error handling in automated pipelines that previously broke when OMNI swallowed non-zero exit statuses.
 
 ## The Filter Priority System
 
-When multiple filters could match the same command — say a generic `npm` filter and a specialized `vitest` filter that both trigger on `npm run test` — which one wins? Before this release, the answer depended on filesystem ordering, which is nondeterministic across operating systems. We solved this with an explicit alphabetical sorting system for built-in filters. Files like `00_vitest.toml` now take guaranteed precedence over `npm.toml`, ensuring that the most specialized, highest-precision filter always activates first. This simple naming convention gives filter authors complete control over the match hierarchy without introducing complex priority metadata.
+When multiple filters could match the same command (say a generic `npm` filter and a specialized `vitest` filter that both trigger on `npm run test`), which one wins? Before this release, the answer depended on filesystem ordering, which is nondeterministic across operating systems. We solved this with an explicit alphabetical sorting system for built-in filters. Files like `00_vitest.toml` now take guaranteed precedence over `npm.toml`, ensuring that the most specialized, highest-precision filter always activates first. This simple naming convention gives filter authors complete control over the match hierarchy without introducing complex priority metadata.
 
 ## Deep Terraform Support
 
@@ -26,7 +26,7 @@ The existing Vitest and Kubectl filters received targeted refactoring for higher
 
 ## Session Tracking Stability
 
-Under the hood, session state persistence was hardened with additional stability guarantees around rule application ordering. A subtle race condition in the session state serializer — where filter rules could occasionally be applied in a different order on replay than on initial capture — was identified and eliminated. The persistence layer now enforces strict deterministic ordering, ensuring that session replays produce bit-identical results.
+Under the hood, session state persistence was hardened with additional stability guarantees around rule application ordering. A subtle race condition in the session state serializer (where filter rules could occasionally be applied in a different order on replay than on initial capture) was identified and eliminated. The persistence layer now enforces strict deterministic ordering, ensuring that session replays produce bit-identical results.
 
 ## Hook Reliability Under Edge Conditions
 
@@ -34,4 +34,4 @@ The `PreToolUse` hook handling was refined to resolve edge cases where certain a
 
 ## Toward Deterministic Filtering
 
-The overarching theme of this release candidate is determinism. Filter priority, session replay, hook handling — every component now guarantees reproducible behavior regardless of execution environment, filesystem ordering, or timing conditions. When your AI agent processes a command through OMNI, the result is identical whether it runs on your MacBook, a Linux CI server, or a Windows development machine. That level of consistency is what separates a tool from a platform.
+The overarching theme of this release candidate is determinism. Filter priority, session replay, hook handling: every component now guarantees reproducible behavior regardless of execution environment, filesystem ordering, or timing conditions. When your AI agent processes a command through OMNI, the result is identical whether it runs on your MacBook, a Linux CI server, or a Windows development machine. That level of consistency is what separates a tool from a platform.

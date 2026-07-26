@@ -6,11 +6,11 @@ tag: Release Note
 author: OMNI Core Team
 ---
 
-Developers should never have to troubleshoot their troubleshooting tools. Yet that is exactly what happens with most developer infrastructure — you install a tool, it breaks subtly, and then you spend forty-five minutes reading GitHub issues to figure out which config file is malformed. We built OMNI to eliminate friction from the AI development workflow, so it felt deeply hypocritical that our own setup process could sometimes leave users stranded with broken integrations. Version 0.5.4-rc4 fixes that embarrassment with aggressive, autonomous self-healing.
+Developers should never have to troubleshoot their troubleshooting tools. Yet that is exactly what happens with most developer infrastructure: you install a tool, it breaks subtly, and then you spend forty-five minutes reading GitHub issues to figure out which config file is malformed. We built OMNI to eliminate friction from the AI development workflow, so it felt deeply hypocritical that our own setup process could sometimes leave users stranded with broken integrations. Version 0.5.4-rc4 fixes that embarrassment with aggressive, autonomous self-healing.
 
 ## Introducing `omni doctor --fix`
 
-The star of this release is the new `--fix` flag on the `omni doctor` command. Where `omni doctor` previously only *diagnosed* problems — telling you what was wrong without lifting a finger to help — the `--fix` flag transforms it into a fully autonomous repair system. When you run `omni doctor --fix`, the engine scans your entire integration surface and automatically resolves every issue it finds.
+The star of this release is the new `--fix` flag on the `omni doctor` command. Where `omni doctor` previously only *diagnosed* problems (telling you what was wrong without lifting a finger to help), the `--fix` flag transforms it into a fully autonomous repair system. When you run `omni doctor --fix`, the engine scans your entire integration surface and automatically resolves every issue it finds.
 
 Missing config directory? Created. Hooks not installed? Reinstalled. MCP server not registered? Provisioned. User filter files with invalid extensions? Safely renamed to `.bak` with a warning. Project-level trust boundaries not established? Offered for interactive approval. The entire repair sequence runs in under two seconds, and every action is logged with clear, human-readable output so you know exactly what was touched.
 
@@ -28,4 +28,4 @@ We continued our relentless war on code smells by collapsing nested `if` stateme
 
 ## Why Self-Healing Matters
 
-The broader philosophy behind `omni doctor --fix` extends beyond convenience. In agentic workflows, your AI is often the one invoking OMNI — not you. If a hook is broken or a config is missing, the agent cannot debug it. It just silently receives unfiltered, noisy context and starts hallucinating. By making the infrastructure self-healing, we ensure that even fully autonomous pipelines maintain optimal performance without human babysitting. Your agent's context quality should never degrade because of a missing config file.
+The broader philosophy behind `omni doctor --fix` extends beyond convenience. In agentic workflows, your AI is often the one invoking OMNI, not you. If a hook is broken or a config is missing, the agent cannot debug it. It just silently receives unfiltered, noisy context and starts hallucinating. By making the infrastructure self-healing, we ensure that even fully autonomous pipelines maintain optimal performance without human babysitting. Your agent's context quality should never degrade because of a missing config file.

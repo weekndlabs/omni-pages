@@ -27,9 +27,9 @@ We check our extensive registry of `.toml` filters. If a developer has defined a
 
 ## Stage 4: The Scorer
 This is where the magic happens. Every single line of output is evaluated and assigned a score from `0.0` to `1.0`.
-- **Critical (0.85–1.0):** Errors, exceptions, panics, `FAILED`.
-- **Important (0.60–0.84):** Warnings, deprecations.
-- **Noise (0.0–0.29):** Downloading, Compiling, progress bars.
+- **Critical (0.85 to 1.0):** Errors, exceptions, panics, `FAILED`.
+- **Important (0.60 to 0.84):** Warnings, deprecations.
+- **Noise (0.0 to 0.29):** Downloading, Compiling, progress bars.
 
 *Crucially*, the Scorer is context-aware. If a line mentions a file that is "hot" (frequently edited in this session), its score is artificially boosted so the agent doesn't miss it.
 

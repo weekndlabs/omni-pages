@@ -8,7 +8,7 @@ author: OMNI Core Team
 
 The world of Agentic AI is obsessed with context windows. As models expand to 100k, 200k, and even 1 million tokens, developers are eagerly dumping their entire repositories and logs into the LLM. 
 
-But this comes at a massive cost—both financially and cognitively.
+But this comes at a massive cost, both financially and cognitively.
 
 At OMNI, our North Star is simple: **OMNI makes AI agents work better for longer, without wasting tokens.** To achieve this, we architected the system around two non-negotiable pillars.
 
@@ -34,6 +34,6 @@ If an agent runs a command and OMNI filters out too much, the agent might lose i
 
 ## The Balance
 
-Token Efficiency and Context Fidelity are in constant tension. Cut too much, and fidelity drops. Cut too little, and efficiency is lost. OMNI walks this tightrope via adaptive compression—if an agent repeatedly asks for the full logs (via `omni_retrieve`), OMNI learns and adjusts its thresholds.
+Token Efficiency and Context Fidelity are in constant tension. Cut too much, and fidelity drops. Cut too little, and efficiency is lost. OMNI walks this tightrope via adaptive compression: if an agent repeatedly asks for the full logs (via `omni_retrieve`), OMNI learns and adjusts its thresholds.
 
 By mastering both pillars, OMNI lets you code for 4+ hours straight without your agent ever losing its mind.
