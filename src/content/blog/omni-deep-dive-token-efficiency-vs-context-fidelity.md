@@ -12,7 +12,7 @@ But this comes at a massive cost—both financially and cognitively.
 
 At OMNI, our North Star is simple: **OMNI makes AI agents work better for longer, without wasting tokens.** To achieve this, we architected the system around two non-negotiable pillars.
 
-### Pillar 1: Token Efficiency
+## Pillar 1: Token Efficiency
 
 *Rule: Not a single token should be wasted on useless output.*
 
@@ -20,7 +20,7 @@ Every byte that enters the context window must be meaningful. When you run `npm 
 
 OMNI's semantic engine acts as a highly opinionated gatekeeper. It compresses noise drastically. We see real-world scenarios where a 3,000-token compile error is distilled down to just 80 tokens of pure signal. This isn't just about saving API costs; it's about reducing the cognitive load on the LLM so it doesn't get lost in the noise.
 
-### Pillar 2: Context Fidelity
+## Pillar 2: Context Fidelity
 
 *Rule: The agent must always know what it is doing, from the beginning to the end of the session.*
 
@@ -32,7 +32,7 @@ If an agent runs a command and OMNI filters out too much, the agent might lose i
 - **Critical File Pinning:** Files like `AGENTS.md`, `CLAUDE.md`, or `.cursorrules` are vital. OMNI automatically pins these and re-injects them during session compaction, ensuring the agent *never* forgets its core instructions.
 - **Graph Indexer:** OMNI builds a local dependency graph. If the agent is about to modify a highly-imported file, OMNI injects a warning: *"15 files import this. Modify with care."*
 
-### The Balance
+## The Balance
 
 Token Efficiency and Context Fidelity are in constant tension. Cut too much, and fidelity drops. Cut too little, and efficiency is lost. OMNI walks this tightrope via adaptive compression—if an agent repeatedly asks for the full logs (via `omni_retrieve`), OMNI learns and adjusts its thresholds.
 

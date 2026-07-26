@@ -8,15 +8,15 @@ author: OMNI Core Team
 
 The first release candidate for v0.5.7 focuses on deep architectural improvements to token estimation, positional scoring, and security.
 
-### Automated Tool Distillation
+## Automated Tool Distillation
 
 We have implemented automated distillation for `MultiEdit` and unhandled tool outputs. This natively reduces token usage without requiring custom filters, keeping your context windows lean even during massive refactors.
 
-### Context-Aware Token Estimation
+## Context-Aware Token Estimation
 
 A new token estimation utility provides highly accurate cost and usage calculations directly within the ROI monitor. This gives you precise insight into exactly how many tokens (and dollars) OMNI is saving you in real-time.
 
-### Positional Priority & Security Hardening
+## Positional Priority & Security Hardening
 
 - **Positional Boosting**: Extracted positional boost logic to the semantic scorer, implementing dynamic priority-based segment distillation.
 - **Security Hardening**: Expanded the denylist of restricted environment variables in `sanitize_env` to prevent injection attacks.
