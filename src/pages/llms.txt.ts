@@ -105,7 +105,9 @@ Free. MIT licensed. No paid tier, no account, no telemetry. See /pricing.md.
 ## Links
 
 - Source: https://github.com/fajarhide/omni
-- Releases: https://github.com/fajarhide/omni/releases
+- Releases: https://omni.weekndlabs.com/releases, every shipped version and what
+  it changed, read from the repository CHANGELOG at build time.
+- Release notes: https://github.com/fajarhide/omni/releases
 - Journal: https://omni.weekndlabs.com/blog
 - Benchmarks: https://omni.weekndlabs.com/#numbers
 
