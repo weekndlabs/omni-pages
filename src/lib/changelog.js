@@ -15,10 +15,22 @@ const CHANGELOG_URL = 'https://raw.githubusercontent.com/fajarhide/omni/main/CHA
 /** Bullets shown per release before the page defers to the full notes. */
 export const BULLET_CAP = 5;
 
-/** Last-known-good, verified against CHANGELOG@main on 2026-07-26. */
+/** Last-known-good, verified against CHANGELOG@main on 2026-07-27. */
 export const FALLBACK = {
 	source: 'fallback',
 	releases: [
+		{
+			version: '0.6.7',
+			date: '2026-07-27',
+			bullets: [
+				{ label: 'fixed', text: "A TOML filter's `max_lines` cut the tail with nothing to say so" },
+				{ label: 'fixed', text: '`ps aux` lost 416 of 556 rows to the 50 KB safety cut, and the marker never said so' },
+				{ label: 'fixed', text: "A `python3` script's 40 data rows were collapsed into one marker and booked as 95.7% saved, undoing #190 one stage later" },
+				{ label: 'fixed', text: '`sqlite3 db ".schema"` came back as `DB: ok (3 lines output)`, with the schema deleted' },
+				{ label: 'fixed', text: 'A fully green `cargo test` run was reported as having failures' },
+			],
+			total: 6,
+		},
 		{
 			version: '0.6.6',
 			date: '2026-07-26',
