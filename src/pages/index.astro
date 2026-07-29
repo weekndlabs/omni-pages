@@ -12,7 +12,7 @@ const getVersionLabel = (version) => {
 	return 'Stable';
 };
 
-let latestVersion = 'v0.6.7';
+let latestVersion = 'v0.6.8';
 let versionLabel = getVersionLabel(latestVersion);
 
 try {
@@ -168,6 +168,16 @@ const limits = [
 		v: `saved nothing at all. Across ${stats.totalCalls} replayed executions close to two thirds went straight back, zero bytes added, zero removed. All of the ${stats.overallSaved} headline comes from the other ${workingShare}.`,
 	},
 	{
+		k: '66.3% to 29.3%',
+		sub: 'all-time figure, corrected',
+		v: `A separate all-time counter, not the replay benchmark below, credited itself for <code>omni exec</code> and shell-pipe calls, where output goes to a terminal, no context holds it and nobody is billed for it. Those rows were 73.4% of every byte it claimed to have saved. Dropping them more than halved the figure. The ${stats.overallSaved} below measures a different thing and is unaffected.`,
+	},
+	{
+		k: 'Nine in v0.6.8',
+		sub: 'invented results',
+		v: 'The design is fail open, so a distiller that parsed no signal hands back the raw output. Nine places where that broke are fixed in v0.6.8, including a search matching nothing delivered as <code>grep: 20 matches in 10 files</code>, and a <code>cargo test</code> run that exited 101 delivered as <code>1 passed, 0 failed</code>.',
+	},
+	{
 		k: '82 to 308 ms',
 		sub: 'per hooked command',
 		v: 'and the cost grows with your history. A 496 byte <code>git status</code> takes about 82ms against a fresh database and about 308ms against a 97 MB one. A 16.5 KB <code>cargo test</code> takes about 276ms. Budget for it.',
@@ -186,9 +196,9 @@ const promises = [
 		proof: { label: 'omni_retrieve', href: `${GITHUB_REPO}#how-it-works` },
 	},
 	{
-		k: 'Never invents',
-		v: 'A distiller that parsed no signal hands back the raw output. It will not write a green "no errors" line that nothing supports.',
-		proof: { label: 'issue 143', href: `${GITHUB_REPO}/issues/143` },
+		k: 'Publishes what it got wrong',
+		v: 'Every invented result is written up with the command that produced it and the wrong answer it gave, including the ones we found ourselves rather than had reported. The failures listed above come from that record.',
+		proof: { label: 'v0.6.8 write-up', href: '/blog/omni-update-v0-6-8-cutting-our-own-headline/' },
 	},
 	{
 		k: 'Never hides',
