@@ -19,15 +19,28 @@ export const isReleaseCandidate = (idOrUrl) => RC_SLUG.test(idOrUrl);
 export const wordsIn = (entry) => (entry.body || '').trim().split(/\s+/).length || 1;
 
 /**
+ * A per-version note, under either filename prefix. The repo uses both
+ * `omni-update-v0-6-9-*` and `omni-v0-5-0-*`, and neither is the convention,
+ * which is why this matches the version token rather than the prefix. Same test
+ * `postFor` in changelog.js relies on.
+ */
+export const VERSION_SLUG = /v\d+-\d+-\d+/;
+
+/**
  * Evergreen posts are the ones that answer a question someone might actually
- * search for, rather than announcing a version. The repo names per-version
- * notes `omni-update-*`, so the slug carries the distinction already.
+ * search for, rather than announcing a version.
+ *
+ * This used to test `id.startsWith('omni-update-')`, which missed the four
+ * `omni-v0-*` release notes and served them as evergreen. The effect was not
+ * cosmetic: the pool was 8 rather than 4, and "Worth reading next" on the
+ * v0.6.9 post pointed at three v0.4 and v0.5 release notes and no deep dive at
+ * all. The whole point of the block is to point at the handful worth reading.
  *
  * Length alone does not work here: several release notes are long because they
  * embed big code blocks, and ranking by word count surfaced
  * `omni-update-v0-4-4-test-infrastructure` above every deep dive.
  */
-export const isEvergreen = (id) => !RC_SLUG.test(id) && !id.startsWith('omni-update-');
+export const isEvergreen = (id) => !RC_SLUG.test(id) && !VERSION_SLUG.test(id);
 
 /**
  * Three evergreen posts to link from `current`, rotated by position so the
