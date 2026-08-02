@@ -12,7 +12,7 @@ const getVersionLabel = (version) => {
 	return 'Stable';
 };
 
-let latestVersion = 'v0.6.7';
+let latestVersion = 'v0.6.9';
 let versionLabel = getVersionLabel(latestVersion);
 
 try {
@@ -182,8 +182,11 @@ const limits = [
 const promises = [
 	{
 		k: 'Reversible',
-		v: 'Everything cut is archived to local SQLite keyed by SHA-256. Your agent gets the hash and calls it back when it wants the rest.',
-		proof: { label: 'omni_retrieve', href: `${GITHUB_REPO}#how-it-works` },
+		/* The bound is published because the unbounded version of this sentence was
+		   false until v0.6.9: the archive gate never fired, and 0 of 8,968
+		   distillations carried a hash. The receipt is the issue that found it. */
+		v: 'Everything cut is archived to local SQLite keyed by SHA-256, for inputs up to 64 KB. Your agent gets the hash and calls it back when it wants the rest. Above the cap nothing is archived and the marker says so, with the size.',
+		proof: { label: 'issue 271', href: `${GITHUB_REPO}/issues/271` },
 	},
 	{
 		k: 'Never invents',
@@ -251,7 +254,7 @@ const commands = [
 const faq = [
 	{
 		q: 'Does OMNI delete my logs?',
-		a: 'No. Everything it cuts is compressed and archived to a local SQLite store, keyed by SHA-256. Your agent receives the hash and pulls the full original back whenever it needs it, through the omni_retrieve MCP tool. Nothing is deleted and nothing leaves your machine.',
+		a: 'No. What it cuts is archived to a local SQLite store keyed by SHA-256, and your agent pulls the original back by hash through the omni_retrieve MCP tool. Inputs over 64 KB are not archived, and the marker on those says so with the size. Nothing leaves your machine.',
 	},
 	{
 		q: 'Will it slow down my terminal?',
@@ -324,7 +327,7 @@ const pipeline = [
 	{ k: 'Score', v: 'Every line gets a weight. Stack frames and errors score high, progress bars and passing tests score low.' },
 	{ k: 'Collapse', v: 'Repetition folds. Four hundred passing tests become the runner\'s own summary line, never a paraphrase of it.' },
 	{ k: 'Distill', v: 'A command-specific reader runs. Returning the input is always allowed, inventing a summary is not.' },
-	{ k: 'Persist', v: 'Everything cut is hashed into local SQLite, so any of it comes back on demand.' },
+	{ k: 'Persist', v: 'Everything cut is hashed into local SQLite, so any of it comes back on demand. Inputs over 64 KB are the one exception, and they say so.' },
 ];
 ---
 

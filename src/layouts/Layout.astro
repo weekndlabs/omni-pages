@@ -84,6 +84,13 @@ const structuredData = jsonLd ?? defaultJsonLd;
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
 		<meta property="og:image" content={new URL(image, Astro.site || SITE)} />
+		{/* Dimensions let a crawler lay out the card before the image lands, which
+		    is what stops a shared link rendering as a small thumbnail on first
+		    fetch. The alt describes the card itself, not the page, and the card is
+		    the same on every URL. */}
+		<meta property="og:image:width" content="2400" />
+		<meta property="og:image:height" content="1260" />
+		<meta property="og:image:alt" content="OMNI, noise-canceling context and long-term memory for AI coding agents" />
 		{isArticle && (
 			<Fragment>
 				<meta property="article:author" content={author} />
@@ -99,9 +106,12 @@ const structuredData = jsonLd ?? defaultJsonLd;
 
 		<script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
 
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+        {/* IBM Plex is served from this origin now, declared in global.css.
+            Only the two faces above the fold are preloaded: the condensed 700
+            the headline is set in, and the body 400. Preloading all seven would
+            put five unused files ahead of the ones that block first paint. */}
+        <link rel="preload" href="/fonts/ibm-plex-sans-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="/fonts/ibm-plex-sans-400.woff2" as="font" type="font/woff2" crossorigin>
 	</head>
 	<body>
 		<Navbar />

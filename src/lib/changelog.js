@@ -15,10 +15,34 @@ const CHANGELOG_URL = 'https://raw.githubusercontent.com/fajarhide/omni/main/CHA
 /** Bullets shown per release before the page defers to the full notes. */
 export const BULLET_CAP = 5;
 
-/** Last-known-good, verified against CHANGELOG@main on 2026-07-27. */
+/** Last-known-good, verified against CHANGELOG@main on 2026-08-02. */
 export const FALLBACK = {
 	source: 'fallback',
 	releases: [
+		{
+			version: '0.6.9',
+			date: '2026-08-02',
+			bullets: [
+				{ label: 'fixed', text: '`npm run build` was delivered as `prettier --write: 2 reformatted, 0 unchanged` over four bare timestamps' },
+				{ label: 'fixed', text: 'CI took 23 minutes of wall clock for 13 minutes of work' },
+				{ label: 'fixed', text: 'Cumulative, cache-discounted savings are computed and tested, and deliberately not published yet' },
+				{ label: 'fixed', text: 'The five findings in #118 are closed, and the last one was closed by verification rather than by code' },
+				{ label: 'fixed', text: '`PostToolUse` was registered for `Bash` only, so the `Read`, `Grep` and `WebFetch` distillers had never executed on Claude Code' },
+			],
+			total: 18,
+		},
+		{
+			version: '0.6.8',
+			date: '2026-07-29',
+			bullets: [
+				{ label: 'fixed', text: 'A compound search whose first `grep` found nothing was delivered as `grep: 20 matches in 10 files`' },
+				{ label: 'fixed', text: 'A 15-second wall-clock assertion reddened a PR that could not have caused it' },
+				{ label: 'fixed', text: "The pre-hook rewrote the caller's whole pipeline, so `| tail` read OMNI's markers and `> log` received a truncated file" },
+				{ label: 'fixed', text: 'A markdown document read with `cat` was delivered as `tree: N entries`, and a `sed` range of source lost 37 of 56 lines' },
+				{ label: 'fixed', text: '`Passthrough` was printed over bytes that had already lost lines, and the gap marker under it carried no count' },
+			],
+			total: 11,
+		},
 		{
 			version: '0.6.7',
 			date: '2026-07-27',

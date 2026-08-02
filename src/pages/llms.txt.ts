@@ -63,7 +63,8 @@ of the way everywhere else.
 ## Guarantees
 
 - Reversible. Everything cut is archived to local SQLite keyed by SHA-256, and
-  the agent retrieves it by hash through the omni_retrieve MCP tool.
+  the agent retrieves it by hash through the omni_retrieve MCP tool. Inputs above
+  64 KB are not archived, and the marker on those states the size instead.
 - Never invents a result. See github.com/fajarhide/omni/issues/143.
 - Never hides a failure. See github.com/fajarhide/omni/issues/120.
 - Never mangles structured data.

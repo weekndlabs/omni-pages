@@ -61,6 +61,18 @@ const jsonLd = {
 	isPartOf: { '@type': 'Blog', name: 'OMNI Journal', url: 'https://omni.weekndlabs.com/blog' },
 	about: { '@type': 'SoftwareApplication', name: 'OMNI', applicationCategory: 'DeveloperApplication' },
 };
+
+/* Posts sit two levels down and nothing told a crawler that, so every result
+   printed the bare URL. With this, the SERP shows the trail instead. */
+const breadcrumbs = {
+	'@context': 'https://schema.org',
+	'@type': 'BreadcrumbList',
+	itemListElement: [
+		{ '@type': 'ListItem', position: 1, name: 'OMNI', item: 'https://omni.weekndlabs.com' },
+		{ '@type': 'ListItem', position: 2, name: 'Journal', item: 'https://omni.weekndlabs.com/blog' },
+		{ '@type': 'ListItem', position: 3, name: entry.data.title, item: url },
+	],
+};
 ---
 
 <Layout
@@ -68,7 +80,7 @@ const jsonLd = {
 	description={entry.data.description}
 	author={author}
 	publishDate={iso}
-	jsonLd={jsonLd}
+	jsonLd={[jsonLd, breadcrumbs]}
 	noindex={isReleaseCandidate}
 >
 	<article class="wrap article">
