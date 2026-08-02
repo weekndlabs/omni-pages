@@ -7,19 +7,24 @@
         <span class="mark">OMNI</span>
         <p>Noise-canceling context and long-term memory for AI agents. Local only, MIT licensed.</p>
       </div>
+      {/* These two labels used to be headings. They name navigation, not a
+          document section, and as headings they sat under every page's h1, so
+          any page without a heading of its own between them reported a level
+          skip. /releases was that page. A nav landmark names each group without
+          entering the outline. */}
       <div class="footer-links">
-        <div class="link-group">
-          <h3>Project</h3>
+        <nav class="link-group" aria-label="Project">
+          <p class="link-h">Project</p>
           <a href="https://github.com/fajarhide/omni">Source</a>
           <a href="/releases">Releases</a>
           <a href="/blog">Journal</a>
-        </div>
-        <div class="link-group">
-          <h3>Reference</h3>
+        </nav>
+        <nav class="link-group" aria-label="Reference">
+          <p class="link-h">Reference</p>
           <a href="https://github.com/fajarhide/omni/blob/main/docs/DSL_GUIDE.md">Writing filters</a>
           <a href="https://github.com/fajarhide/omni/blob/main/CONTRIBUTING.md">Contributing</a>
           <a href="https://github.com/fajarhide/omni/blob/main/LICENSE">MIT license</a>
-        </div>
+        </nav>
       </div>
     </div>
     <div class="footer-bottom">
