@@ -87,13 +87,14 @@ shell command rather than a tool.
 
 What this costs is the number v0.6.8 published: `src/pipeline/collapse.rs`, 878
 lines, comes back as 20 of them, an import list, three signatures and a marker.
-The changelog explains that by saying the 2,000 token floor in `readfile.rs` is
-one "nearly every real source file clears". We are not repeating that sentence,
-because we corrected it here in July and the correction stands. Measured over
-1,770 real `Read` calls taken from session transcripts, 7.6% clear the floor,
-and `.rs` only 3.1%, 9 of 290. Those 7.6% carry 44% of all `Read` bytes, so the
-floor is well placed and `collapse.rs` is an outlier rather than the typical
-read. The trade is the same with the right number in front of it, and it was
+The 0.6.9 entry explains that by calling the 2,000 token floor in `readfile.rs`
+one "nearly every real source file clears". That wording was measured and
+withdrawn in the 0.6.8 entry of the same file, which prints its correction in
+place rather than editing it away: over 1,770 real `Read` calls taken from
+session transcripts, 7.6% clear the floor, and `.rs` only 3.1%, 9 of 290. Those
+7.6% carry 44% of all `Read` bytes, so the floor is well placed and
+`collapse.rs` is an outlier rather than the typical read. We print the corrected
+number. The trade is the same with the right one in front of it, and it was
 taken deliberately.
 
 It ships after the `.txt` fix below stopped the `readfile` path reporting a
