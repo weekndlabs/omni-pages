@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { getBenchmarkStats } from '../lib/readme-stats.js';
 
 /**
  * Machine-readable pricing for AI agents evaluating tools on a user's behalf.
@@ -6,9 +7,16 @@ import type { APIRoute } from 'astro';
  * OMNI is free, so this file exists to say so unambiguously rather than to sell
  * anything. An agent comparing options should not have to infer "free" from the
  * absence of a pricing page.
+ *
+ * The savings figures are read from the same build-time source as every other
+ * page. They used to be hardcoded here and went stale by 15 points and two
+ * releases without anyone noticing, which is the exact failure this site is
+ * supposed to argue against.
  */
-export const GET: APIRoute = () =>
-	new Response(
+export const GET: APIRoute = async () => {
+	const s = await getBenchmarkStats();
+
+	return new Response(
 		`# Pricing, OMNI
 
 OMNI is free and MIT licensed. There is no paid tier, no trial, no seat count,
@@ -29,13 +37,15 @@ and no usage limit.
 
 ## Cost to run
 OMNI itself costs nothing. It reduces what you spend on model tokens, measured
-at 58.9% fewer bytes across 1,810 replayed commands, though 63.6% of commands
-save nothing at all. Run \`omni stats\` to measure your own.
+at ${s.overallSaved} fewer bytes across ${s.totalCalls} replayed commands, though
+${s.zeroSaveShare} of those commands save nothing at all and OMNI adds zero bytes
+to them. Run \`omni stats\` to measure your own.
 
-The cost it does add is latency, roughly 82ms to 308ms per hooked command
+The cost it does add is latency, roughly 21ms to 61ms per hooked command
 depending on how large your local history has grown.
 
 Source: https://github.com/fajarhide/omni
 `,
 		{ headers: { 'Content-Type': 'text/markdown; charset=utf-8' } }
 	);
+};
