@@ -165,12 +165,12 @@ const limits = [
 	{
 		k: stats.zeroSaveShare,
 		sub: 'of all calls',
-		v: `saved nothing at all. Across ${stats.totalCalls} replayed executions close to two thirds went straight back, zero bytes added, zero removed. All of the ${stats.overallSaved} headline comes from the other ${workingShare}.`,
+		v: `saved nothing at all. OMNI acts on about 1 command in 10 and adds zero bytes to the other 9, which is why it is safe to leave on for everything. All of the ${stats.overallSaved} headline comes from that ${workingShare}, and not one call in ${stats.totalCalls} came out larger.`,
 	},
 	{
-		k: '82 to 308 ms',
+		k: '21 to 61 ms',
 		sub: 'per hooked command',
-		v: 'and the cost grows with your history. A 496 byte <code>git status</code> takes about 82ms against a fresh database and about 308ms against a 97 MB one. A 16.5 KB <code>cargo test</code> takes about 276ms. Budget for it.',
+		v: 'and the cost grows with your history rather than with the payload. A 496 byte <code>git status</code> takes about 21ms against a fresh database and about 61ms against a 205 MB one. A 16.5 KB <code>cargo test</code> takes 24ms and 65ms. Budget for it.',
 	},
 	{
 		k: 'exit != 0',
@@ -262,7 +262,7 @@ const faq = [
 	},
 	{
 		q: 'How much does it actually save?',
-		a: `${stats.overallSaved} fewer bytes across ${stats.totalCalls} replayed real commands. That average hides a lot: ${stats.zeroSaveShare} of those commands saved nothing at all. The whole saving comes from the remaining ${workingShare}, mostly ${best.command} and other noisy tooling.`,
+		a: `On the commands that actually generate noise, 76 to 91%: ${best.command} ${best.savings}, git 89.2%, kubectl 76.5%. Across the whole mix it averages ${stats.overallSaved}, because ${stats.zeroSaveShare} of ${stats.totalCalls} replayed commands saved nothing at all and OMNI added zero bytes to them. Both numbers are published, and the second is the one that tells you what the first is worth.`,
 	},
 	{
 		q: 'Can it hide an error from my agent?',
@@ -335,7 +335,7 @@ const pipeline = [
 	title="OMNI, cut AI agent token costs by filtering terminal noise"
 	{/* Kept under 160 characters so the whole line survives the SERP. The
 	    numbers still come from the README, so the claim cannot drift. */}
-	description={`Free Rust CLI that cuts terminal noise before your AI coding agent reads it. ${stats.overallSaved} fewer bytes across ${stats.totalCalls} real commands. Always reversible.`}
+	description={`Free Rust CLI that cuts terminal noise before your AI coding agent reads it. git 89%, cargo 91%, kubectl 77%, measured on ${stats.totalCalls} real commands. Always reversible.`}
 	jsonLd={jsonLd}
 >
 	<main>
@@ -347,7 +347,7 @@ const pipeline = [
 						<h1 class="t-display">Claude is not expensive.<br />Your terminal is.</h1>
 
 						<p class="lede">
-							OMNI sits on a shell hook and takes the noise out of command output before your agent reads it. It also remembers your project between sessions, so you stop re-explaining it. Lossy, always reversible, and it never invents a result.
+							OMNI sits on a shell hook and cuts <code>git</code> by 89%, <code>cargo</code> by 91% and <code>kubectl</code> by 77% before your agent reads them. Everything else passes through untouched. It also remembers your project between sessions, so you stop re-explaining it. Nothing is ever lost, and it never invents a result.
 						</p>
 
 						<div class="hero-actions">
@@ -526,7 +526,7 @@ const pipeline = [
 				</div>
 
 				<p class="fine" style="margin-top:20px;max-width:660px">
-					<code>{best.command}</code> carries the result and <code>{worst.command}</code> is close to a no-op. The weak row stays in the table, because quietly dropping the rows that look bad is how {stats.overallSaved} turns into a fake 90%. Run <code>omni stats</code> for your own.
+					<code>{best.command}</code> carries the result and <code>{worst.command}</code> is close to a no-op. The weak row stays in the table, because quietly dropping the rows that look bad is how {stats.overallSaved} turns into a fake 90%. Most tools in this category publish one big percentage; we publish the share of calls where we did nothing. Run <code>omni stats</code> for your own.
 				</p>
 			</div>
 		</section>

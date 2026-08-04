@@ -15,10 +15,44 @@ const CHANGELOG_URL = 'https://raw.githubusercontent.com/fajarhide/omni/main/CHA
 /** Bullets shown per release before the page defers to the full notes. */
 export const BULLET_CAP = 5;
 
-/** Last-known-good, verified against CHANGELOG@main on 2026-08-02. */
+/** Last-known-good, verified against CHANGELOG@main on 2026-08-03. */
 export const FALLBACK = {
 	source: 'fallback',
 	releases: [
+		{
+			version: '0.6.12',
+			date: '2026-08-03',
+			bullets: [
+				{ label: 'fixed', text: 'Every hooked `Read` rebuilt the whole import graph, 48 ms, to sometimes append one advisory line' },
+				{ label: 'added', text: '`omni stats --share`, a copy-pasteable summary of your own measured savings' },
+				{ label: 'changed', text: 'The two lists that had to agree are one list' },
+			],
+			total: 3,
+		},
+		{
+			version: '0.6.11',
+			date: '2026-08-03',
+			bullets: [
+				{ label: 'fixed', text: '`OMNI_HOME` did not reach the code that reads filters, so `cargo test` still loaded the developer\'s live `~/.omni`' },
+				{ label: 'fixed', text: 'A `grep -n` over one file lost 7 of its 12 matches, keeping prose and dropping config' },
+				{ label: 'fixed', text: 'A pipeline that ends in a stage rewriting its payload is routed to that stage' },
+				{ label: 'fixed', text: 'The XDG Base Directory spec is honoured for a fresh install' },
+				{ label: 'changed', text: 'The connection pool opened four SQLite connections before a run-once hook did any work' },
+			],
+			total: 6,
+		},
+		{
+			version: '0.6.10',
+			date: '2026-08-03',
+			bullets: [
+				{ label: 'fixed', text: 'The zero-state guard was voluntary, so the tenth false claim was still shipping: `pip list` came back as `Build: ok`' },
+				{ label: 'fixed', text: 'A green `npm test` came back as its own echo line, with the verdict deleted' },
+				{ label: 'fixed', text: 'A kubectl listing lost its whole tail, and the marker undercounted what went' },
+				{ label: 'changed', text: '64% of every hooked command was loading a GPT vocabulary to fill a reporting column' },
+				{ label: 'removed', text: 'Five direct dependencies that nothing in the tree references' },
+			],
+			total: 16,
+		},
 		{
 			version: '0.6.9',
 			date: '2026-08-02',

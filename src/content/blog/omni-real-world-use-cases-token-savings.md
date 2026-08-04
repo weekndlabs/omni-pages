@@ -8,7 +8,7 @@ author: OMNI Core Team
 
 Let's look at the numbers. How much context does an AI agent *actually* waste when running terminal commands? 
 
-Across 1,810 replayed real commands, OMNI cuts 58.9% of the bytes that reach the model. That average hides the important part: 63.6% of those commands saved nothing at all, and the entire saving comes from the noisy minority. The examples below are drawn from that minority, where the win is large. They are not typical of every command you run.
+Across 9,965 replayed real commands, OMNI cuts 43.3% of the bytes that reach the model. That average hides the important part: 90.0% of those commands saved nothing at all, and the entire saving comes from the noisy minority. The examples below are drawn from that minority, where the win is large. They are not typical of every command you run.
 
 ## 1. Build Output (Cargo, Rustc, Gradle)
 
@@ -62,4 +62,4 @@ Imagine an autonomous agent running a full CI-style pipeline: Build → Test →
 - **Without OMNI:** ~16,000 tokens consumed.
 - **With OMNI:** ~650 tokens consumed.
 
-On this particular mix of noisy commands the reduction is large. Pick a different mix, one heavy on `cat` and `grep`, and it drops close to nothing: measured across everything, `cat` saves 9.1% and `grep` saves 27.8%. The saving is real where the noise is real, and absent where it is not.
+On this particular mix of noisy commands the reduction is large. Pick a different mix, one heavy on `cd` and `grep`, and it drops close to nothing: measured across everything, `cd` saves 2.2%, `grep` saves 18.1%, and `cat`, `ls`, `find`, `sed` and `python3` are now deliberate passthroughs that save 0%. The saving is real where the noise is real, and absent where it is not.
