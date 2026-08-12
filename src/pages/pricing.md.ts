@@ -19,12 +19,12 @@ export const GET: APIRoute = async () => {
 	return new Response(
 		`# Pricing, OMNI
 
-OMNI is free and MIT licensed. There is no paid tier, no trial, no seat count,
+OMNI is free and Apache 2.0 licensed. There is no paid tier, no trial, no seat count,
 and no usage limit.
 
 ## Free
 - Price: 0 USD, permanently
-- License: MIT
+- License: Apache-2.0
 - Limits: none
 - Account required: no
 - Telemetry: none. Everything runs locally and no data leaves your machine.
