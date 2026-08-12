@@ -30,6 +30,7 @@ try {
 // Do not hardcode them here. See src/lib/readme-stats.js.
 const stats = await getBenchmarkStats();
 const { best, worst } = extremes(stats.rows);
+const fileRead = stats.rows.find((r) => /file read/i.test(r.command));
 const workingShare = (100 - parseFloat(stats.zeroSaveShare)).toFixed(1) + '%';
 
 /* Hero demo. Three real command shapes, with the lines OMNI drops marked so the
@@ -258,11 +259,11 @@ const faq = [
 	},
 	{
 		q: 'Will it slow down my terminal?',
-		a: `Yes, measurably. OMNI runs on every hooked command and the cost grows with your history. A 496 byte git status takes about 82ms against a fresh database and about 308ms against a 97 MB one. A 16.5 KB cargo test takes about 276ms.`,
+		a: `Yes, measurably. OMNI runs on every hooked command and the cost grows with your history. A 496 byte git status takes about 21ms against a fresh database and about 61ms against a 205 MB one. A 16.5 KB cargo test takes about 24ms and 65ms.`,
 	},
 	{
 		q: 'How much does it actually save?',
-		a: `On the commands that actually generate noise, 76 to 91%: ${best.command} ${best.savings}, git 89.2%, kubectl 76.5%. Across the whole mix it averages ${stats.overallSaved}, because ${stats.zeroSaveShare} of ${stats.totalCalls} replayed commands saved nothing at all and OMNI added zero bytes to them. Both numbers are published, and the second is the one that tells you what the first is worth.`,
+		a: `On the output that actually carries noise, ${best.command} is ${best.savings}. On file reads, where the filters can take nothing without guessing, the ledger still takes ${fileRead?.savings ?? '26.3%'}. Across the whole mix it averages ${stats.overallSaved}, because ${stats.zeroSaveShare} of ${stats.totalCalls} replayed commands saved nothing at all and OMNI added zero bytes to them. Both numbers are published, and the second is the one that tells you what the first is worth.`,
 	},
 	{
 		q: 'Can it hide an error from my agent?',
@@ -278,7 +279,7 @@ const faq = [
 	},
 	{
 		q: 'What does OMNI cost?',
-		a: 'Nothing. It is MIT licensed with no paid tier, no account and no telemetry. If it saves you nothing, omni stats will tell you so and omni reset removes it.',
+		a: 'Nothing. It is Apache 2.0 licensed with no paid tier, no account and no telemetry. If it saves you nothing, omni stats will tell you so and omni reset removes it.',
 	},
 ];
 
@@ -486,14 +487,14 @@ const pipeline = [
 
 				<div class="ledger-wrap">
 					<table class="ledger">
-						<caption>Read from the README on main at build time, so the two cannot drift apart.</caption>
+						<caption>Read from the manual on main at build time, so the two cannot drift apart.</caption>
 						<thead>
 							<tr>
-								<th scope="col">Command</th>
+								<th scope="col">Class</th>
 								<th scope="col">Calls</th>
 								<th scope="col">In</th>
-								<th scope="col">Out</th>
-								<th scope="col">Saved</th>
+								<th scope="col">Filters</th>
+								<th scope="col">With ledger</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -502,7 +503,7 @@ const pipeline = [
 									<th scope="row"><code>{row.command}</code></th>
 									<td class="n">{row.calls}</td>
 									<td class="n">{row.input}</td>
-									<td class="n">{row.output}</td>
+									<td class="n">{row.filters}</td>
 									<td class="saved"><span class="bar" style={`--w:${row.pct}%`}><span>{row.savings}</span></span></td>
 								</tr>
 							))}
@@ -620,7 +621,7 @@ const pipeline = [
 		<!-- CLOSE -->
 		<section class="band band-sunk" id="start">
 			<div class="wrap wrap-text">
-				<h2 class="t-section">A passion project, MIT licensed</h2>
+				<h2 class="t-section">A passion project, Apache 2.0 licensed</h2>
 				<p class="lede" style="margin:14px 0 24px">
 					Built by one developer who got tired of paying to read progress bars. If it saves you nothing, <code>omni stats</code> will say so and <code>omni reset</code> removes it. That is the whole deal.
 				</p>

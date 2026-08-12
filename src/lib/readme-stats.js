@@ -6,34 +6,42 @@
  * the stale `.git-worktrees/format-safe/` checkout. Fetching at build time makes
  * that class of drift impossible, there is one source and the page can't lag it.
  *
- * The source moved from README.md to docs/BENCHMARKS.md when the README was cut
- * from 370 lines to 219: the tables and the corpus paragraph now live in the doc,
- * and the README carries only the headline. Pointing at the doc keeps the parser
- * reading the full set rather than the summary, and the doc is the file that has
- * to stay complete anyway.
+ * That argument only holds while the parser still matches the doc, and for one
+ * release it did not. 0.7.0 rewrote the benchmark: the breakdown went from
+ * per-command to per-class, the byte pair started using "to" instead of an arrow,
+ * and the corpus stopped being described as "real command executions". Every one
+ * of those broke a rule here, `parseReadme` returned null, and the page served the
+ * committed fallback in silence. Live it read 43.3% over 9,965 traces while the
+ * repository published 15.4% over 6,656. A page about honest numbers published a
+ * figure its own source contradicted, for as long as nobody looked at the build log.
+ *
+ * Two changes came out of that. The source is now the manual, which is the file
+ * that has to stay complete, and the fallback below is the current measurement
+ * rather than a snapshot from a corpus that no longer exists. A stale fallback is
+ * the failure mode: it is indistinguishable from a live read on the rendered page.
  *
  * If the fetch or the parse fails we publish FALLBACK rather than nothing, in the
  * same spirit as the tool this page is selling: fail open, never fabricate.
  */
 
-const BENCHMARKS_URL = 'https://raw.githubusercontent.com/fajarhide/omni/main/docs/BENCHMARKS.md';
+const BENCHMARKS_URL =
+	'https://raw.githubusercontent.com/fajarhide/omni/main/docs/website/src/develop/benchmarks.md';
 
-/** Last-known-good, verified against docs/BENCHMARKS.md@main on 2026-08-03. */
+/** Last-known-good, verified against the manual on 2026-08-12 (0.7.0 corpus). */
 export const FALLBACK = {
 	source: 'fallback',
-	totalCalls: '9,965',
-	overallSaved: '43.3%',
-	zeroSaveShare: '90.0%',
-	bytesIn: '40.1 MB',
-	bytesOut: '22.7 MB',
+	totalCalls: '6,656',
+	overallSaved: '15.4%',
+	zeroSaveShare: '97.3%',
+	bytesIn: '6.47 MB',
+	bytesOut: '5.47 MB',
 	rows: [
-		{ command: 'cargo', calls: '124', input: '1.5 MB', output: '127 KB', savings: '91.4%', pct: 91.4 },
-		{ command: 'git', calls: '931', input: '12.0 MB', output: '1.3 MB', savings: '89.2%', pct: 89.2 },
-		{ command: 'kubectl', calls: '456', input: '5.5 MB', output: '1.3 MB', savings: '76.5%', pct: 76.5 },
-		{ command: 'az', calls: '62', input: '264 KB', output: '176 KB', savings: '33.6%', pct: 33.6 },
-		{ command: 'grep', calls: '938', input: '2.4 MB', output: '2.0 MB', savings: '18.1%', pct: 18.1 },
-		{ command: 'gh', calls: '232', input: '534 KB', output: '509 KB', savings: '4.6%', pct: 4.6 },
-		{ command: 'cd', calls: '2,963', input: '5.6 MB', output: '5.5 MB', savings: '2.2%', pct: 2.2 },
+		{ command: 'build and test', calls: '69', input: '94 KB', filters: '76.9%', savings: '78.3%', pct: 78.3 },
+		{ command: 'file read', calls: '699', input: '1.60 MB', filters: '0.0%', savings: '26.3%', pct: 26.3 },
+		{ command: 'git, gh', calls: '661', input: '609 KB', filters: '4.4%', savings: '22.9%', pct: 22.9 },
+		{ command: 'search', calls: '828', input: '1.03 MB', filters: '4.8%', savings: '13.5%', pct: 13.5 },
+		{ command: 'infra', calls: '254', input: '193 KB', filters: '4.4%', savings: '8.2%', pct: 8.2 },
+		{ command: 'other', calls: '4,145', input: '2.95 MB', filters: '0.7%', savings: '7.1%', pct: 7.1 },
 	],
 	// The three reproducible fixtures the hero demo cycles through, so every
 	// meter reading is a real measurement rather than a number chosen to look
@@ -53,13 +61,20 @@ export const FIXTURE_KEYS = Object.keys(FALLBACK.fixtures);
 const clean = (cell) => cell.replace(/[*`]/g, '').trim();
 
 /**
- * Pull the per-command savings table. Several tables in the doc start with
- * `| Command`, so key on `Calls`, only the per-command breakdown has it.
+ * Pull the per-class breakdown: class, calls, input, filters, filters+ledger.
+ *
+ * Keyed on a header carrying both `calls` and `ledger`, which no other table in
+ * the doc does. The head-to-head table has neither and the fixture table has
+ * only `saved`, so a decoy cannot be mistaken for this one.
+ *
+ * The `aggregate` row is a total, not a class, and is dropped. Leaving it in put
+ * a 100%-width bar at the bottom of the page's chart that read as a seventh
+ * category.
  */
-function parseCommandTable(md) {
+function parseClassTable(md) {
 	const lines = md.split('\n');
 	const header = lines.findIndex(
-		(l) => /^\|/.test(l) && /\bCalls\b/.test(l) && /\bSaved\b/.test(l)
+		(l) => /^\|/.test(l) && /\bcalls\b/i.test(l) && /\bledger\b/i.test(l)
 	);
 	if (header === -1) return [];
 
@@ -68,20 +83,30 @@ function parseCommandTable(md) {
 	for (let i = header + 2; i < lines.length && lines[i].startsWith('|'); i++) {
 		const cells = lines[i].split('|').slice(1, -1).map(clean);
 		if (cells.length < 5) break;
-		const [command, calls, input, output, savings] = cells;
-		rows.push({ command, calls, input, output, savings, pct: parseFloat(savings) });
+		const [command, calls, input, filters, savings] = cells;
+		if (/^aggregate$/i.test(command)) continue;
+		rows.push({
+			// The doc names the largest class "file read (`cat`, `sed`, …)". The
+			// examples belong in the doc, not in a table cell three columns wide.
+			command: command.replace(/\s*\(.*\)$/, ''),
+			calls,
+			input,
+			filters,
+			savings,
+			pct: parseFloat(savings),
+		});
 	}
 	return rows;
 }
 
 /**
- * The single-fixture table ("Command / Context | Input | Output | Saved").
- * Returns the named row, so the hero can quote one reproducible measurement.
+ * The single-fixture table. Returns the named row, so the hero can quote one
+ * reproducible measurement.
  */
 function parseFixture(md, want) {
 	const lines = md.split('\n');
 	const header = lines.findIndex(
-		(l) => /^\|/.test(l) && /Command \/ Context/.test(l)
+		(l) => /^\|/.test(l) && /\bcommand\b/i.test(l) && /\bdelivered\b/i.test(l)
 	);
 	if (header === -1) return null;
 
@@ -104,23 +129,34 @@ const grab = (md, re) => {
  * Returns parsed stats, or null when the doc no longer looks like we expect.
  * Null is deliberate: half-parsed numbers on a page about honest numbers would be
  * worse than stale ones, so the caller falls back instead of publishing guesses.
+ *
+ * Every regex here takes both the pre-0.7.0 and current wording. Not to support
+ * an old doc, which no longer exists, but because the failure this file is named
+ * after was a prose edit nobody thought of as a breaking change.
  */
 export function parseReadme(md) {
-	const rows = parseCommandTable(md);
+	const rows = parseClassTable(md);
 	// Each fixture falls back on its own, so one renamed row cannot blank the hero.
 	const fixtures = Object.fromEntries(
 		FIXTURE_KEYS.map((k) => [k, parseFixture(md, k) ?? FALLBACK.fixtures[k]])
 	);
+	// "(6.47 MB to 5.47 MB)" today, "(40.1 MB → 22.7 MB)" before 0.7.0.
+	const bytePair = md.match(/\(([\d.]+ [KMG]B)\s*(?:→|to)\s*([\d.]+ [KMG]B)\)/);
 	const stats = {
-		source: 'docs/BENCHMARKS.md@main',
+		source: 'docs/website/src/develop/benchmarks.md@main',
 		rows,
 		fixtures,
-		overallSaved: grab(md, /\*\*([\d.]+% fewer bytes)\*\*/)?.replace(' fewer bytes', ''),
+		overallSaved: grab(md, /\*\*([\d.]+)% fewer bytes\*\*/),
 		zeroSaveShare: grab(md, /\*\*([\d.]+)% of (?:those )?calls saved nothing/),
-		totalCalls: grab(md, /\*\*([\d,]+) real command\s*\n?\s*executions\*\*/),
-		bytesIn: grab(md, /\(([\d.]+ [KMG]B) →/),
-		bytesOut: grab(md, /→ ([\d.]+ [KMG]B)\)/),
+		// "over **6,656 traces covering …**" today, "**9,965 real command
+		// executions**" before.
+		totalCalls:
+			grab(md, /\*\*([\d,]+) traces\b/) ??
+			grab(md, /\*\*([\d,]+) real command\s*\n?\s*executions\*\*/),
+		bytesIn: bytePair?.[1] ?? null,
+		bytesOut: bytePair?.[2] ?? null,
 	};
+	if (stats.overallSaved) stats.overallSaved += '%';
 	if (stats.zeroSaveShare) stats.zeroSaveShare += '%';
 
 	const sane = (p) => Number.isFinite(p) && p >= 0 && p <= 100;
@@ -140,16 +176,18 @@ export async function getBenchmarkStats() {
 		const res = await fetch(BENCHMARKS_URL);
 		if (!res.ok) throw new Error(`HTTP ${res.status}`);
 		const parsed = parseReadme(await res.text());
-		if (!parsed) throw new Error('BENCHMARKS.md parsed but failed validation, shape changed?');
-		console.log(`[benchmarks] ${parsed.rows.length} rows from BENCHMARKS.md@main (${parsed.overallSaved})`);
+		if (!parsed) throw new Error('the manual parsed but failed validation, shape changed?');
+		console.log(`[benchmarks] ${parsed.rows.length} rows from ${parsed.source} (${parsed.overallSaved})`);
 		return parsed;
 	} catch (e) {
-		console.warn(`[benchmarks] using committed fallback: ${e.message}`);
+		// Loud on purpose. This warning was the only trace of the page serving a
+		// stale corpus for a whole release, and nobody reads a quiet build log.
+		console.warn(`[benchmarks] USING COMMITTED FALLBACK, the live read failed: ${e.message}`);
 		return FALLBACK;
 	}
 }
 
-/** Best and worst performing command in the mix, for the headline stat row. */
+/** Best and worst rows by savings, for the copy that names them. */
 export function extremes(rows) {
 	const sorted = [...rows].sort((a, b) => b.pct - a.pct);
 	return { best: sorted[0], worst: sorted[sorted.length - 1] };

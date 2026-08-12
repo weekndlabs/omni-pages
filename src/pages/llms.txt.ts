@@ -26,7 +26,7 @@ export const GET: APIRoute = async () => {
 
 ## What it is
 
-A CLI tool and MCP server written in Rust, MIT licensed, running entirely on your
+A CLI tool and MCP server written in Rust, Apache 2.0 licensed, running entirely on your
 machine. It hooks the shell so command output is distilled on the way to the
 agent. Nothing is sent anywhere. There is no account and no dashboard.
 
@@ -101,7 +101,7 @@ Claude Code, Cursor, Windsurf, Roo Code, OpenAI Codex, Antigravity.
 
 ## Pricing
 
-Free. MIT licensed. No paid tier, no account, no telemetry. See /pricing.md.
+Free. Apache 2.0 licensed. No paid tier, no account, no telemetry. See /pricing.md.
 
 ## Links
 

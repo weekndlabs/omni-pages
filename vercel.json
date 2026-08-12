@@ -1,5 +1,6 @@
 {
   "name": "omni-landing",
+  "buildCommand": "bash scripts/build-docs.sh && astro build",
   "cleanUrls": true,
   "redirects": [
     {
