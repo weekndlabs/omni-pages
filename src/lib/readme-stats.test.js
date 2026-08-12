@@ -99,12 +99,18 @@ test('the fallback is a shape the page can render', () => {
 	for (const k of FIXTURE_KEYS) assert.ok(FALLBACK.fixtures[k]);
 });
 
-test('the fallback matches what the doc currently publishes', () => {
+test('the fallback is pinned, so it cannot be changed on one side only', () => {
 	// A stale fallback is indistinguishable from a live read on the page, which
 	// is exactly how the site served a 9,965-trace figure for a release after
-	// the corpus became 6,656. Pin it, so a corpus change fails here first.
+	// the corpus became 6,656.
+	//
+	// This does not fetch the doc, so it cannot tell you the fallback has gone
+	// stale. What it does is force the edit to happen in two places, which stops
+	// a figure being nudged here without anyone deciding to. Checking against the
+	// live doc would put a network call in the suite, and a suite that fails when
+	// GitHub is slow is a suite people learn to ignore.
 	assert.equal(FALLBACK.totalCalls, '6,656');
-	assert.equal(FALLBACK.overallSaved, '15.4%');
+	assert.equal(FALLBACK.overallSaved, '14.9%');
 	assert.equal(FALLBACK.zeroSaveShare, '97.3%');
 });
 

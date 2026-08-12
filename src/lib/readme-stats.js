@@ -27,21 +27,21 @@
 const BENCHMARKS_URL =
 	'https://raw.githubusercontent.com/fajarhide/omni/main/docs/website/src/develop/benchmarks.md';
 
-/** Last-known-good, verified against the manual on 2026-08-12 (0.7.0 corpus). */
+/** Last-known-good, verified against the manual on 2026-08-12 (0.7.2). */
 export const FALLBACK = {
 	source: 'fallback',
 	totalCalls: '6,656',
-	overallSaved: '15.4%',
+	overallSaved: '14.9%',
 	zeroSaveShare: '97.3%',
 	bytesIn: '6.47 MB',
 	bytesOut: '5.47 MB',
 	rows: [
-		{ command: 'build and test', calls: '69', input: '94 KB', filters: '76.9%', savings: '78.3%', pct: 78.3 },
-		{ command: 'file read', calls: '699', input: '1.60 MB', filters: '0.0%', savings: '26.3%', pct: 26.3 },
-		{ command: 'git, gh', calls: '661', input: '609 KB', filters: '4.4%', savings: '22.9%', pct: 22.9 },
-		{ command: 'search', calls: '828', input: '1.03 MB', filters: '4.8%', savings: '13.5%', pct: 13.5 },
+		{ command: 'build and test', calls: '69', input: '94 KB', filters: '76.9%', savings: '78.0%', pct: 78.0 },
+		{ command: 'file read', calls: '699', input: '1.60 MB', filters: '0.0%', savings: '25.2%', pct: 25.2 },
+		{ command: 'git, gh', calls: '661', input: '609 KB', filters: '4.4%', savings: '22.3%', pct: 22.3 },
+		{ command: 'search', calls: '828', input: '1.03 MB', filters: '4.8%', savings: '13.3%', pct: 13.3 },
 		{ command: 'infra', calls: '254', input: '193 KB', filters: '4.4%', savings: '8.2%', pct: 8.2 },
-		{ command: 'other', calls: '4,145', input: '2.95 MB', filters: '0.7%', savings: '7.1%', pct: 7.1 },
+		{ command: 'other', calls: '4,145', input: '2.95 MB', filters: '0.6%', savings: '6.8%', pct: 6.8 },
 	],
 	// The three reproducible fixtures the hero demo cycles through, so every
 	// meter reading is a real measurement rather than a number chosen to look
