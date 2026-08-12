@@ -1,6 +1,7 @@
 ---
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
+import interFont from '@weekndlabs/design/fonts/inter-100-900.woff2?url';
 import '../styles/global.css';
 
 interface Props {
@@ -59,7 +60,9 @@ const structuredData = jsonLd ?? defaultJsonLd;
 ---
 
 <!doctype html>
-<html lang="en">
+{/* The design system is dark by default and light by attribute. This page is a
+    document on paper, so it pins light rather than following the OS. */}
+<html lang="en" data-theme="light">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -74,7 +77,9 @@ const structuredData = jsonLd ?? defaultJsonLd;
 		<link rel="alternate" type="text/plain" href="/llms.txt" title="OMNI summary for AI systems" />
 
 		<meta name="author" content={author} />
-		<meta name="theme-color" content="#E3E4E0" />
+		{/* The one place a token has to be written out: this meta takes a colour,
+		    not a var. It is --wl-background at [data-theme='light']. */}
+		<meta name="theme-color" content="#FAFAFA" />
 		<meta name="robots" content={robots} />
 
 		<!-- Open Graph -->
@@ -106,12 +111,12 @@ const structuredData = jsonLd ?? defaultJsonLd;
 
 		<script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
 
-        {/* IBM Plex is served from this origin now, declared in global.css.
-            Only the two faces above the fold are preloaded: the condensed 700
-            the headline is set in, and the body 400. Preloading all seven would
-            put five unused files ahead of the ones that block first paint. */}
-        <link rel="preload" href="/fonts/ibm-plex-sans-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
-        <link rel="preload" href="/fonts/ibm-plex-sans-400.woff2" as="font" type="font/woff2" crossorigin>
+        {/* Inter is one variable file carrying every weight the page uses, so
+            the seven IBM Plex preloads collapse to one. The mono and the serif
+            are below the fold on every route and are left to the stylesheet.
+            The URL is imported rather than written out because the file is
+            hashed out of node_modules at build time. */}
+        <link rel="preload" href={interFont} as="font" type="font/woff2" crossorigin>
 	</head>
 	<body>
 		<Navbar />
