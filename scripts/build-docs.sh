@@ -81,15 +81,29 @@ cat > "$book_src/theme/head.hbs" <<'HEAD'
 <link rel="stylesheet" href="{{ path_to_root }}wl/fonts.css">
 <link rel="preload" href="{{ path_to_root }}wl/fonts/inter-100-900.woff2" as="font" type="font/woff2" crossorigin>
 <script>
-  /* mdbook keeps the active theme in a class on <html>; the design system keys
-     off data-theme. Mirroring one onto the other is what lets the theme picker
-     drive both, and it runs before first paint so there is no flash. */
+  /* Three theme stores have to agree here, and this is the only place that can
+     make them. The site keeps its toggle in `omni-theme`, mdbook keeps its
+     picker in `mdbook-theme`, and the design system reads `data-theme`.
+
+     This runs in <head>, ahead of mdbook's own theme script in <body>, so
+     seeding `mdbook-theme` from the site's choice happens before mdbook reads
+     it and there is no flash. The write back keeps the site following the
+     book's picker in the other direction. */
   (function () {
     var el = document.documentElement;
     var dark = { navy: 1, coal: 1, ayu: 1 };
+
+    try {
+      var site = localStorage.getItem('omni-theme');
+      if (site) localStorage.setItem('mdbook-theme', site === 'dark' ? 'navy' : 'light');
+    } catch (e) { /* private mode: each surface keeps its own default */ }
+
     function sync() {
-      var hit = Array.prototype.some.call(el.classList, function (c) { return dark[c]; });
-      el.dataset.theme = hit ? 'dark' : 'light';
+      var isDark = Array.prototype.some.call(el.classList, function (c) { return dark[c]; });
+      el.dataset.theme = isDark ? 'dark' : 'light';
+      try {
+        localStorage.setItem('omni-theme', isDark ? 'dark' : 'light');
+      } catch (e) { /* as above */ }
     }
     sync();
     new MutationObserver(sync).observe(el, { attributeFilter: ['class'] });
