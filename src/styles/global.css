@@ -67,6 +67,12 @@
   --measure-text: var(--wl-measure-text);
 }
 
+/* Tells the browser which way to paint what it owns rather than what we style:
+   form controls, scrollbars, the caret, and the canvas behind an overscroll.
+   Without it a light page hands dark-mode users a dark scrollbar. */
+:root[data-theme='light'] { color-scheme: light; }
+:root[data-theme='dark']  { color-scheme: dark; }
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html {
@@ -114,10 +120,11 @@ h1, h2, h3, h4 {
 }
 .t-section { font-size: var(--wl-text-section); }
 
-/* The full stop is the mark. Amber on paper is the one accent this page spends,
-   so it is the warning token and not a colour of its own. Decorative: the
-   sentence still ends the same way with CSS off. */
-.text-brand { color: var(--amber-ink); }
+/* The full stop is the mark, the same one weekndlabs.com puts after "agentic
+   era". It is --wl-ring, the system's accent, not this page's amber: amber
+   belongs to the terminal and this dot is the house signature. Decorative, so
+   the sentence still ends the same way with CSS off. */
+.text-brand { color: var(--wl-ring); }
 
 .lede {
   font-size: var(--wl-text-lede);
