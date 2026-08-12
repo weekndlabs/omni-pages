@@ -1,6 +1,7 @@
 ---
 import Navbar from '../components/Navbar.astro';
 import Footer from '../components/Footer.astro';
+import interFont from '@weekndlabs/design/fonts/inter-100-900.woff2?url';
 import '../styles/global.css';
 
 interface Props {
@@ -59,7 +60,10 @@ const structuredData = jsonLd ?? defaultJsonLd;
 ---
 
 <!doctype html>
-<html lang="en">
+{/* data-theme is written before first paint by the script in <head>. The
+    attribute starts as light so a reader with JavaScript off gets the paper
+    version rather than the design system's bare dark default. */}
+<html lang="en" data-theme="light">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -74,7 +78,27 @@ const structuredData = jsonLd ?? defaultJsonLd;
 		<link rel="alternate" type="text/plain" href="/llms.txt" title="OMNI summary for AI systems" />
 
 		<meta name="author" content={author} />
-		<meta name="theme-color" content="#E3E4E0" />
+		{/* The one place a token has to be written out: this meta takes a colour,
+		    not a var. These are --wl-background at each theme. The media queries
+		    only track the OS, so a reader who has toggled against it gets browser
+		    chrome one shade off. Matching the toggle would need JS to rewrite the
+		    tag on every switch, which is more moving parts than the mismatch is
+		    worth. */}
+		<meta name="theme-color" media="(prefers-color-scheme: light)" content="#FAFAFA" />
+		<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131316" />
+
+		{/* Before first paint, so the page never flashes the wrong theme. A stored
+		    choice wins over the OS; nothing stored means follow the OS. Kept inline
+		    and tiny for that reason: a deferred module would run after paint. */}
+		<script is:inline>
+			(() => {
+				let stored = null;
+				try { stored = localStorage.getItem('omni-theme'); } catch { /* private mode */ }
+				const dark = stored ? stored === 'dark'
+					: matchMedia('(prefers-color-scheme: dark)').matches;
+				document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+			})();
+		</script>
 		<meta name="robots" content={robots} />
 
 		<!-- Open Graph -->
@@ -106,12 +130,12 @@ const structuredData = jsonLd ?? defaultJsonLd;
 
 		<script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
 
-        {/* IBM Plex is served from this origin now, declared in global.css.
-            Only the two faces above the fold are preloaded: the condensed 700
-            the headline is set in, and the body 400. Preloading all seven would
-            put five unused files ahead of the ones that block first paint. */}
-        <link rel="preload" href="/fonts/ibm-plex-sans-condensed-700.woff2" as="font" type="font/woff2" crossorigin>
-        <link rel="preload" href="/fonts/ibm-plex-sans-400.woff2" as="font" type="font/woff2" crossorigin>
+        {/* Inter is one variable file carrying every weight the page uses, so
+            the seven IBM Plex preloads collapse to one. The mono and the serif
+            are below the fold on every route and are left to the stylesheet.
+            The URL is imported rather than written out because the file is
+            hashed out of node_modules at build time. */}
+        <link rel="preload" href={interFont} as="font" type="font/woff2" crossorigin>
 	</head>
 	<body>
 		<Navbar />

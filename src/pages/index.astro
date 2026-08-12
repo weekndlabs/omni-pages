@@ -229,6 +229,29 @@ const memory = [
 	},
 ];
 
+/* Straight from the README's "What each host lets OMNI do". The tiers are a
+   support claim, so they are copied rather than paraphrased: a host listed one
+   tier too high is the site promising shell distillation the host cannot do.
+   Check against the README on main before editing, and against `omni doctor`,
+   which prints the tier for every installed host. */
+const hosts = [
+	{
+		k: 'Full',
+		names: 'Claude Code, Codex CLI, Gemini CLI, Aider (pipe)',
+		v: "The host applies OMNI's rewrite, so the model reads distilled output from its own built-in tools.",
+	},
+	{
+		k: 'Handoff-first',
+		names: 'Cursor, Windsurf',
+		v: 'The host cannot rewrite built-in tool output. <code>omni_run</code> distils anything you route through it, and <code>omni init --cursor</code> installs the rule that makes the agent reach for it.',
+	},
+	{
+		k: 'MCP-only',
+		names: 'Cline, Roo, OpenCode, VS Code, Zed, Copilot, Antigravity, Hermes, Pi',
+		v: 'Memory, recall and session state. No shell distillation, and no claim of it.',
+	},
+];
+
 /* Every entry below exists in BOTH the released binary and main.
  *
  * Do not add a command from docs/ without running `omni <cmd> --help` against an
@@ -345,7 +368,7 @@ const pipeline = [
 			<div class="wrap">
 				<div class="hero-grid">
 					<div>
-						<h1 class="t-display">Claude is not expensive.<br />Your terminal is.</h1>
+						<h1 class="t-display">Claude is not expensive<span class="text-brand">.</span><br />Your terminal is<span class="text-brand">.</span></h1>
 
 						<p class="lede">
 							OMNI sits on a shell hook and cuts <code>git</code> by 89%, <code>cargo</code> by 91% and <code>kubectl</code> by 77% before your agent reads them. Everything else passes through untouched. It also remembers your project between sessions, so you stop re-explaining it. Nothing is ever lost, and it never invents a result.
@@ -473,7 +496,51 @@ const pipeline = [
 				</p>
 			</div>
 		</section>
+		<!-- MEMORY -->
+		<section class="band" id="memory">
+			<div class="wrap">
+				<header class="band-head">
+					<span class="eyebrow">The other half</span>
+					<h2 class="t-section">Your agent also forgets everything overnight</h2>
+				</header>
 
+				<dl class="rows">
+					{memory.map((m) => (
+						<div class="row">
+							<dt class="row-k">{m.k}</dt>
+							<dd class="row-v">
+								<span class="was">{m.was}</span>
+								<span class="now">{m.now}</span>
+							</dd>
+						</div>
+					))}
+				</dl>
+			</div>
+		</section>
+		<!-- HOST TIERS -->
+		<section class="band band-sunk" id="hosts">
+			<div class="wrap">
+				<header class="band-head">
+					<span class="eyebrow">Supported agents</span>
+					<h2 class="t-section">What each host lets OMNI do</h2>
+					<p class="lede">
+						Only a host that can rewrite its own tool output gets shell distillation. The rest get memory, and no claim of more. <code>omni doctor</code> prints the tier for every host you have installed.
+					</p>
+				</header>
+
+				<dl class="rows">
+					{hosts.map((h) => (
+						<div class="row">
+							<dt class="row-k">{h.k}</dt>
+							<dd class="row-v">
+								<span class="host-names">{h.names}</span>
+								<span set:html={h.v} />
+							</dd>
+						</div>
+					))}
+				</dl>
+			</div>
+		</section>
 		<!-- NUMBERS -->
 		<section class="band" id="numbers">
 			<div class="wrap">
@@ -531,29 +598,24 @@ const pipeline = [
 				</p>
 			</div>
 		</section>
-
-		<!-- MEMORY -->
-		<section class="band band-sunk" id="memory">
+		<!-- FAQ -->
+		<section class="band band-sunk" id="faq">
 			<div class="wrap">
 				<header class="band-head">
-					<span class="eyebrow">The other half</span>
-					<h2 class="t-section">Your agent also forgets everything overnight</h2>
+					<span class="eyebrow">Questions</span>
+					<h2 class="t-section">What people ask before installing it</h2>
 				</header>
 
 				<dl class="rows">
-					{memory.map((m) => (
+					{faq.map((f) => (
 						<div class="row">
-							<dt class="row-k">{m.k}</dt>
-							<dd class="row-v">
-								<span class="was">{m.was}</span>
-								<span class="now">{m.now}</span>
-							</dd>
+							<dt class="row-k">{f.q}</dt>
+							<dd class="row-v">{f.a}</dd>
 						</div>
 					))}
 				</dl>
 			</div>
 		</section>
-
 		<!-- COMMANDS -->
 		<section class="band" id="cli">
 			<div class="wrap">
@@ -575,7 +637,6 @@ const pipeline = [
 				</dl>
 			</div>
 		</section>
-
 		<!-- PIPELINE -->
 		<section class="band band-sunk" id="how">
 			<div class="wrap">
@@ -598,28 +659,8 @@ const pipeline = [
 				</p>
 			</div>
 		</section>
-
-		<!-- FAQ -->
-		<section class="band" id="faq">
-			<div class="wrap">
-				<header class="band-head">
-					<span class="eyebrow">Questions</span>
-					<h2 class="t-section">What people ask before installing it</h2>
-				</header>
-
-				<dl class="rows">
-					{faq.map((f) => (
-						<div class="row">
-							<dt class="row-k">{f.q}</dt>
-							<dd class="row-v">{f.a}</dd>
-						</div>
-					))}
-				</dl>
-			</div>
-		</section>
-
 		<!-- CLOSE -->
-		<section class="band band-sunk" id="start">
+		<section class="band" id="start">
 			<div class="wrap wrap-text">
 				<h2 class="t-section">A passion project, Apache 2.0 licensed</h2>
 				<p class="lede" style="margin:14px 0 24px">

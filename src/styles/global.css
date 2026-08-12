@@ -8,101 +8,77 @@
    Two rules hold the system together:
      1. Mono type means a machine emitted it. Sans means a person wrote it.
         Never mix the two inside one block.
-     2. Amber phosphor appears only inside a black terminal. It is the
-        instrument's colour, so it never leaks onto the page.
+     2. Yellow appears only inside the terminal, and only on the live reading.
+        It is the instrument's colour, so it never leaks onto the page. The
+        page's own accent is --accent, the same one weekndlabs.com uses.
+
+   Every value below comes from @weekndlabs/design. Nothing in this file, and
+   nothing in any component, may name a colour, a family or a measure directly:
+   the names in the `:root` block are this page's vocabulary, and the `--wl-*`
+   they resolve to are the system's. A design change is a version bump of that
+   package, which is also what carries it into the manual at /docs. See
+   scripts/build-docs.sh, which renders the book against this same package.
    ========================================================================== */
 
-/* Self-hosted, latin subset only, pulled from the Google Fonts CSS the page used
-   to link. That link was a render-blocking stylesheet on a third-party origin:
-   two extra DNS and TLS handshakes before the browser knew which files to fetch,
-   on every page. These are the same seven files, served from our own origin,
-   170 KB in total. No unicode-range: with one subset per weight the browser
-   falls back per glyph through the stacks below, which is what we want anyway. */
-@font-face {
-  font-family: 'IBM Plex Sans';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/fonts/ibm-plex-sans-400.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'IBM Plex Sans';
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url('/fonts/ibm-plex-sans-500.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'IBM Plex Sans';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url('/fonts/ibm-plex-sans-600.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'IBM Plex Sans Condensed';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url('/fonts/ibm-plex-sans-condensed-600.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'IBM Plex Sans Condensed';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('/fonts/ibm-plex-sans-condensed-700.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'IBM Plex Mono';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/fonts/ibm-plex-mono-400.woff2') format('woff2');
-}
-@font-face {
-  font-family: 'IBM Plex Mono';
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url('/fonts/ibm-plex-mono-500.woff2') format('woff2');
-}
+@import '@weekndlabs/design/tokens.css';
+@import '@weekndlabs/design/fonts.css';
 
+/* The receipt's names on the left, the system's tokens on the right. This layer
+   is the whole adapter: 800 lines of rules below it never learn that the
+   palette moved. */
 :root {
-  /* Paper. Cool and slightly desaturated, deliberately not a warm cream. */
-  --paper:        #E3E4E0;
-  --paper-panel:  #DBDCD6;
-  --paper-sunk:   #D3D5CD;
+  /* Paper, raised, recessed. */
+  --paper:        var(--wl-background);
+  --paper-panel:  var(--wl-card);
+  --paper-sunk:   var(--wl-muted);
 
-  --ink:          #16161A;  /* 14.5:1 on paper */
-  --ink-soft:     #56585A;  /*  5.5:1 on paper */
-  --rule:         #C6C8C1;
-  --rule-strong:  #A9ABA3;
+  --ink:          var(--wl-foreground);
+  --ink-soft:     var(--wl-muted-foreground);
+  --rule:         var(--wl-border);
+  --rule-strong:  var(--wl-input);
 
-  /* The instrument. Only ever used together, only inside .crt. */
-  --crt:          #0B0B0C;
-  --phosphor:     #FFB000;  /* P3 amber, 10.7:1 on --crt */
-  /* Dim enough to read as secondary, bright enough to still pass AA (4.8:1).
-     The obvious #7A5400 lands at 2.9:1 and fails, so do not darken this. */
-  --phosphor-dim: #A87400;
+  /* The instrument. Only ever used together, only inside .crt. The system
+     carries a terminal ramp precisely so a black block is not a local
+     invention here.
 
-  /* Amber dark enough to sit on paper as text. 5.6:1. */
-  --amber-ink:    #7A4E00;
+     Amber used to be the body colour in here, which made the demo block read
+     as a brand wash rather than as a terminal. It is now what a terminal
+     actually does with yellow: the live reading, and nothing else. */
+  --crt:            var(--wl-terminal-ground);
+  --phosphor:       var(--wl-terminal-foreground);
+  --phosphor-dim:   var(--wl-terminal-dim);
+  --phosphor-hot:   var(--wl-terminal-yellow);
+  /* Derived rather than picked, so the terminal keeps its internal contrast
+     when the system moves the ramp. A hairline one step off the ground, and
+     the colour a struck line lands on before it collapses. */
+  --crt-rule:       oklch(from var(--wl-terminal-ground) calc(l + 0.05) c h);
+  --phosphor-struck: oklch(from var(--wl-terminal-dim) calc(l - 0.22) c h);
 
-  --font-display: 'IBM Plex Sans Condensed', 'IBM Plex Sans', system-ui, sans-serif;
-  --font-body:    'IBM Plex Sans', system-ui, sans-serif;
-  --font-mono:    'IBM Plex Mono', ui-monospace, monospace;
+  /* The accent, on paper. Links, rules under them, the focus ring, the dot
+     after the headline. --wl-ring is what weekndlabs.com spends it on, and
+     unlike the old amber it has a dark-theme value. */
+  --accent:       var(--wl-ring);
 
-  --measure: 1180px;
+  --font-display: var(--wl-font-sans);
+  --font-body:    var(--wl-font-sans);
+  --font-mono:    var(--wl-font-mono);
+
+  --measure: var(--wl-measure-page);
   /* A page that is a list of records, not an instrument panel. The homepage
-     needs 1180 for the terminal beside the copy; the journal and the changelog
-     are documents, and a 1000px line of prose is not read, it is skimmed. */
-  --measure-doc: 900px;
-  /* One continuous reading column. 700px of text plus the wrap's own gutters. */
-  --measure-article: 748px;
-  --measure-text: 660px;
-  --gutter: 28px;   /* width of the diff marker column */
+     needs the full page measure for the terminal beside the copy; the journal
+     and the changelog are documents, and a 1000px line of prose is not read,
+     it is skimmed. */
+  --measure-doc: var(--wl-measure-doc);
+  /* One continuous reading column. */
+  --measure-article: var(--wl-measure-article);
+  --measure-text: var(--wl-measure-text);
 }
+
+/* Tells the browser which way to paint what it owns rather than what we style:
+   form controls, scrollbars, the caret, and the canvas behind an overscroll.
+   Without it a light page hands dark-mode users a dark scrollbar. */
+:root[data-theme='light'] { color-scheme: light; }
+:root[data-theme='dark']  { color-scheme: dark; }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -116,8 +92,8 @@ body {
   background: var(--paper);
   color: var(--ink);
   font-family: var(--font-body);
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: var(--wl-text-body);
+  line-height: var(--wl-leading-body);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
@@ -125,7 +101,7 @@ body {
 a { color: inherit; text-decoration: none; }
 
 :focus-visible {
-  outline: 2px solid var(--amber-ink);
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 
@@ -137,43 +113,49 @@ a { color: inherit; text-decoration: none; }
 
 h1, h2, h3, h4 {
   font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: -0.015em;
-  line-height: 1.15;
+  font-weight: var(--wl-weight-semibold);
+  letter-spacing: var(--wl-tracking-section);
+  line-height: var(--wl-leading-heading);
   text-wrap: balance;
 }
 
 .t-display {
-  font-size: clamp(2.1rem, 5.2vw, 3.9rem);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1.05;
+  font-size: var(--wl-text-hero);
+  font-weight: var(--wl-weight-display);
+  letter-spacing: var(--wl-tracking-hero);
+  line-height: var(--wl-leading-hero);
 }
-.t-section { font-size: clamp(1.55rem, 3vw, 2.3rem); }
+.t-section { font-size: var(--wl-text-section); }
+
+/* The full stop is the mark, the same one weekndlabs.com puts after "agentic
+   era". It is --wl-ring, the system's accent, not this page's amber: amber
+   belongs to the terminal and this dot is the house signature. Decorative, so
+   the sentence still ends the same way with CSS off. */
+.text-brand { color: var(--accent); }
 
 .lede {
-  font-size: 1.12rem;
+  font-size: var(--wl-text-lede);
   color: var(--ink-soft);
   max-width: var(--measure-text);
-  line-height: 1.65;
+  line-height: var(--wl-leading-body);
 }
 
 .eyebrow {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
+  font-size: var(--wl-text-label);
+  letter-spacing: var(--wl-tracking-label);
   text-transform: uppercase;
   color: var(--ink-soft);
 }
 
-.fine { font-size: 0.86rem; color: var(--ink-soft); }
+.fine { font-size: var(--wl-text-meta); color: var(--ink-soft); }
 
 code {
   font-family: var(--font-mono);
   font-size: 0.9em;
   background: var(--paper-sunk);
   border: 1px solid var(--rule);
-  border-radius: 3px;
+  border-radius: var(--wl-radius-control);
   padding: 0.05em 0.35em;
 }
 
@@ -204,22 +186,22 @@ code {
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
+  gap: var(--wl-space-2);
   font-family: var(--font-body);
-  font-size: 0.92rem;
-  font-weight: 500;
-  padding: 11px 20px;
+  font-size: var(--wl-text-body);
+  font-weight: var(--wl-weight-medium);
+  padding: var(--wl-space-3) var(--wl-space-4);
   border: 1px solid var(--ink);
-  border-radius: 4px;
+  border-radius: var(--wl-radius-control);
   cursor: pointer;
-  transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+  transition: background var(--wl-duration-fast) var(--wl-ease-out), color var(--wl-duration-fast) var(--wl-ease-out), transform var(--wl-duration-fast) var(--wl-ease-out);
   min-height: 44px;
 }
 .btn-solid { background: var(--ink); color: var(--paper); }
-.btn-solid:hover { background: #000; transform: translateY(-1px); }
+.btn-solid:hover { background: oklch(from var(--wl-primary) calc(l - 0.06) c h); transform: translateY(-1px); }
 .btn-ghost { background: transparent; color: var(--ink); }
 .btn-ghost:hover { background: var(--paper-sunk); }
-.btn-sm { padding: 7px 14px; font-size: 0.85rem; min-height: 36px; }
+.btn-sm { padding: var(--wl-space-2) var(--wl-space-3); font-size: var(--wl-text-meta); min-height: 36px; }
 
 /* --------------------------------------------------------------------------
    Navbar
@@ -231,7 +213,7 @@ code {
   z-index: 60;
   background: var(--paper);
   border-bottom: 1px solid transparent;
-  transition: border-color 200ms ease;
+  transition: border-color var(--wl-duration-base) var(--wl-ease-out);
 }
 .navbar.scrolled { border-bottom-color: var(--rule); }
 .navbar .wrap {
@@ -247,14 +229,14 @@ code {
   gap: 9px;
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 1.16rem;
+  font-size: var(--wl-text-lede);
   letter-spacing: 0.01em;
 }
 /* One square mark everywhere: navbar, favicon, README. Pin the height and let
    the width follow, so a future non-square lockup still fits. The radius is the
    site's own 5px rather than the icon's 22%, because at 22px the icon's corner
    curve is too soft to read and a crisper chip sits better beside the wordmark. */
-.nav-brand img { height: 22px; width: auto; border-radius: 5px; }
+.nav-brand img { height: 22px; width: auto; border-radius: var(--wl-radius-control); }
 .nav-links {
   display: flex;
   align-items: center;
@@ -262,14 +244,33 @@ code {
   list-style: none;
 }
 .nav-links a {
-  font-size: 0.9rem;
+  font-size: var(--wl-text-body);
   color: var(--ink-soft);
   padding: 6px 0;
   border-bottom: 1px solid transparent;
-  transition: color 160ms ease, border-color 160ms ease;
+  transition: color var(--wl-duration-fast) var(--wl-ease-out), border-color var(--wl-duration-fast) var(--wl-ease-out);
 }
 .nav-links a:hover { color: var(--ink); border-bottom-color: var(--ink); }
 .nav-end { display: flex; align-items: center; gap: 12px; }
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: var(--wl-radius-control);
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: color var(--wl-duration-fast) var(--wl-ease-out), border-color var(--wl-duration-fast) var(--wl-ease-out);
+}
+.theme-toggle:hover { color: var(--ink); border-color: var(--rule-strong); }
+/* The icon shown is the theme you are switching to, not the one you are in. */
+.theme-toggle .i-sun { display: none; }
+[data-theme='dark'] .theme-toggle .i-moon { display: none; }
+[data-theme='dark'] .theme-toggle .i-sun { display: inline; }
 .nav-toggle { display: none; background: none; border: 0; color: var(--ink); cursor: pointer; padding: 8px; }
 
 /* --------------------------------------------------------------------------
@@ -292,16 +293,16 @@ code {
   align-items: center;
   gap: 9px;
   font-family: var(--font-mono);
-  font-size: 0.76rem;
+  font-size: var(--wl-text-meta);
   color: var(--ink-soft);
   border: 1px solid var(--rule);
-  border-radius: 3px;
+  border-radius: var(--wl-radius-control);
   padding: 4px 10px;
   /* Sits directly above the terminal in the right column, so the headline is
      the first thing in the left column with nothing stacked on top of it. */
   margin-bottom: 10px;
 }
-.release-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--amber-ink); }
+.release-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
 .release [data-status="stable"] { color: var(--ink); }
 
 /* Install strip. Reads as a field you copy from, not a hero CTA. */
@@ -311,10 +312,10 @@ code {
   align-items: center;
   gap: 10px;
   background: var(--crt);
-  border-radius: 4px;
+  border-radius: var(--wl-radius-control);
   padding: 12px 14px;
   font-family: var(--font-mono);
-  font-size: 0.86rem;
+  font-size: var(--wl-text-meta);
   color: var(--phosphor);
 }
 .install-row .sigil { color: var(--phosphor-dim); user-select: none; flex: none; }
@@ -330,27 +331,27 @@ code {
   flex: none;
   background: none;
   border: 1px solid var(--phosphor-dim);
-  border-radius: 3px;
+  border-radius: var(--wl-radius-control);
   color: var(--phosphor);
   cursor: pointer;
   padding: 6px;
   display: flex;
   min-width: 32px; min-height: 32px;
   align-items: center; justify-content: center;
-  transition: background 160ms ease;
+  transition: background var(--wl-duration-fast) var(--wl-ease-out);
 }
 .copy:hover { background: rgba(255, 176, 0, 0.14); }
 .install-alt {
   display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
-  margin-top: 12px; font-size: 0.84rem; color: var(--ink-soft);
+  margin-top: 12px; font-size: var(--wl-text-meta); color: var(--ink-soft);
 }
 .linkish {
   background: none; border: 0; cursor: pointer;
-  font-family: var(--font-mono); font-size: 0.84rem;
-  color: var(--amber-ink); border-bottom: 1px solid var(--rule-strong);
+  font-family: var(--font-mono); font-size: var(--wl-text-meta);
+  color: var(--accent); border-bottom: 1px solid var(--rule-strong);
   padding: 2px 0;
 }
-.linkish:hover { border-bottom-color: var(--amber-ink); }
+.linkish:hover { border-bottom-color: var(--accent); }
 
 /* --------------------------------------------------------------------------
    THE SIGNATURE, subtraction in place
@@ -359,7 +360,7 @@ code {
 
 .crt {
   background: var(--crt);
-  border-radius: 5px;
+  border-radius: var(--wl-radius-control);
   overflow: hidden;
   font-family: var(--font-mono);
   box-shadow: 0 1px 0 var(--rule-strong), 0 18px 40px -28px rgba(0, 0, 0, 0.7);
@@ -370,8 +371,8 @@ code {
   justify-content: space-between;
   gap: 12px;
   padding: 9px 14px;
-  border-bottom: 1px solid #1E1E20;
-  font-size: 0.72rem;
+  border-bottom: 1px solid var(--crt-rule);
+  font-size: var(--wl-text-label);
   color: var(--phosphor-dim);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -384,15 +385,15 @@ code {
 .crt-phase {
   color: var(--phosphor-dim);
   border: 1px solid currentColor;
-  border-radius: 2px;
+  border-radius: var(--wl-radius-control);
   padding: 1px 6px;
-  font-size: 0.64rem;
+  font-size: var(--wl-text-label);
 }
-.crt-phase[data-on] { color: var(--phosphor); }
-.crt-meter { color: var(--phosphor); font-variant-numeric: tabular-nums; }
+.crt-phase[data-on] { color: var(--phosphor-hot); }
+.crt-meter { color: var(--phosphor-hot); font-variant-numeric: tabular-nums; }
 .crt-body {
   padding: 14px;
-  font-size: 0.775rem;
+  font-size: var(--wl-text-meta);
   line-height: 1.55;
   color: var(--phosphor);
   overflow-x: auto;
@@ -411,7 +412,7 @@ code {
   grid-template-columns: 14px 1fr;
   gap: 8px;
   white-space: pre;
-  transition: opacity 420ms ease, height 420ms ease, margin 420ms ease;
+  transition: opacity var(--wl-duration-slow) var(--wl-ease-out), height var(--wl-duration-slow) var(--wl-ease-out), margin var(--wl-duration-slow) var(--wl-ease-out);
   height: 1.55em;
   overflow: hidden;
 }
@@ -424,11 +425,11 @@ code {
    2. `cut`: the struck lines collapse, leaving the verdict. */
 .crt.scoring .ln-noise > .txt,
 .crt.scoring .ln-noise > .mark {
-  animation: strike 260ms ease forwards;
-  animation-delay: calc(var(--i) * 110ms);
+  animation: strike var(--wl-duration-slow) var(--wl-ease-out) forwards;
+  animation-delay: calc(var(--i) * var(--wl-duration-fast));
 }
 @keyframes strike {
-  to { color: #6B4A00; text-decoration-line: line-through; }
+  to { color: var(--phosphor-struck); text-decoration-line: line-through; }
 }
 
 .crt.cut .ln-noise {
@@ -438,15 +439,15 @@ code {
 }
 
 .crt-foot {
-  border-top: 1px solid #1E1E20;
+  border-top: 1px solid var(--crt-rule);
   padding: 10px 14px;
-  font-size: 0.72rem;
+  font-size: var(--wl-text-label);
   color: var(--phosphor-dim);
   display: flex; flex-wrap: wrap; gap: 6px 16px;
 }
 .crt-cap {
   margin-top: 10px;
-  font-size: 0.8rem;
+  font-size: var(--wl-text-meta);
   color: var(--ink-soft);
   font-family: var(--font-body);
 }
@@ -464,13 +465,13 @@ code {
 .stat + .stat { border-left: 1px solid var(--rule); padding-left: 24px; }
 .stat-n {
   font-family: var(--font-mono);
-  font-size: 1.85rem;
+  font-size: var(--wl-text-display);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
   display: block;
   margin-bottom: 6px;
 }
-.stat-l { font-size: 0.85rem; color: var(--ink-soft); line-height: 1.45; display: block; }
+.stat-l { font-size: var(--wl-text-meta); color: var(--ink-soft); line-height: 1.45; display: block; }
 
 /* --------------------------------------------------------------------------
    Rows
@@ -484,7 +485,7 @@ code {
 .rows {
   border: 1px solid var(--rule);
   margin: 0;
-  border-radius: 5px;
+  border-radius: var(--wl-radius-control);
   overflow: hidden;
   background: var(--paper);
 }
@@ -503,27 +504,27 @@ code {
    session" is not machine output. Only commands and measurements get .is-mono. */
 .row-k {
   font-family: var(--font-display);
-  font-size: 0.95rem;
+  font-size: var(--wl-text-body);
   font-weight: 600;
   color: var(--ink);
   line-height: 1.5;
 }
 .row-k.is-mono {
   font-family: var(--font-mono);
-  font-size: 0.83rem;
+  font-size: var(--wl-text-meta);
   font-weight: 400;
 }
 .row-k .sub {
   display: block;
-  font-size: 0.72rem;
+  font-size: var(--wl-text-label);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ink-soft);
   margin-top: 3px;
 }
-.row-v { margin: 0; font-size: 0.93rem; color: var(--ink-soft); line-height: 1.55; }
+.row-v { margin: 0; font-size: var(--wl-text-body); color: var(--ink-soft); line-height: 1.55; }
 .row-v strong { color: var(--ink); font-weight: 600; }
-.row-v .also { display: block; margin-top: 5px; font-size: 0.87rem; }
+.row-v .also { display: block; margin-top: 5px; font-size: var(--wl-text-meta); }
 .row-quiet { background: var(--paper-sunk); }
 .band-sunk .row-quiet { background: var(--paper-sunk); }
 
@@ -531,13 +532,13 @@ code {
    of key would leave the value cell too thin to read. */
 .rows-tight { margin-top: 12px; }
 .rows-tight .row { grid-template-columns: 78px minmax(0, 1fr); gap: 14px; padding: 11px 14px; }
-.rows-tight .row-k { font-size: 0.87rem; }
-.rows-tight .row-v { font-size: 0.85rem; }
+.rows-tight .row-k { font-size: var(--wl-text-meta); }
+.rows-tight .row-v { font-size: var(--wl-text-meta); }
 /* Echoes the diff marker column inside the terminal, so the two blocks read as
    one thought rather than a caption parked under a picture. */
 .gutter {
   font-family: var(--font-mono);
-  color: var(--amber-ink);
+  color: var(--accent);
   display: inline-block;
   width: 15px;
 }
@@ -545,22 +546,33 @@ code {
 /* Receipts sit inline at the end of a value, not on their own line. */
 .receipt {
   font-family: var(--font-mono);
-  font-size: 0.78rem;
+  font-size: var(--wl-text-meta);
   white-space: nowrap;
 }
-.receipt a { color: var(--amber-ink); border-bottom: 1px solid var(--rule-strong); }
-.receipt a:hover { border-bottom-color: var(--amber-ink); }
+.receipt a { color: var(--accent); border-bottom: 1px solid var(--rule-strong); }
+.receipt a:hover { border-bottom-color: var(--accent); }
 
 /* Before / after inside one value cell. */
+/* The host list reads as a set of product names, so it gets the mono treatment
+   the rest of the page gives to fixed strings, and the sentence under it stays
+   in the body face. */
+.host-names {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--wl-text-meta);
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
 .was { color: var(--ink-soft); }
 .now { color: var(--ink); display: block; margin-top: 4px; }
 .now::before {
   content: 'now';
   font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: var(--wl-text-label);
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--amber-ink);
+  color: var(--accent);
   margin-right: 8px;
 }
 
@@ -568,13 +580,13 @@ code {
    Ledger table
    -------------------------------------------------------------------------- */
 
-.ledger-wrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 5px; }
-.ledger { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 560px; }
+.ledger-wrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: var(--wl-radius-control); }
+.ledger { width: 100%; border-collapse: collapse; font-size: var(--wl-text-body); min-width: 560px; }
 .ledger caption {
   caption-side: bottom;
   text-align: left;
   padding: 14px 16px;
-  font-size: 0.82rem;
+  font-size: var(--wl-text-meta);
   color: var(--ink-soft);
   border-top: 1px solid var(--rule);
 }
@@ -582,7 +594,7 @@ code {
 .ledger th:first-child, .ledger td:first-child { text-align: left; }
 .ledger thead th {
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: var(--wl-text-label);
   font-weight: 400;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -591,7 +603,7 @@ code {
 }
 .ledger tbody th { font-weight: 400; }
 .ledger tbody tr + tr th, .ledger tbody tr + tr td { border-top: 1px solid var(--rule); }
-.ledger tbody th code { background: none; border: 0; padding: 0; font-size: 0.9rem; }
+.ledger tbody th code { background: none; border: 0; padding: 0; font-size: var(--wl-text-body); }
 .ledger .n { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink-soft); }
 .ledger .saved { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink); }
 
@@ -606,7 +618,7 @@ code {
   height: 15px;
   width: var(--w);
   background: rgba(122, 78, 0, 0.16);
-  border-radius: 2px;
+  border-radius: var(--wl-radius-control);
   z-index: 0;
 }
 .bar > span { position: relative; z-index: 1; }
@@ -622,16 +634,16 @@ code {
    Footer
    -------------------------------------------------------------------------- */
 
-.footer { border-top: 1px solid var(--rule); padding: 54px 0 34px; font-size: 0.9rem; }
+.footer { border-top: 1px solid var(--rule); padding: 54px 0 34px; font-size: var(--wl-text-body); }
 .footer-top { display: flex; flex-wrap: wrap; gap: 44px; justify-content: space-between; }
 .footer-brand { max-width: 300px; }
-.footer-brand .mark { font-family: var(--font-display); font-weight: 700; font-size: 1.16rem; display: block; margin-bottom: 8px; }
+.footer-brand .mark { font-family: var(--font-display); font-weight: 700; font-size: var(--wl-text-lede); display: block; margin-bottom: 8px; }
 .footer-brand p { color: var(--ink-soft); }
 .footer-links { display: flex; gap: 56px; flex-wrap: wrap; }
-.link-group .link-h { font-size: 0.74rem; font-family: var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); font-weight: 400; margin-bottom: 12px; }
+.link-group .link-h { font-size: var(--wl-text-meta); font-family: var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); font-weight: 400; margin-bottom: 12px; }
 .link-group a { display: block; margin-bottom: 8px; color: var(--ink-soft); border-bottom: 1px solid transparent; width: fit-content; }
 .link-group a:hover { color: var(--ink); border-bottom-color: var(--ink); }
-.footer-bottom { margin-top: 44px; padding-top: 20px; border-top: 1px solid var(--rule); color: var(--ink-soft); font-size: 0.84rem; }
+.footer-bottom { margin-top: 44px; padding-top: 20px; border-top: 1px solid var(--rule); color: var(--ink-soft); font-size: var(--wl-text-meta); }
 .footer-bottom a { border-bottom: 1px solid var(--rule-strong); }
 .footer-bottom a:hover { border-bottom-color: var(--ink); }
 
@@ -654,20 +666,20 @@ code {
   align-items: baseline;
 }
 .post-row:hover .post-title { border-bottom-color: var(--ink); }
-.post-when { font-family: var(--font-mono); font-size: 0.78rem; color: var(--ink-soft); }
+.post-when { font-family: var(--font-mono); font-size: var(--wl-text-meta); color: var(--ink-soft); }
 .post-tag {
   display: inline-block;
   font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: var(--wl-text-label);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--amber-ink);
+  color: var(--accent);
   margin-bottom: 6px;
 }
-.post-title { font-size: 1.2rem; font-weight: 600; border-bottom: 1px solid transparent; display: inline; }
-.post-excerpt { color: var(--ink-soft); font-size: 0.94rem; margin-top: 8px; max-width: var(--measure-text); }
+.post-title { font-size: var(--wl-text-subtitle); font-weight: 600; border-bottom: 1px solid transparent; display: inline; }
+.post-excerpt { color: var(--ink-soft); font-size: var(--wl-text-body); margin-top: 8px; max-width: var(--measure-text); }
 .post-row.is-lead { padding: 34px 0; }
-.post-row.is-lead .post-title { font-size: 1.6rem; }
+.post-row.is-lead .post-title { font-size: var(--wl-text-title); }
 
 /* The shorthand here used to be `64px 0 88px`, which beat `.wrap`'s `0 24px` on
    source order and left every post's text flush against the screen edge on a
@@ -677,26 +689,26 @@ code {
 .article { padding-block: 72px 88px; max-width: var(--measure-article); }
 .article-head { border-bottom: 1px solid var(--rule); padding-bottom: 26px; margin-bottom: 34px; }
 .article-head h1 { font-size: clamp(1.8rem, 4vw, 2.7rem); margin-bottom: 16px; }
-.article-meta { display: flex; flex-wrap: wrap; gap: 16px; font-family: var(--font-mono); font-size: 0.78rem; color: var(--ink-soft); }
+.article-meta { display: flex; flex-wrap: wrap; gap: 16px; font-family: var(--font-mono); font-size: var(--wl-text-meta); color: var(--ink-soft); }
 /* The measure is the article column's now, so prose fills it rather than
    sitting narrow inside a wider one. */
-.prose { font-size: 1.02rem; line-height: 1.72; }
+.prose { font-size: var(--wl-text-body); line-height: 1.72; }
 .prose > * + * { margin-top: 1.1em; }
-.prose h2 { font-size: 1.5rem; margin-top: 2em; }
-.prose h3 { font-size: 1.18rem; margin-top: 1.7em; }
+.prose h2 { font-size: var(--wl-text-title); margin-top: 2em; }
+.prose h3 { font-size: var(--wl-text-lede); margin-top: 1.7em; }
 .prose ul, .prose ol { padding-left: 1.3em; }
 .prose li + li { margin-top: 0.4em; }
-.prose a { color: var(--amber-ink); border-bottom: 1px solid var(--rule-strong); }
-.prose a:hover { border-bottom-color: var(--amber-ink); }
-.prose blockquote { border-left: 2px solid var(--amber-ink); padding-left: 18px; color: var(--ink-soft); }
-.prose img { max-width: 100%; height: auto; border-radius: 4px; }
+.prose a { color: var(--accent); border-bottom: 1px solid var(--rule-strong); }
+.prose a:hover { border-bottom-color: var(--accent); }
+.prose blockquote { border-left: 2px solid var(--accent); padding-left: 18px; color: var(--ink-soft); }
+.prose img { max-width: 100%; height: auto; border-radius: var(--wl-radius-control); }
 .prose pre {
   background: var(--crt);
   color: var(--phosphor);
   padding: 16px;
-  border-radius: 5px;
+  border-radius: var(--wl-radius-control);
   overflow-x: auto;
-  font-size: 0.84rem;
+  font-size: var(--wl-text-meta);
   line-height: 1.55;
 }
 .prose pre code { background: none; border: 0; padding: 0; color: inherit; font-size: inherit; }
@@ -706,9 +718,9 @@ code {
    rather than `break-word` because only `anywhere` also shrinks the min-content
    width, which is what stops the parent staying wide. */
 .prose :not(pre) > code { overflow-wrap: anywhere; }
-.prose table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+.prose table { width: 100%; border-collapse: collapse; font-size: var(--wl-text-body); }
 .prose th, .prose td { padding: 9px 12px; border-bottom: 1px solid var(--rule); text-align: left; }
-.prose th { font-family: var(--font-mono); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft); font-weight: 400; }
+.prose th { font-family: var(--font-mono); font-size: var(--wl-text-meta); text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft); font-weight: 400; }
 .article-foot { margin-top: 48px; padding-top: 22px; border-top: 1px solid var(--rule); }
 
 /* --------------------------------------------------------------------------
@@ -768,17 +780,17 @@ code {
    -------------------------------------------------------------------------- */
 
 .rc-note {
-  border-left: 2px solid var(--amber-ink);
+  border-left: 2px solid var(--accent);
   padding: 10px 0 10px 16px;
   margin-bottom: 26px;
-  font-size: 0.9rem;
+  font-size: var(--wl-text-body);
   color: var(--ink-soft);
 }
 .rc-note a { border-bottom: 1px solid var(--rule-strong); }
-.rc-note a:hover { border-bottom-color: var(--amber-ink); }
+.rc-note a:hover { border-bottom-color: var(--accent); }
 
 .rc-archive { margin: 56px 0 24px; padding-top: 26px; border-top: 1px solid var(--rule); }
-.rc-h { font-size: 1.05rem; margin-bottom: 6px; }
+.rc-h { font-size: var(--wl-text-lede); margin-bottom: 6px; }
 .rc-archive .fine { margin-bottom: 16px; }
 .rc-list { list-style: none; }
 .rc-list li {
@@ -787,11 +799,11 @@ code {
   gap: 16px;
   padding: 7px 0;
   border-bottom: 1px solid var(--rule);
-  font-size: 0.88rem;
+  font-size: var(--wl-text-meta);
 }
 .rc-list a { color: var(--ink-soft); border-bottom: 1px solid transparent; }
 .rc-list a:hover { color: var(--ink); border-bottom-color: var(--ink); }
-.rc-list time { font-family: var(--font-mono); font-size: 0.78rem; color: var(--ink-soft); white-space: nowrap; }
+.rc-list time { font-family: var(--font-mono); font-size: var(--wl-text-meta); color: var(--ink-soft); white-space: nowrap; }
 
 /* --------------------------------------------------------------------------
    Releases. The same dl/dt/dd row as everywhere else: version and date on the
@@ -802,11 +814,11 @@ code {
 /* Narrower key than the default 190px: "v0.6.6 / JUL 26, 2026 / LATEST" needs
    about 150, and the 40px back is 40px more of readable bullet. */
 .rel-rows .row { grid-template-columns: 150px minmax(0, 1fr); align-items: start; padding: 20px 18px; }
-.rel-rows .row-k { font-size: 1rem; }
+.rel-rows .row-k { font-size: var(--wl-text-body); }
 .rel-latest {
   display: inline-block;
   margin-left: 8px;
-  color: var(--amber-ink);
+  color: var(--accent);
   font-weight: 600;
   letter-spacing: 0.08em;
 }
@@ -821,16 +833,16 @@ code {
   flex: none;
   width: 68px;
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: var(--wl-text-label);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--amber-ink);
+  color: var(--accent);
 }
 
-.rel-more { margin-top: 9px; font-size: 0.87rem; color: var(--ink-soft); }
-.rel-links { display: flex; gap: 18px; margin-top: 12px; font-size: 0.87rem; }
+.rel-more { margin-top: 9px; font-size: var(--wl-text-meta); color: var(--ink-soft); }
+.rel-links { display: flex; gap: 18px; margin-top: 12px; font-size: var(--wl-text-meta); }
 .rel-links a { border-bottom: 1px solid var(--rule-strong); }
-.rel-links a:hover { border-bottom-color: var(--amber-ink); }
+.rel-links a:hover { border-bottom-color: var(--accent); }
 .rel-foot { margin: 22px 0 72px; max-width: var(--measure-text); }
 
 @media (max-width: 640px) {
@@ -841,13 +853,13 @@ code {
 }
 
 .more { margin-bottom: 32px; }
-.more-h { font-size: 1.05rem; margin-bottom: 14px; }
+.more-h { font-size: var(--wl-text-lede); margin-bottom: 14px; }
 /* Same row primitive, stacked. The key here is a full post title, and a 190px
    key column wrapped every one of them to three lines beside a one-line value. */
 .more .row { grid-template-columns: minmax(0, 1fr); gap: 5px; }
 .more .row-k a { border-bottom: 1px solid var(--rule-strong); }
-.more .row-k a:hover { border-bottom-color: var(--amber-ink); }
-.more .row-v { font-size: 0.89rem; }
+.more .row-k a:hover { border-bottom-color: var(--accent); }
+.more .row-v { font-size: var(--wl-text-meta); }
 
 .stepper {
   display: flex;
@@ -857,7 +869,7 @@ code {
   border-top: 1px solid var(--rule);
   border-bottom: 1px solid var(--rule);
   margin-bottom: 24px;
-  font-size: 0.88rem;
+  font-size: var(--wl-text-meta);
 }
 /* Both titles are full post titles, so without a cap they wrap into each other
    across the middle of the row and it stops being clear which is which. */

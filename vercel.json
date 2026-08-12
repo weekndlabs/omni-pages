@@ -4,6 +4,11 @@
   "cleanUrls": true,
   "redirects": [
     {
+      "source": "/docs",
+      "destination": "/docs/",
+      "permanent": true
+    },
+    {
       "source": "/install",
       "destination": "https://raw.githubusercontent.com/fajarhide/omni/main/scripts/install.sh",
       "permanent": true
