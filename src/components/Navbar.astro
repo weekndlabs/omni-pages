@@ -21,6 +21,13 @@ const DISCORD = 'https://discord.gg/zHTuvZhF2M';
     </ul>
 
     <div class="nav-end">
+      {/* Both icons ship in the markup and CSS shows the one for the theme that
+          is not active, so the button says what it will do rather than what is
+          on. No JS needed to swap them. */}
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch theme">
+        <svg class="i-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="i-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </button>
       <a href={DISCORD} class="btn btn-ghost btn-sm" target="_blank" rel="noopener noreferrer">Discord</a>
       <a href={GITHUB_REPO} class="btn btn-ghost btn-sm" target="_blank" rel="noopener noreferrer">GitHub</a>
       <button class="nav-toggle" id="nav-toggle" aria-label="Show navigation" aria-expanded="false" aria-controls="nav-links">
@@ -45,6 +52,29 @@ const DISCORD = 'https://discord.gg/zHTuvZhF2M';
         toggle.setAttribute('aria-expanded', 'false');
       })
     );
+  }
+
+  const theme = document.getElementById('theme-toggle');
+  if (theme) {
+    const root = document.documentElement;
+    const label = () =>
+      theme.setAttribute(
+        'aria-label',
+        root.dataset.theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme',
+      );
+    label();
+    theme.addEventListener('click', () => {
+      const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+      root.dataset.theme = next;
+      label();
+      // A stored choice is what the head script reads on the next page, and it
+      // is also what tells that script to stop following the OS.
+      try {
+        localStorage.setItem('omni-theme', next);
+      } catch {
+        /* private mode: the toggle still works, it just does not persist */
+      }
+    });
   }
 
   const navbar = document.getElementById('navbar');

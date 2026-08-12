@@ -8,8 +8,9 @@
    Two rules hold the system together:
      1. Mono type means a machine emitted it. Sans means a person wrote it.
         Never mix the two inside one block.
-     2. Amber phosphor appears only inside a black terminal. It is the
-        instrument's colour, so it never leaks onto the page.
+     2. Yellow appears only inside the terminal, and only on the live reading.
+        It is the instrument's colour, so it never leaks onto the page. The
+        page's own accent is --accent, the same one weekndlabs.com uses.
 
    Every value below comes from @weekndlabs/design. Nothing in this file, and
    nothing in any component, may name a colour, a family or a measure directly:
@@ -38,19 +39,25 @@
 
   /* The instrument. Only ever used together, only inside .crt. The system
      carries a terminal ramp precisely so a black block is not a local
-     invention here. */
-  --crt:          var(--wl-terminal-ground);
-  --phosphor:     var(--wl-terminal-yellow);
-  --phosphor-dim: var(--wl-terminal-dim);
+     invention here.
+
+     Amber used to be the body colour in here, which made the demo block read
+     as a brand wash rather than as a terminal. It is now what a terminal
+     actually does with yellow: the live reading, and nothing else. */
+  --crt:            var(--wl-terminal-ground);
+  --phosphor:       var(--wl-terminal-foreground);
+  --phosphor-dim:   var(--wl-terminal-dim);
+  --phosphor-hot:   var(--wl-terminal-yellow);
   /* Derived rather than picked, so the terminal keeps its internal contrast
      when the system moves the ramp. A hairline one step off the ground, and
      the colour a struck line lands on before it collapses. */
-  --crt-rule:     oklch(from var(--wl-terminal-ground) calc(l + 0.05) c h);
-  --phosphor-struck: oklch(from var(--wl-terminal-yellow) calc(l - 0.36) c h);
+  --crt-rule:       oklch(from var(--wl-terminal-ground) calc(l + 0.05) c h);
+  --phosphor-struck: oklch(from var(--wl-terminal-dim) calc(l - 0.22) c h);
 
-  /* Amber that has to sit on paper as text rather than glow on the terminal,
-     so it is the themed warning token and not the terminal one. */
-  --amber-ink:    var(--wl-warning);
+  /* The accent, on paper. Links, rules under them, the focus ring, the dot
+     after the headline. --wl-ring is what weekndlabs.com spends it on, and
+     unlike the old amber it has a dark-theme value. */
+  --accent:       var(--wl-ring);
 
   --font-display: var(--wl-font-sans);
   --font-body:    var(--wl-font-sans);
@@ -94,7 +101,7 @@ body {
 a { color: inherit; text-decoration: none; }
 
 :focus-visible {
-  outline: 2px solid var(--amber-ink);
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 
@@ -124,7 +131,7 @@ h1, h2, h3, h4 {
    era". It is --wl-ring, the system's accent, not this page's amber: amber
    belongs to the terminal and this dot is the house signature. Decorative, so
    the sentence still ends the same way with CSS off. */
-.text-brand { color: var(--wl-ring); }
+.text-brand { color: var(--accent); }
 
 .lede {
   font-size: var(--wl-text-lede);
@@ -245,6 +252,25 @@ code {
 }
 .nav-links a:hover { color: var(--ink); border-bottom-color: var(--ink); }
 .nav-end { display: flex; align-items: center; gap: 12px; }
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: var(--wl-radius-control);
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: color var(--wl-duration-fast) var(--wl-ease-out), border-color var(--wl-duration-fast) var(--wl-ease-out);
+}
+.theme-toggle:hover { color: var(--ink); border-color: var(--rule-strong); }
+/* The icon shown is the theme you are switching to, not the one you are in. */
+.theme-toggle .i-sun { display: none; }
+[data-theme='dark'] .theme-toggle .i-moon { display: none; }
+[data-theme='dark'] .theme-toggle .i-sun { display: inline; }
 .nav-toggle { display: none; background: none; border: 0; color: var(--ink); cursor: pointer; padding: 8px; }
 
 /* --------------------------------------------------------------------------
@@ -276,7 +302,7 @@ code {
      the first thing in the left column with nothing stacked on top of it. */
   margin-bottom: 10px;
 }
-.release-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--amber-ink); }
+.release-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
 .release [data-status="stable"] { color: var(--ink); }
 
 /* Install strip. Reads as a field you copy from, not a hero CTA. */
@@ -322,10 +348,10 @@ code {
 .linkish {
   background: none; border: 0; cursor: pointer;
   font-family: var(--font-mono); font-size: var(--wl-text-meta);
-  color: var(--amber-ink); border-bottom: 1px solid var(--rule-strong);
+  color: var(--accent); border-bottom: 1px solid var(--rule-strong);
   padding: 2px 0;
 }
-.linkish:hover { border-bottom-color: var(--amber-ink); }
+.linkish:hover { border-bottom-color: var(--accent); }
 
 /* --------------------------------------------------------------------------
    THE SIGNATURE, subtraction in place
@@ -363,8 +389,8 @@ code {
   padding: 1px 6px;
   font-size: var(--wl-text-label);
 }
-.crt-phase[data-on] { color: var(--phosphor); }
-.crt-meter { color: var(--phosphor); font-variant-numeric: tabular-nums; }
+.crt-phase[data-on] { color: var(--phosphor-hot); }
+.crt-meter { color: var(--phosphor-hot); font-variant-numeric: tabular-nums; }
 .crt-body {
   padding: 14px;
   font-size: var(--wl-text-meta);
@@ -512,7 +538,7 @@ code {
    one thought rather than a caption parked under a picture. */
 .gutter {
   font-family: var(--font-mono);
-  color: var(--amber-ink);
+  color: var(--accent);
   display: inline-block;
   width: 15px;
 }
@@ -523,8 +549,8 @@ code {
   font-size: var(--wl-text-meta);
   white-space: nowrap;
 }
-.receipt a { color: var(--amber-ink); border-bottom: 1px solid var(--rule-strong); }
-.receipt a:hover { border-bottom-color: var(--amber-ink); }
+.receipt a { color: var(--accent); border-bottom: 1px solid var(--rule-strong); }
+.receipt a:hover { border-bottom-color: var(--accent); }
 
 /* Before / after inside one value cell. */
 .was { color: var(--ink-soft); }
@@ -535,7 +561,7 @@ code {
   font-size: var(--wl-text-label);
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--amber-ink);
+  color: var(--accent);
   margin-right: 8px;
 }
 
@@ -636,7 +662,7 @@ code {
   font-size: var(--wl-text-label);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--amber-ink);
+  color: var(--accent);
   margin-bottom: 6px;
 }
 .post-title { font-size: var(--wl-text-subtitle); font-weight: 600; border-bottom: 1px solid transparent; display: inline; }
@@ -661,9 +687,9 @@ code {
 .prose h3 { font-size: var(--wl-text-lede); margin-top: 1.7em; }
 .prose ul, .prose ol { padding-left: 1.3em; }
 .prose li + li { margin-top: 0.4em; }
-.prose a { color: var(--amber-ink); border-bottom: 1px solid var(--rule-strong); }
-.prose a:hover { border-bottom-color: var(--amber-ink); }
-.prose blockquote { border-left: 2px solid var(--amber-ink); padding-left: 18px; color: var(--ink-soft); }
+.prose a { color: var(--accent); border-bottom: 1px solid var(--rule-strong); }
+.prose a:hover { border-bottom-color: var(--accent); }
+.prose blockquote { border-left: 2px solid var(--accent); padding-left: 18px; color: var(--ink-soft); }
 .prose img { max-width: 100%; height: auto; border-radius: var(--wl-radius-control); }
 .prose pre {
   background: var(--crt);
@@ -743,14 +769,14 @@ code {
    -------------------------------------------------------------------------- */
 
 .rc-note {
-  border-left: 2px solid var(--amber-ink);
+  border-left: 2px solid var(--accent);
   padding: 10px 0 10px 16px;
   margin-bottom: 26px;
   font-size: var(--wl-text-body);
   color: var(--ink-soft);
 }
 .rc-note a { border-bottom: 1px solid var(--rule-strong); }
-.rc-note a:hover { border-bottom-color: var(--amber-ink); }
+.rc-note a:hover { border-bottom-color: var(--accent); }
 
 .rc-archive { margin: 56px 0 24px; padding-top: 26px; border-top: 1px solid var(--rule); }
 .rc-h { font-size: var(--wl-text-lede); margin-bottom: 6px; }
@@ -781,7 +807,7 @@ code {
 .rel-latest {
   display: inline-block;
   margin-left: 8px;
-  color: var(--amber-ink);
+  color: var(--accent);
   font-weight: 600;
   letter-spacing: 0.08em;
 }
@@ -799,13 +825,13 @@ code {
   font-size: var(--wl-text-label);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--amber-ink);
+  color: var(--accent);
 }
 
 .rel-more { margin-top: 9px; font-size: var(--wl-text-meta); color: var(--ink-soft); }
 .rel-links { display: flex; gap: 18px; margin-top: 12px; font-size: var(--wl-text-meta); }
 .rel-links a { border-bottom: 1px solid var(--rule-strong); }
-.rel-links a:hover { border-bottom-color: var(--amber-ink); }
+.rel-links a:hover { border-bottom-color: var(--accent); }
 .rel-foot { margin: 22px 0 72px; max-width: var(--measure-text); }
 
 @media (max-width: 640px) {
@@ -821,7 +847,7 @@ code {
    key column wrapped every one of them to three lines beside a one-line value. */
 .more .row { grid-template-columns: minmax(0, 1fr); gap: 5px; }
 .more .row-k a { border-bottom: 1px solid var(--rule-strong); }
-.more .row-k a:hover { border-bottom-color: var(--amber-ink); }
+.more .row-k a:hover { border-bottom-color: var(--accent); }
 .more .row-v { font-size: var(--wl-text-meta); }
 
 .stepper {

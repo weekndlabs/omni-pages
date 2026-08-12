@@ -60,8 +60,9 @@ const structuredData = jsonLd ?? defaultJsonLd;
 ---
 
 <!doctype html>
-{/* The design system is dark by default and light by attribute. This page is a
-    document on paper, so it pins light rather than following the OS. */}
+{/* data-theme is written before first paint by the script in <head>. The
+    attribute starts as light so a reader with JavaScript off gets the paper
+    version rather than the design system's bare dark default. */}
 <html lang="en" data-theme="light">
 	<head>
 		<meta charset="UTF-8" />
@@ -78,8 +79,26 @@ const structuredData = jsonLd ?? defaultJsonLd;
 
 		<meta name="author" content={author} />
 		{/* The one place a token has to be written out: this meta takes a colour,
-		    not a var. It is --wl-background at [data-theme='light']. */}
-		<meta name="theme-color" content="#FAFAFA" />
+		    not a var. These are --wl-background at each theme. The media queries
+		    only track the OS, so a reader who has toggled against it gets browser
+		    chrome one shade off. Matching the toggle would need JS to rewrite the
+		    tag on every switch, which is more moving parts than the mismatch is
+		    worth. */}
+		<meta name="theme-color" media="(prefers-color-scheme: light)" content="#FAFAFA" />
+		<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131316" />
+
+		{/* Before first paint, so the page never flashes the wrong theme. A stored
+		    choice wins over the OS; nothing stored means follow the OS. Kept inline
+		    and tiny for that reason: a deferred module would run after paint. */}
+		<script is:inline>
+			(() => {
+				let stored = null;
+				try { stored = localStorage.getItem('omni-theme'); } catch { /* private mode */ }
+				const dark = stored ? stored === 'dark'
+					: matchMedia('(prefers-color-scheme: dark)').matches;
+				document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+			})();
+		</script>
 		<meta name="robots" content={robots} />
 
 		<!-- Open Graph -->
