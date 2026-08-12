@@ -553,6 +553,17 @@ code {
 .receipt a:hover { border-bottom-color: var(--accent); }
 
 /* Before / after inside one value cell. */
+/* The host list reads as a set of product names, so it gets the mono treatment
+   the rest of the page gives to fixed strings, and the sentence under it stays
+   in the body face. */
+.host-names {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--wl-text-meta);
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
 .was { color: var(--ink-soft); }
 .now { color: var(--ink); display: block; margin-top: 4px; }
 .now::before {
