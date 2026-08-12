@@ -8,6 +8,17 @@
 #
 # Runs during `vercel build` and on a laptop. Everything it needs is downloaded,
 # so there is no toolchain to install on either.
+#
+# The trap that comes with fetching the source from another repository: a change
+# to the manual there does not publish itself. Vercel builds this project when
+# this project is pushed, and nothing else, so the clone below only picks up new
+# prose when something unrelated happens to trigger a deploy. It cost two and a
+# half hours on 2026-08-12, when fajarhide/omni#487 sat merged and unpublished
+# while /docs kept serving the theme from before it.
+#
+# The fix is a Vercel Deploy Hook for this project, called from a workflow in
+# fajarhide/omni on any push to main touching `docs/website/**`. Until that is
+# wired, a manual change over there needs a deploy here to become real.
 set -euo pipefail
 
 MDBOOK_VERSION="v0.5.4"
