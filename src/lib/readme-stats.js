@@ -40,6 +40,16 @@ export const FALLBACK = {
 	// two is the whole argument, so both are read rather than typed.
 	repeated: '22.9%',
 	repeatedAfterDistillers: '22.4%',
+	// The comparison, including the arm we lose. Publishing rtk ahead of us on
+	// filters is the point of the section, so a fallback that quietly drops it
+	// would turn an honest table into an advertisement.
+	headToHead: [
+		{ label: 'omni, filters only', saved: '2.7%', note: '', pct: 2.7, mine: true },
+		{ label: 'rtk pipe', saved: '6.2%', note: '872 of 6,656 claimed by a filter', pct: 6.2, mine: false },
+		{ label: 'lean-ctx compress', saved: '6.1%', note: '134 of 6,656 shortened', pct: 6.1, mine: false },
+		{ label: 'omni, with the ledger', saved: '14.9%', note: '', pct: 14.9, mine: true },
+		{ label: "rtk pipe + omni's ledger", saved: '17.6%', note: '', pct: 17.6, mine: false },
+	],
 	rows: [
 		{ command: 'build and test', calls: '69', input: '94 KB', filters: '76.9%', savings: '78.0%', pct: 78.0 },
 		{ command: 'file read', calls: '699', input: '1.60 MB', filters: '0.0%', savings: '25.0%', pct: 25.0 },
@@ -105,6 +115,45 @@ function parseClassTable(md) {
 }
 
 /**
+ * The head-to-head arms: us, the two competitors, and the row where a reader
+ * would beat us by running their filters with our ledger.
+ *
+ * Keyed on a header carrying both `bytes` and `saved`. The per-class table has
+ * neither word and the fixture table has `saved` without `bytes`, so this is the
+ * one table in the doc that matches.
+ *
+ * These are the figures most dangerous to hardcode. A stale number on our own
+ * row is embarrassing; a stale number on a competitor's row is a false claim
+ * about somebody else's software, and rtk's arm has already moved once.
+ */
+function parseHeadToHead(md) {
+	const lines = md.split('\n');
+	const header = lines.findIndex(
+		(l) => /^\|/.test(l) && /\bbytes\b/i.test(l) && /\bsaved\b/i.test(l)
+	);
+	if (header === -1) return [];
+
+	const arms = [];
+	for (let i = header + 2; i < lines.length && lines[i].startsWith('|'); i++) {
+		const cells = lines[i].split('|').slice(1, -1).map(clean);
+		if (cells.length < 3) break;
+		const [label, , saved, note = ''] = cells;
+		const pct = parseFloat(saved);
+		if (!label || !Number.isFinite(pct)) continue;
+		arms.push({
+			label,
+			saved,
+			note,
+			pct,
+			// Which rows are ours, so the page can weight them without matching on
+			// a string in the template.
+			mine: /^omni\b/i.test(label),
+		});
+	}
+	return arms;
+}
+
+/**
  * The single-fixture table. Returns the named row, so the hero can quote one
  * reproducible measurement.
  */
@@ -141,6 +190,7 @@ const grab = (md, re) => {
  */
 export function parseReadme(md) {
 	const rows = parseClassTable(md);
+	const headToHead = parseHeadToHead(md);
 	// Each fixture falls back on its own, so one renamed row cannot blank the hero.
 	const fixtures = Object.fromEntries(
 		FIXTURE_KEYS.map((k) => [k, parseFixture(md, k) ?? FALLBACK.fixtures[k]])
@@ -150,6 +200,9 @@ export function parseReadme(md) {
 	const stats = {
 		source: 'docs/website/src/develop/benchmarks.md@main',
 		rows,
+		// Falls back whole rather than per row. A comparison missing one arm is a
+		// different claim from the one the doc makes, so it is all or nothing.
+		headToHead: headToHead.length >= 4 ? headToHead : FALLBACK.headToHead,
 		fixtures,
 		overallSaved: grab(md, /\*\*([\d.]+)% fewer bytes\*\*/),
 		zeroSaveShare: grab(md, /\*\*([\d.]+)% of (?:those )?calls saved nothing/),

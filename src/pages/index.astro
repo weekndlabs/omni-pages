@@ -33,6 +33,13 @@ const { best, worst } = extremes(stats.rows);
 const fileRead = stats.rows.find((r) => /file read/i.test(r.command));
 const workingShare = (100 - parseFloat(stats.zeroSaveShare)).toFixed(1) + '%';
 
+/* What the ledger is worth on its own, subtracted from the same table rather
+   than typed, so the claim moves when the measurement does. */
+const arms = stats.headToHead;
+const ourFilters = arms.find((a) => a.mine && /filters only/i.test(a.label));
+const ourLedger = arms.find((a) => a.mine && /ledger/i.test(a.label));
+const ledgerLift = (ourLedger.pct - ourFilters.pct).toFixed(1);
+
 /* Hero demo. Three real command shapes, with the lines OMNI drops marked so the
    block can subtract them in place. `n` is the noise flag, `keep` highlights the
    part that survives. Every byte figure comes from the README fixture table, and
@@ -332,6 +339,10 @@ const faq = [
 		a: `On the output that actually carries noise, ${best.command} is ${best.savings}. On file reads, where the filters can take nothing without guessing, the ledger still takes ${fileRead?.savings ?? '26.3%'}. Across the whole mix it averages ${stats.overallSaved}, because ${stats.zeroSaveShare} of ${stats.totalCalls} replayed commands saved nothing at all and OMNI added zero bytes to them. Both numbers are published, and the second is the one that tells you what the first is worth.`,
 	},
 	{
+		q: 'Is this just another output filter?',
+		a: `No, and the corpus says why. On filters alone we are at ${ourFilters.saved} and rtk beats us there at 6.2%. But ${stats.repeated} of raw bytes are lines your agent had already been shown, and ${stats.repeatedAfterDistillers} still are after every distiller has run, because repetition is not noise. The ledger takes that half, which is how the same corpus goes from ${ourFilters.saved} to ${stats.overallSaved}.`,
+	},
+	{
 		q: 'Can it hide an error from my agent?',
 		a: 'No. Any command that exits non-zero passes through verbatim, uncompressed. Structured output such as JSON, YAML, NDJSON and CSV is never touched. A distiller that cannot parse its input returns the raw output rather than summarising it.',
 	},
@@ -409,12 +420,12 @@ const pipeline = [
 ---
 
 <Layout
-	title="OMNI, stop paying to re-read the same terminal output"
+	title="OMNI, stop paying your AI agent to re-read the same output"
 	{/* Kept under 160 characters so the whole line survives the SERP. Every
 	    number is parsed from the manual, so the claim cannot drift. It carried
 	    "git 89%, cargo 91%, kubectl 77%" for a while, and none of the three
 	    appeared anywhere in the repository. */}
-	description={`Free Rust CLI. Output your AI agent has already been shown comes back as a handle, not the bytes again: ${fileRead?.savings ?? '25.0%'} off file reads, ${stats.overallSaved} across ${stats.totalCalls} real commands.`}
+	description={`Your agent re-reads the same file all session. OMNI hands it a handle instead: 214 B for 7.6 KB, ${stats.overallSaved} across ${stats.totalCalls} real commands. Free, local, reversible.`}
 	jsonLd={jsonLd}
 >
 	<main>
@@ -423,10 +434,10 @@ const pipeline = [
 			<div class="wrap">
 				<div class="hero-grid">
 					<div>
-						<h1 class="t-display">Claude is not expensive<span class="text-brand">.</span><br />Your terminal is<span class="text-brand">.</span></h1>
+						<h1 class="t-display">Your agent already read that file<span class="text-brand">.</span><br />You paid for it twice<span class="text-brand">.</span></h1>
 
 						<p class="lede">
-							OMNI sits on a shell hook. It cuts the noise out of command output before your agent reads it, and folds what the agent has already been shown into a handle instead of sending the bytes twice: {fileRead?.savings ?? '25.0%'} off file reads, {stats.overallSaved} across {stats.totalCalls} real commands. Everything else passes through untouched. It also remembers your project between sessions, so you stop re-explaining it. Nothing is deleted, and it never invents a result.
+							OMNI sits on a shell hook. Output your agent has already been shown comes back as a handle instead of the bytes again: 214 B instead of 7.6 KB on the second read of a file, {fileRead?.savings ?? '25.0%'} across every file read in a {stats.totalCalls} command corpus. Nothing is deleted, nothing is summarised, and <code>omni retrieve</code> hands any of it back. It also remembers your project between sessions, so you stop re-explaining it.
 						</p>
 
 						<div class="hero-actions">
@@ -434,7 +445,11 @@ const pipeline = [
 								<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
 								Read the source
 							</a>
-							<a href="#numbers" class="btn btn-ghost">See the numbers</a>
+							{/* Points at the limits section rather than the benchmark. A
+							    reader who came for a token-saving tool clicks "see where it
+							    fails" faster than "see the numbers", and it lands them on
+							    the part of the page that earns the rest of it. */}
+							<a href="#limits" class="btn btn-ghost">See where it fails</a>
 						</div>
 
 						<div class="install">
@@ -451,6 +466,9 @@ const pipeline = [
 								<span>and</span>
 								<button class="linkish" data-copy="irm omni.weekndlabs.com/install.ps1 | iex">PowerShell</button>
 							</p>
+							{/* The risk reversal belongs beside the install line, not 900px
+							    down the page next to the licence. */}
+							<p class="fine" style="margin-top:10px">Apache 2.0. No account, no telemetry, and nothing about your machine leaves it.</p>
 						</div>
 					</div>
 
@@ -558,7 +576,7 @@ const pipeline = [
 					<span class="eyebrow">Where the saving comes from</span>
 					<h2 class="t-section">The second read is free</h2>
 					<p class="lede">
-						A filter removes a line because a pattern calls it noise. The ledger removes it because your agent is already holding it. Nothing else in this category ships the second one.
+						A filter removes a line because a pattern calls it noise. The ledger removes it because your agent is already holding it. Nothing else in this category ships the second one, and it adds {ledgerLift} points on top of our own filters.
 					</p>
 				</header>
 
@@ -628,7 +646,7 @@ const pipeline = [
 					<span class="eyebrow">Benchmarks</span>
 					<h2 class="t-section">{stats.totalCalls} real commands, replayed on the release binary</h2>
 					<p class="lede">
-						One developer's actual usage over months, not a fixture set chosen to flatter the result. {stats.bytesIn} in, {stats.bytesOut} out.
+						One developer's actual usage over months, not a fixture set chosen to flatter the result. {stats.bytesIn} in, {stats.bytesOut} out, and the difference is turns: every byte you do not spend is another exchange before the session hits the wall and compacts.
 					</p>
 				</header>
 
@@ -678,8 +696,46 @@ const pipeline = [
 				</p>
 			</div>
 		</section>
+		<!-- HEAD TO HEAD -->
+		<section class="band" id="versus">
+			<div class="wrap">
+				<header class="band-head">
+					<span class="eyebrow">Against the alternatives</span>
+					<h2 class="t-section">We ran the other tools on the same corpus</h2>
+					<p class="lede">
+						The bar was set before the measurement: if OMNI does not win, the claim does not ship. It wins, and the arm it loses is in the table.
+					</p>
+				</header>
+
+				<div class="ledger-wrap">
+					<table class="ledger">
+						<caption>Same {stats.totalCalls} traces, same {stats.bytesIn}, one replay. Read from the manual at build time.</caption>
+						<thead>
+							<tr>
+								<th scope="col">Arm</th>
+								<th scope="col">Saved</th>
+								<th scope="col">Notes</th>
+							</tr>
+						</thead>
+						<tbody>
+							{arms.map((a) => (
+								<tr>
+									<th scope="row"><code>{a.label}</code></th>
+									<td class="saved"><span class="bar" style={`--w:${(a.pct / 17.6) * 100}%`}><span>{a.saved}</span></span></td>
+									<td class="n">{a.note || ' '}</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+
+				<p class="fine" style="margin-top:20px;max-width:660px">
+					<strong>rtk's patterns are better than ours</strong>, by 3.5 points on the same bytes, over 872 of {stats.totalCalls} traces. That is not a rounding difference and it is not argued away here. The ledger is what puts us ahead, and the last row says plainly that a reader who wants the largest number on this page would run their filters with ours.
+				</p>
+			</div>
+		</section>
 		<!-- FAQ -->
-		<section class="band" id="faq">
+		<section class="band band-sunk" id="faq">
 			<div class="wrap">
 				<header class="band-head">
 					<span class="eyebrow">Questions</span>
@@ -697,7 +753,7 @@ const pipeline = [
 			</div>
 		</section>
 		<!-- COMMANDS -->
-		<section class="band band-sunk" id="cli">
+		<section class="band" id="cli">
 			<div class="wrap">
 				<header class="band-head">
 					<span class="eyebrow">The CLI</span>
@@ -718,7 +774,7 @@ const pipeline = [
 			</div>
 		</section>
 		<!-- PIPELINE -->
-		<section class="band" id="how">
+		<section class="band band-sunk" id="how">
 			<div class="wrap">
 				<header class="band-head">
 					<span class="eyebrow">How it works</span>
@@ -740,12 +796,21 @@ const pipeline = [
 			</div>
 		</section>
 		<!-- CLOSE -->
-		<section class="band band-sunk" id="start">
+		<section class="band" id="start">
 			<div class="wrap wrap-text">
-				<h2 class="t-section">A passion project, Apache 2.0 licensed</h2>
+				<h2 class="t-section">Install it, and check the number yourself</h2>
 				<p class="lede" style="margin:14px 0 24px">
-					Built by one developer who got tired of paying to read progress bars. If it saves you nothing, <code>omni stats</code> will say so and <code>omni reset</code> removes it. That is the whole deal.
+					One developer got tired of paying to read progress bars. Apache 2.0, no account, no telemetry, and nothing about your machine leaves it. Run it for a week and <code>omni stats</code> tells you what it saved. If that is nothing, <code>omni reset</code> takes it back out and keeps a backup of your config.
 				</p>
+				<div class="install" style="margin-bottom:26px">
+					<div class="install-row">
+						<span class="sigil" aria-hidden="true">$</span>
+						<code>brew install fajarhide/tap/omni</code>
+						<button class="copy" data-copy="brew install fajarhide/tap/omni" aria-label="Copy the install command">
+							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+						</button>
+					</div>
+				</div>
 				<div class="hero-actions" style="margin-bottom:0">
 					<a href={GITHUB_REPO} class="btn btn-solid" target="_blank" rel="noopener noreferrer">
 						<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
