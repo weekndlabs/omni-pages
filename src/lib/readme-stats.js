@@ -27,21 +27,26 @@
 const BENCHMARKS_URL =
 	'https://raw.githubusercontent.com/fajarhide/omni/main/docs/website/src/develop/benchmarks.md';
 
-/** Last-known-good, verified against the manual on 2026-08-12 (0.7.2). */
+/** Last-known-good, verified against the manual on 2026-08-13 (0.7.3 replay). */
 export const FALLBACK = {
 	source: 'fallback',
 	totalCalls: '6,656',
 	overallSaved: '14.9%',
 	zeroSaveShare: '97.3%',
 	bytesIn: '6.47 MB',
-	bytesOut: '5.47 MB',
+	bytesOut: '5.50 MB',
+	// What the ledger exists for: the share of raw bytes the agent had already
+	// been shown, and how little of it the distillers reach. The gap between the
+	// two is the whole argument, so both are read rather than typed.
+	repeated: '22.9%',
+	repeatedAfterDistillers: '22.4%',
 	rows: [
 		{ command: 'build and test', calls: '69', input: '94 KB', filters: '76.9%', savings: '78.0%', pct: 78.0 },
-		{ command: 'file read', calls: '699', input: '1.60 MB', filters: '0.0%', savings: '25.2%', pct: 25.2 },
-		{ command: 'git, gh', calls: '661', input: '609 KB', filters: '4.4%', savings: '22.3%', pct: 22.3 },
+		{ command: 'file read', calls: '699', input: '1.60 MB', filters: '0.0%', savings: '25.0%', pct: 25.0 },
+		{ command: 'git, gh', calls: '661', input: '609 KB', filters: '4.4%', savings: '22.1%', pct: 22.1 },
 		{ command: 'search', calls: '828', input: '1.03 MB', filters: '4.8%', savings: '13.3%', pct: 13.3 },
 		{ command: 'infra', calls: '254', input: '193 KB', filters: '4.4%', savings: '8.2%', pct: 8.2 },
-		{ command: 'other', calls: '4,145', input: '2.95 MB', filters: '0.6%', savings: '6.8%', pct: 6.8 },
+		{ command: 'other', calls: '4,145', input: '2.95 MB', filters: '0.6%', savings: '6.9%', pct: 6.9 },
 	],
 	// The three reproducible fixtures the hero demo cycles through, so every
 	// meter reading is a real measurement rather than a number chosen to look
@@ -155,7 +160,20 @@ export function parseReadme(md) {
 			grab(md, /\*\*([\d,]+) real command\s*\n?\s*executions\*\*/),
 		bytesIn: bytePair?.[1] ?? null,
 		bytesOut: bytePair?.[2] ?? null,
+		// Prose rather than a table, so these fall back on their own instead of
+		// failing the whole read. A missing sentence should not blank a page whose
+		// tables parsed.
+		repeated:
+			grab(md, /\*\*([\d.]+)% of raw bytes are lines the agent had already been shown\*\*/) ??
+			FALLBACK.repeated,
+		repeatedAfterDistillers:
+			grab(md, /\*\*([\d.]+)% still\s+are after every distiller/) ??
+			FALLBACK.repeatedAfterDistillers,
 	};
+	if (stats.repeated && !stats.repeated.endsWith('%')) stats.repeated += '%';
+	if (stats.repeatedAfterDistillers && !stats.repeatedAfterDistillers.endsWith('%')) {
+		stats.repeatedAfterDistillers += '%';
+	}
 	if (stats.overallSaved) stats.overallSaved += '%';
 	if (stats.zeroSaveShare) stats.zeroSaveShare += '%';
 

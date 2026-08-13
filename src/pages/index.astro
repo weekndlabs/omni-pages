@@ -38,24 +38,29 @@ const workingShare = (100 - parseFloat(stats.zeroSaveShare)).toFixed(1) + '%';
    part that survives. Every byte figure comes from the README fixture table, and
    the three are chosen to span the range on purpose: a command that pays for
    itself, an ordinary one, and one that barely does. A page arguing against fake
-   90% claims cannot show three 90% demos. */
+   90% claims cannot show three 90% demos.
+
+   Every path and module below exists in the omni repository on `main`. They were
+   invented once (`src/rewind/`, `src/distill/`, `pipeline/score.rs`) and that is
+   fabricated output in the first screen of a tool whose pitch is that it never
+   fabricates output. Check against `git ls-tree` before editing one. */
 const cargoTest = [
 	{ t: '$ cargo test', prompt: true },
-	{ t: '   Compiling omni v0.6.0 (/Users/f/omni)', n: true },
+	{ t: `   Compiling omni ${latestVersion} (/Users/f/omni)`, n: true },
 	{ t: '   Compiling serde v1.0.210', n: true },
 	{ t: '   Compiling regex v1.10.6', n: true },
 	{ t: '    Finished test profile in 41.20s', n: true },
 	{ t: '     Running unittests src/lib.rs', n: true },
-	{ t: 'test pipeline::score::keeps_stack_frames ... ok', n: true },
-	{ t: 'test pipeline::score::drops_progress_bars ... ok', n: true },
+	{ t: 'test pipeline::scorer::keeps_stack_frames ... ok', n: true },
+	{ t: 'test pipeline::scorer::drops_progress_bars ... ok', n: true },
 	{ t: 'test pipeline::format::json_passthrough ... ok', n: true },
-	{ t: 'test rewind::store::roundtrip_sha256 ... ok', n: true },
-	{ t: 'test rewind::store::retrieve_by_hash ... ok', n: true },
+	{ t: 'test ledger::folds_a_run_already_shown ... ok', n: true },
+	{ t: 'test store::sqlite::roundtrip_sha256 ... ok', n: true },
 	{ t: '... 478 more passing tests ...', n: true },
-	{ t: 'test distill::cargo::parses_summary ... FAILED', keep: true },
+	{ t: 'test distillers::test::parses_summary ... FAILED', keep: true },
 	{ t: '', n: true },
 	{ t: 'failures:' },
-	{ t: '    thread panicked at src/distill/cargo.rs:118:9', keep: true },
+	{ t: '    thread panicked at src/distillers/test.rs:118:9', keep: true },
 	{ t: '    assertion `left == right` failed' },
 	{ t: '      left: 490' },
 	{ t: '     right: 500' },
@@ -73,8 +78,8 @@ const gitStatus = [
 	{ t: 'Changes not staged for commit:' },
 	{ t: '  (use "git add <file>..." to update what will be committed)', n: true },
 	{ t: '  (use "git restore <file>..." to discard changes)', n: true },
-	{ t: '        modified:   src/pipeline/score.rs', keep: true },
-	{ t: '        modified:   src/distill/cargo.rs', keep: true },
+	{ t: '        modified:   src/pipeline/scorer.rs', keep: true },
+	{ t: '        modified:   src/distillers/test.rs', keep: true },
 	{ t: '', n: true },
 	{ t: 'Untracked files:' },
 	{ t: '  (use "git add <file>..." to include in what will be committed)', n: true },
@@ -102,7 +107,7 @@ const dockerBuild = [
 	{ t: '#5 DONE 0.3s', n: true },
 	{ t: '#8 [builder 4/5] RUN cargo build --release' },
 	{ t: '#8 24.61 warning: unused import: `std::fmt`', keep: true },
-	{ t: '#8 24.61   --> src/rewind/store.rs:4:5', keep: true },
+	{ t: '#8 24.61   --> src/store/sqlite.rs:4:5', keep: true },
 	{ t: '#8 DONE 61.4s', n: true },
 	{ t: '#9 exporting to image' },
 	{ t: '#9 writing image sha256:9f2c1a3e8b04', keep: true },
@@ -183,10 +188,12 @@ const limits = [
 const promises = [
 	{
 		k: 'Reversible',
-		/* The bound is published because the unbounded version of this sentence was
-		   false until v0.6.9: the archive gate never fired, and 0 of 8,968
-		   distillations carried a hash. The receipt is the issue that found it. */
-		v: 'Everything cut is archived to local SQLite keyed by SHA-256, for inputs up to 64 KB. Your agent gets the hash and calls it back when it wants the rest. Above the cap nothing is archived and the marker says so, with the size.',
+		/* Both bounds are published because the unbounded version of this sentence
+		   was false until v0.6.9: the archive gate never fired, and 0 of 8,968
+		   distillations carried a hash. The receipt is the issue that found it.
+		   The 30 day window is the manual's own limit on a handle, and it is the
+		   one thing "nothing is ever lost" cannot promise. */
+		v: 'Everything cut is archived to local SQLite keyed by SHA-256, for inputs up to 64 KB. The marker carries the handle and <code>omni retrieve</code> prints the original on any host. Above the cap nothing is archived and the marker says so, with the size. The archive is a rolling 30 day window, so a handle older than that will not resolve.',
 		proof: { label: 'issue 271', href: `${GITHUB_REPO}/issues/271` },
 	},
 	{
@@ -203,6 +210,38 @@ const promises = [
 		k: 'Never mangles',
 		v: 'JSON, YAML, NDJSON and CSV go through byte for byte, because a corrupted payload costs more than a missed compression.',
 		proof: { label: 'pipeline::format', href: `${GITHUB_REPO}/tree/main/src/pipeline` },
+	},
+];
+
+/* The ledger. It is where most of the saving now comes from, and the page had the
+   evidence for it in the benchmark table while the pitch never mentioned it: file
+   read is the largest class, the filters take 0.0% of it, and the ledger takes the
+   rest. Numbers here are parsed except the 214 bytes, which is the README's own
+   second-read fixture and lives in prose there rather than in the benchmark doc. */
+const ledger = [
+	{
+		k: '214 B',
+		sub: 'the second read',
+		v: 'A file your agent reads twice costs full price, then this. The repeat comes back as one marker carrying a handle, because those bytes are already in its context, and <code>omni retrieve</code> hands the file back in full if it is ever needed.',
+	},
+	{
+		k: stats.repeated,
+		sub: 'of raw bytes',
+		v: `were lines the agent had already been shown, and ${stats.repeatedAfterDistillers} still are after every distiller has run. Filtering barely dents repetition, because repetition is not noise. It is signal that was already delivered.`,
+	},
+	{
+		k: fileRead?.savings ?? '25.0%',
+		sub: 'off file reads',
+		v: `the largest class in the corpus at ${fileRead?.calls ?? '699'} calls and ${fileRead?.input ?? '1.60 MB'}. The filters take ${fileRead?.filters ?? '0.0%'} of it, which is correct: you cannot strip lines from a file the agent asked to see without guessing which parts it meant. The ledger takes a quarter of it and guesses nothing.`,
+	},
+	{
+		k: 'Across sessions',
+		v: 'The store is one SQLite file keyed by project path rather than by agent, so a second agent in the same directory gets a handle for output an earlier session produced. That marker reads <code>from an earlier session</code> and not <code>already shown</code>, because this agent has genuinely never seen those bytes.',
+	},
+	{
+		k: 'A compaction ends it',
+		v: 'The licence to replace forty lines with a handle is that the agent is still holding those lines. When the context window compacts, that stops being true, so OMNI deliberately forgets what it had shown. It cannot stop a compaction, only push it further out.',
+		quiet: true,
 	},
 ];
 
@@ -252,21 +291,25 @@ const hosts = [
 	},
 ];
 
-/* Every entry below exists in BOTH the released binary and main.
+/* A subset of `omni help`, not the whole of it. Every entry exists in BOTH the
+ * released binary and main.
  *
  * Do not add a command from docs/ without running `omni <cmd> --help` against an
- * installed build first. Two entries here were wrong: `omni trust` is documented
- * in HOW_TO_USE.md but the binary answers "unknown command", and `omni rewind`
- * shipped in v0.6.3 then got deleted on main, so it would have broken at the
- * next release. Retrieval is the omni_retrieve MCP tool, not a subcommand.
+ * installed build first. Three entries here were wrong: `omni trust` is documented
+ * in HOW_TO_USE.md but the binary answers "unknown command", `omni rewind` shipped
+ * in v0.6.3 then got deleted on main, and `omni learn` went with the filter layer
+ * in 0.7.4, which the manual had already stopped documenting. This list told
+ * readers to run it for two releases after the answer became "there are no filters
+ * to add".
  */
 const commands = [
 	{ k: 'omni init', v: 'Wire the hook into Claude Code, Cursor, Windsurf, Codex or Antigravity. Interactive.' },
-	{ k: 'omni doctor --fix', v: 'Check hooks, MCP wiring and filter cost, then repair whatever is broken.' },
+	{ k: 'omni doctor --fix', v: 'Check the hooks and the MCP wiring, then repair whatever is broken.' },
 	{ k: 'omni stats', v: 'What it actually saved on your machine. Takes <code>--today</code>, <code>--week</code>, <code>--month</code>.' },
+	{ k: 'omni retrieve', v: 'Print what a marker archived, by the 16 characters inside it. Works on every host, MCP or not.' },
 	{ k: 'omni diff', v: 'The last raw input beside what the agent received. This is how you check its work.' },
+	{ k: 'omni dashboard', v: 'The same numbers <code>omni stats</code> reads, in a browser. Loopback only, read only.' },
 	{ k: 'omni session --status', v: 'Context pressure, stored engrams, and the errors still open in this session.' },
-	{ k: 'omni learn --discover', v: 'Read your shell history and propose filters for your own internal tools.' },
 	{ k: 'omni goal', v: 'Set the objective once. OMNI restates it on every prompt so the agent stops drifting.' },
 	{ k: 'omni remember', v: 'Store a project rule or a gotcha in local SQLite. Recalled by semantic search later.' },
 	{ k: 'omni reset', v: 'Take it back out. Clean uninstall, keeping a backup of your config.' },
@@ -278,7 +321,7 @@ const commands = [
 const faq = [
 	{
 		q: 'Does OMNI delete my logs?',
-		a: 'No. What it cuts is archived to a local SQLite store keyed by SHA-256, and your agent pulls the original back by hash through the omni_retrieve MCP tool. Inputs over 64 KB are not archived, and the marker on those says so with the size. Nothing leaves your machine.',
+		a: 'No. What it cuts is archived to a local SQLite store keyed by SHA-256, and the marker carries the handle that pulls the original back. Inputs over 64 KB are not archived, and the marker on those says so with the size. Nothing leaves your machine.',
 	},
 	{
 		q: 'Will it slow down my terminal?',
@@ -294,11 +337,15 @@ const faq = [
 	},
 	{
 		q: 'Which agents does it work with?',
-		a: 'Claude Code, Cursor, Windsurf, Roo Code, OpenAI Codex and Antigravity. It installs as a shell hook rather than a wrapper, so you keep typing the commands you already type and nothing about your workflow changes.',
+		a: 'Fifteen hosts across three tiers, listed above under Supported agents, and what you get differs by tier. Only a host that can rewrite its own tool output gets shell distillation; the rest get memory and no claim of more. It installs as a shell hook rather than a wrapper, so nothing about how you work changes.',
 	},
 	{
 		q: 'Can I add filters for my own tools?',
-		a: 'Yes. Filters are TOML files in ~/.omni/signals/ that match a command by regex and strip lines by pattern. You can write them by hand, or run omni learn --discover to have OMNI read your shell history and draft them from the noise it already sees.',
+		a: 'There are no filters to add. The pattern-matching layer was retired in 0.7.4 after it measured at 2,018 bytes over 6,656 commands, 0.031% of the corpus, while costing 5 to 7ms of the hook\'s 10ms budget. What remains is the Rust distillers and the ledger, both compiled in, so the set that runs is the set the tests cover. If a tool needs handling, open an issue and it ships in the binary for everyone.',
+	},
+	{
+		q: 'How do I get back something OMNI folded?',
+		a: 'omni retrieve <handle>, where the handle is the 16 characters inside the marker. It works on every host, with or without MCP, and agents that have the MCP server wired can call omni_retrieve instead. The archive is a rolling 30 day window, so a handle older than that will not resolve.',
 	},
 	{
 		q: 'What does OMNI cost?',
@@ -345,21 +392,29 @@ const jsonLd = [
 	},
 ];
 
+/* The order is `Read → Guard → Score → Distill → [Collapse] → Ledger → Persist`,
+   copied from the manual's pipeline page rather than remembered. This list had
+   Collapse before Distill, which is the mistake the manual itself carried for two
+   releases, and it had no Ledger stage at all while the benchmark table three
+   sections up printed a "With ledger" column. */
 const pipeline = [
 	{ k: 'Read', v: 'A shell hook catches stdout on its way to the agent. Nothing about how you work changes.' },
 	{ k: 'Guard', v: 'Non-zero exit, or JSON, YAML, NDJSON, CSV? Straight through. <strong>This branch is taken more often than not.</strong>', quiet: true },
 	{ k: 'Score', v: 'Every line gets a weight. Stack frames and errors score high, progress bars and passing tests score low.' },
-	{ k: 'Collapse', v: 'Repetition folds. Four hundred passing tests become the runner\'s own summary line, never a paraphrase of it.' },
-	{ k: 'Distill', v: 'A command-specific reader runs. Returning the input is always allowed, inventing a summary is not.' },
-	{ k: 'Persist', v: 'Everything cut is hashed into local SQLite, so any of it comes back on demand. Inputs over 64 KB are the one exception, and they say so.' },
+	{ k: 'Distill', v: 'A command-specific reader runs on the raw text. Returning the input is always allowed, inventing a summary is not.' },
+	{ k: 'Collapse', v: 'A fallback rather than a step, taken only when the distilled form failed to earn its keep. Runs of near-identical lines fold into a count.' },
+	{ k: 'Ledger', v: 'What survives is checked against what this session has already been shown. A run of lines the agent is still holding becomes one marker and a handle. <strong>This is where most of the saving now comes from.</strong>' },
+	{ k: 'Persist', v: 'Everything cut is hashed into local SQLite before the marker is written, so a handle never names content that was not stored. Inputs over 64 KB are the one exception, and they say so.' },
 ];
 ---
 
 <Layout
-	title="OMNI, cut AI agent token costs by filtering terminal noise"
-	{/* Kept under 160 characters so the whole line survives the SERP. The
-	    numbers still come from the README, so the claim cannot drift. */}
-	description={`Free Rust CLI that cuts terminal noise before your AI coding agent reads it. git 89%, cargo 91%, kubectl 77%, measured on ${stats.totalCalls} real commands. Always reversible.`}
+	title="OMNI, stop paying to re-read the same terminal output"
+	{/* Kept under 160 characters so the whole line survives the SERP. Every
+	    number is parsed from the manual, so the claim cannot drift. It carried
+	    "git 89%, cargo 91%, kubectl 77%" for a while, and none of the three
+	    appeared anywhere in the repository. */}
+	description={`Free Rust CLI. Output your AI agent has already been shown comes back as a handle, not the bytes again: ${fileRead?.savings ?? '25.0%'} off file reads, ${stats.overallSaved} across ${stats.totalCalls} real commands.`}
 	jsonLd={jsonLd}
 >
 	<main>
@@ -371,7 +426,7 @@ const pipeline = [
 						<h1 class="t-display">Claude is not expensive<span class="text-brand">.</span><br />Your terminal is<span class="text-brand">.</span></h1>
 
 						<p class="lede">
-							OMNI sits on a shell hook and cuts <code>git</code> by 89%, <code>cargo</code> by 91% and <code>kubectl</code> by 77% before your agent reads them. Everything else passes through untouched. It also remembers your project between sessions, so you stop re-explaining it. Nothing is ever lost, and it never invents a result.
+							OMNI sits on a shell hook. It cuts the noise out of command output before your agent reads it, and folds what the agent has already been shown into a handle instead of sending the bytes twice: {fileRead?.savings ?? '25.0%'} off file reads, {stats.overallSaved} across {stats.totalCalls} real commands. Everything else passes through untouched. It also remembers your project between sessions, so you stop re-explaining it. Nothing is deleted, and it never invents a result.
 						</p>
 
 						<div class="hero-actions">
@@ -496,8 +551,33 @@ const pipeline = [
 				</p>
 			</div>
 		</section>
+		<!-- LEDGER -->
+		<section class="band" id="ledger">
+			<div class="wrap">
+				<header class="band-head">
+					<span class="eyebrow">Where the saving comes from</span>
+					<h2 class="t-section">The second read is free</h2>
+					<p class="lede">
+						A filter removes a line because a pattern calls it noise. The ledger removes it because your agent is already holding it. Nothing else in this category ships the second one.
+					</p>
+				</header>
+
+				<dl class="rows">
+					{ledger.map((r) => (
+						<div class={`row${r.quiet ? ' row-quiet' : ''}`}>
+							<dt class={`row-k${r.sub ? ' is-mono' : ''}`}>{r.k}{r.sub && <span class="sub">{r.sub}</span>}</dt>
+							<dd class="row-v" set:html={r.v} />
+						</div>
+					))}
+				</dl>
+
+				<p class="fine" style="margin-top:18px;max-width:660px">
+					One marker carries all of it: <code>[OMNI: 40 lines already shown, omni retrieve bc7e821a4340073e]</code>. The count, what happened to those lines, and the handle that undoes it.
+				</p>
+			</div>
+		</section>
 		<!-- MEMORY -->
-		<section class="band" id="memory">
+		<section class="band band-sunk" id="memory">
 			<div class="wrap">
 				<header class="band-head">
 					<span class="eyebrow">The other half</span>
@@ -518,7 +598,7 @@ const pipeline = [
 			</div>
 		</section>
 		<!-- HOST TIERS -->
-		<section class="band band-sunk" id="hosts">
+		<section class="band" id="hosts">
 			<div class="wrap">
 				<header class="band-head">
 					<span class="eyebrow">Supported agents</span>
@@ -542,7 +622,7 @@ const pipeline = [
 			</div>
 		</section>
 		<!-- NUMBERS -->
-		<section class="band" id="numbers">
+		<section class="band band-sunk" id="numbers">
 			<div class="wrap">
 				<header class="band-head">
 					<span class="eyebrow">Benchmarks</span>
@@ -599,7 +679,7 @@ const pipeline = [
 			</div>
 		</section>
 		<!-- FAQ -->
-		<section class="band band-sunk" id="faq">
+		<section class="band" id="faq">
 			<div class="wrap">
 				<header class="band-head">
 					<span class="eyebrow">Questions</span>
@@ -617,13 +697,13 @@ const pipeline = [
 			</div>
 		</section>
 		<!-- COMMANDS -->
-		<section class="band" id="cli">
+		<section class="band band-sunk" id="cli">
 			<div class="wrap">
 				<header class="band-head">
 					<span class="eyebrow">The CLI</span>
-					<h2 class="t-section">Nine commands, all of them local</h2>
+					<h2 class="t-section">The ten you will use, all of them local</h2>
 					<p class="lede">
-						No dashboard and no account. Nothing about your machine leaves it.
+						<code>omni help</code> lists the rest. No account, and nothing about your machine leaves it.
 					</p>
 				</header>
 
@@ -638,11 +718,11 @@ const pipeline = [
 			</div>
 		</section>
 		<!-- PIPELINE -->
-		<section class="band band-sunk" id="how">
+		<section class="band" id="how">
 			<div class="wrap">
 				<header class="band-head">
 					<span class="eyebrow">How it works</span>
-					<h2 class="t-section">Six stages, and the second one usually ends it</h2>
+					<h2 class="t-section">Seven stages, and the second one usually ends it</h2>
 				</header>
 
 				<dl class="rows">
@@ -660,7 +740,7 @@ const pipeline = [
 			</div>
 		</section>
 		<!-- CLOSE -->
-		<section class="band" id="start">
+		<section class="band band-sunk" id="start">
 			<div class="wrap wrap-text">
 				<h2 class="t-section">A passion project, Apache 2.0 licensed</h2>
 				<p class="lede" style="margin:14px 0 24px">
