@@ -7,10 +7,13 @@ import { parseReadme, extremes, FALLBACK, FIXTURE_KEYS } from './readme-stats.js
 // carries byte figures, an `aggregate` total inside the real table, a byte pair
 // joined by "to" rather than an arrow, and a corpus described as "traces".
 const DOC = `
-| | bytes | saved |
-|---|---|---|
-| omni, filters only | 6,469,047 to 6,291,784 | **2.7%** |
-| rtk \`pipe\` | 6,469,047 to 6,067,012 | **6.2%** |
+| | bytes | saved | |
+|---|---|---|---|
+| omni, filters only | 6,469,047 to 6,291,784 | **2.7%** | |
+| rtk \`pipe\` | 6,469,047 to 6,067,012 | **6.2%** | 872 of 6,656 claimed by a filter |
+| lean-ctx \`compress\` | 6,469,047 to 6,073,757 | **6.1%** | 134 of 6,656 shortened |
+| omni, with the ledger | 6,469,047 to 5,506,627 | **14.9%** | |
+| rtk \`pipe\` + omni's ledger | 6,469,047 to 5,333,483 | **17.6%** | |
 
 * **15.4% fewer bytes** across the mix (6.47 MB to 5.47 MB), of which the
   filters are 2.7% and the ledger is the rest.
@@ -131,6 +134,26 @@ test('a missing repetition sentence falls back without failing the whole read', 
 	assert.notEqual(s, null);
 	assert.equal(s.repeated, FALLBACK.repeated);
 	assert.equal(s.repeatedAfterDistillers, FALLBACK.repeatedAfterDistillers);
+});
+
+test('parses the head-to-head, including the arm we lose', () => {
+	const h = parseReadme(DOC).headToHead;
+	assert.equal(h.length, 5);
+	// The section only works if this row survives: rtk beats our filters, and a
+	// parser that dropped it would turn the comparison into an advertisement.
+	const rtk = h.find((a) => a.label.startsWith('rtk pipe') && !a.label.includes('+'));
+	assert.equal(rtk.saved, '6.2%');
+	assert.equal(rtk.mine, false);
+	assert.equal(rtk.note, '872 of 6,656 claimed by a filter');
+	assert.equal(h.find((a) => a.label === 'omni, filters only').pct, 2.7);
+	assert.equal(h.filter((a) => a.mine).length, 2);
+});
+
+test('the head-to-head falls back whole when an arm goes missing', () => {
+	// Four arms is the minimum that still says what the doc says. Below that the
+	// committed table is served instead of a comparison with a hole in it.
+	const oneArm = DOC.replace(/\| (rtk|lean-ctx|omni, with)[^\n]*\n/g, '');
+	assert.deepEqual(parseReadme(oneArm).headToHead, FALLBACK.headToHead);
 });
 
 test('extremes names the best and worst class', () => {
