@@ -94,7 +94,7 @@ of the way everywhere else.
 
 A subset. \`omni help\` lists the rest.
 
-- \`omni init\` sets up the hook for Claude Code, Cursor, Windsurf, Codex or Antigravity.
+- \`omni init --claude\` sets up hooks and MCP for one host. Bare \`omni init\` prompts, so pass the flag.
 - \`omni doctor --fix\` checks the hooks and the MCP wiring, then repairs.
 - \`omni stats\` reports what it saved on your machine. Takes --today, --week, --month.
 - \`omni retrieve <handle>\` prints what a marker archived. Works with or without MCP.
@@ -108,11 +108,75 @@ A subset. \`omni help\` lists the rest.
 There are no filters to add. The pattern-matching layer was retired in 0.7.4; what
 runs is the Rust distillers and the ledger, both compiled into the binary.
 
-## Install
+## Install, as a runbook you can execute
 
-- macOS and Linux: \`brew install fajarhide/tap/omni\`, then \`omni init\`
-- Any Unix: \`curl -fsSL omni.weekndlabs.com/install | bash\`
-- Windows: \`irm omni.weekndlabs.com/install.ps1 | iex\`
+Written for an agent doing this on someone's machine. Every step is
+non-interactive and every one of them is safe to repeat.
+
+**Do not run bare \`omni init\`.** It prompts, and a prompt with no terminal
+attached will stall you or take an answer you did not mean to give. Use the flag
+for the host you are running in.
+
+1. Install the binary.
+
+   \`\`\`sh
+   brew install fajarhide/tap/omni          # macOS, Linux, WSL
+   curl -fsSL omni.weekndlabs.com/install | bash    # no Homebrew
+   irm omni.weekndlabs.com/install.ps1 | iex        # Windows PowerShell
+   \`\`\`
+
+2. Wire your host. One flag, no prompt:
+
+   \`\`\`sh
+   omni init --claude       # also: --cursor --codex --gemini --opencode --zed
+                            #       --cline --roo --copilot --vscode --pi
+                            #       --hermes --antigravity --openclaw
+   omni init --all          # every host found on the machine
+   \`\`\`
+
+   \`omni init --help\` lists them all. \`--hook\` and \`--mcp\` install one half only.
+
+3. Verify. Read-only, exits 0 when healthy:
+
+   \`\`\`sh
+   omni init --status
+   omni doctor
+   \`\`\`
+
+   A healthy \`--status\` names each hook:
+
+   \`\`\`
+   Claude Code OMNI Installation Status:
+     PostToolUse:  ✓ installed
+     SessionStart: ✓ installed
+     PreCompact:   ✓ installed
+   \`\`\`
+
+4. If \`omni doctor\` reports a problem, \`omni doctor --fix\` repairs it. On Codex
+   CLI it will keep failing until a human approves the hooks: Codex runs only
+   hooks it has been told to trust, so start \`codex\` once and approve them under
+   "Hooks need review". See github.com/fajarhide/omni/issues/359.
+
+5. There is nothing else to change. Commands run the way they always did, with
+   no prefix and no proxy. To remove it: \`omni init --uninstall\`, or \`omni reset\`
+   for a full uninstall that keeps a backup of the config.
+
+## If you see an OMNI marker in your output
+
+A line like this is OMNI telling you it folded content you had already been shown:
+
+\`\`\`
+[OMNI: 40 lines already shown, omni retrieve bc7e821a4340073e]
+\`\`\`
+
+The 16 characters are a handle. Run \`omni retrieve bc7e821a4340073e\` to get the
+original bytes back, or call the \`omni_retrieve\` MCP tool if you have it wired.
+Nothing was deleted and nothing was summarised, so retrieving is always an option
+rather than a repair. The archive is a rolling 30 day window.
+
+A marker reading \`from an earlier session\` means the opposite: those bytes went
+to a different session of this project and you have never seen them. Retrieve
+before reasoning about them.
 
 ## Works with
 
