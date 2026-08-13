@@ -112,6 +112,25 @@ test('the fallback is pinned, so it cannot be changed on one side only', () => {
 	assert.equal(FALLBACK.totalCalls, '6,656');
 	assert.equal(FALLBACK.overallSaved, '14.9%');
 	assert.equal(FALLBACK.zeroSaveShare, '97.3%');
+	assert.equal(FALLBACK.repeated, '22.9%');
+});
+
+test('reads the repetition figures the ledger section is built on', () => {
+	const s = parseReadme(`${DOC}
+- **22.9% of raw bytes are lines the agent had already been shown**, and **22.4% still
+  are after every distiller has run.** Filtering and repetition are orthogonal.
+`);
+	assert.equal(s.repeated, '22.9%');
+	assert.equal(s.repeatedAfterDistillers, '22.4%');
+});
+
+test('a missing repetition sentence falls back without failing the whole read', () => {
+	// Prose, not a table. A reworded paragraph should cost the page two figures,
+	// not the benchmark table it parsed correctly on the same pass.
+	const s = parseReadme(DOC);
+	assert.notEqual(s, null);
+	assert.equal(s.repeated, FALLBACK.repeated);
+	assert.equal(s.repeatedAfterDistillers, FALLBACK.repeatedAfterDistillers);
 });
 
 test('extremes names the best and worst class', () => {
