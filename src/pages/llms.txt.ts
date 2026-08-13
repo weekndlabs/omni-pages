@@ -113,9 +113,10 @@ runs is the Rust distillers and the ledger, both compiled into the binary.
 Written for an agent doing this on someone's machine. Every step is
 non-interactive and every one of them is safe to repeat.
 
-**Do not run bare \`omni init\`.** It prompts, and a prompt with no terminal
-attached will stall you or take an answer you did not mean to give. Use the flag
-for the host you are running in.
+**Do not run bare \`omni init\`.** It opens an interactive menu, and with no
+terminal attached it exits 1 with \`[omni] Init error: IO error: not a terminal\`
+before writing anything. If you see that line, you did not break the install, you
+just need the flag for the host you are running in.
 
 1. Install the binary.
 
