@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<meta charset="utf-8">
+<!--
+  The share card, rendered by scripts/make-og.mjs. Do not edit public/media/og.png
+  by hand and do not type a number into this file.
+
+  Every {{placeholder}} below is substituted from src/lib/readme-stats.js, the same
+  parser the landing page renders from, so the card cannot drift from the page the
+  way the one it replaced did. That card shipped 58.9% across 1,810 executions for
+  three weeks after the corpus became 6,656, and carried an invented category name
+  and a logo that was not the mark.
+
+  The theme is pinned because the card is one image with no viewer preference to
+  read. Dark is what an unstyled visitor lands on: @weekndlabs/design carries no
+  prefers-color-scheme rule at all, so the palette comes from [data-theme] and the
+  bare :root holds the dark set. If the site's default ever flips, flip this with
+  it, or the card stops looking like the page it links to.
+-->
+<title>OMNI share card</title>
+<link rel="stylesheet" href="../node_modules/@weekndlabs/design/dist/tokens.css">
+<link rel="stylesheet" href="../node_modules/@weekndlabs/design/dist/fonts.css">
+<style>
+  :root {
+    --paper: var(--wl-background);
+    --ink: var(--wl-foreground);
+    --ink-soft: var(--wl-muted-foreground);
+    --rule: var(--wl-border);
+    --accent: var(--wl-ring);
+    --crt: var(--wl-terminal-ground);
+    --phosphor: var(--wl-terminal-foreground);
+    --phosphor-dim: var(--wl-terminal-dim);
+    /* The terminal ramp's blue, never --accent. --wl-ring flips with the theme and
+       this ground does not, so the accent falls to 3.38:1 on it under light. */
+    --phosphor-hot: var(--wl-terminal-blue);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1200px;
+    height: 630px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--wl-font-sans);
+    overflow: hidden;
+  }
+
+  .left { padding: 58px 0 58px 64px; display: flex; flex-direction: column; }
+  .right { padding: 58px 64px 58px 40px; display: flex; align-items: center; }
+
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand img { width: 54px; height: 54px; border-radius: 11px; display: block; }
+  .brand span {
+    font-size: 30px; font-weight: 700; letter-spacing: 0.14em;
+  }
+
+  .eyebrow {
+    margin-top: 30px;
+    font-family: var(--wl-font-mono);
+    font-size: 15px;
+    letter-spacing: 0.18em;
+    color: var(--ink-soft);
+  }
+
+  h1 {
+    margin-top: 16px;
+    font-size: 52px;
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    font-weight: 700;
+    max-width: 14ch;
+    hyphens: none;
+    overflow-wrap: normal;
+  }
+  h1 .dot { color: var(--accent); }
+
+  .lede {
+    margin-top: 18px;
+    font-size: 18.5px;
+    line-height: 1.45;
+    color: var(--ink-soft);
+    max-width: 37ch;
+  }
+
+  /* Both figures carry the same weight. Setting the best case in the large size
+     and the aggregate in fine print is the move the page argues against. */
+  .figures { margin-top: auto; padding-top: 22px; display: flex; gap: 52px; }
+  .fig-n { font-size: 44px; font-weight: 700; letter-spacing: -0.02em; }
+  .fig-l {
+    margin-top: 4px; font-size: 15px; line-height: 1.35;
+    color: var(--ink-soft); max-width: 20ch;
+  }
+
+  .crt {
+    width: 100%;
+    background: var(--crt);
+    border-radius: 14px;
+    padding: 26px 30px 22px;
+    font-family: var(--wl-font-mono);
+    font-size: 16.5px;
+    line-height: 1.72;
+    color: var(--phosphor);
+  }
+  .crt-head {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13px; letter-spacing: 0.12em;
+    color: var(--phosphor-dim);
+    padding-bottom: 16px;
+  }
+  .crt-head b { color: var(--phosphor-hot); font-weight: 400; }
+
+  .ln { display: grid; grid-template-columns: 20px 1fr; }
+  .ln .mark { color: var(--phosphor-dim); }
+  .cut { color: var(--phosphor-dim); text-decoration: line-through; }
+  .keep { color: var(--phosphor-hot); }
+
+  .crt-foot {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid color-mix(in oklch, var(--phosphor-dim) 30%, transparent);
+    font-size: 13px;
+    color: var(--phosphor-dim);
+    display: flex; justify-content: space-between; gap: 24px;
+    white-space: nowrap;
+  }
+</style>
+
+<div class="left">
+  <div class="brand">
+    <img src="../public/logo.svg" alt="">
+    <span>OMNI</span>
+  </div>
+
+  <p class="eyebrow">SHELL HOOK &middot; MCP SERVER &middot; APACHE 2.0</p>
+  <h1>Stop paying to re&#8209;read the same output<span class="dot">.</span></h1>
+  <p class="lede">
+    It drops the noise from command output before the model reads it, and returns
+    what the model has already been shown as a handle. Nothing deleted, nothing
+    invented.
+  </p>
+
+  <div class="figures">
+    <div>
+      <div class="fig-n">{{BEST}}</div>
+      <div class="fig-l">off {{BEST_CLASS}} output</div>
+    </div>
+    <div>
+      <div class="fig-n">{{OVERALL}}</div>
+      <div class="fig-l">across all {{CALLS}} replayed commands</div>
+    </div>
+  </div>
+</div>
+
+<div class="right">
+  <div class="crt">
+    <div class="crt-head">
+      <span>GIT STATUS</span>
+      <span><b>{{FIXTURE_IN}}</b></span>
+    </div>
+    <div class="ln"><span class="mark">$</span><span>git status</span></div>
+    <div class="ln"><span class="mark"></span><span>On branch main</span></div>
+    <div class="ln"><span class="mark">&minus;</span><span class="cut">(use "git push" to publish your commits)</span></div>
+    <div class="ln"><span class="mark"></span><span>Changes not staged for commit:</span></div>
+    <div class="ln"><span class="mark">&minus;</span><span class="cut">(use "git add &lt;file&gt;..." to update)</span></div>
+    <div class="ln"><span class="mark">&minus;</span><span class="cut">(use "git restore &lt;file&gt;..." to discard)</span></div>
+    <div class="ln"><span class="mark"></span><span class="keep">&nbsp;&nbsp;modified: src/pipeline/scorer.rs</span></div>
+    <div class="ln"><span class="mark"></span><span class="keep">&nbsp;&nbsp;modified: src/distillers/test.rs</span></div>
+    <div class="ln"><span class="mark">&minus;</span><span class="cut">no changes added to commit</span></div>
+    <div class="crt-foot">
+      <span>{{FIXTURE_OUT}} delivered, {{FIXTURE_SAVED}} smaller</span>
+      <span>nothing deleted, hashed to disk</span>
+    </div>
+  </div>
+</div>
