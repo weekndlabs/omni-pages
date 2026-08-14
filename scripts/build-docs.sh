@@ -85,9 +85,22 @@ ds_version="$(node -p "require('$here/node_modules/@weekndlabs/design/package.js
 mkdir -p "$book_src/src/wl"
 cp -R "$ds/tokens.css" "$ds/fonts.css" "$ds/fonts" "$book_src/src/wl/"
 
+# Whether this ref has a share card to keep. Read before the append, so it says
+# what the manual shipped rather than what this script just wrote, and so a
+# DOCS_REF older than fajarhide/omni#527 does not fail the check at the end.
+head_had_card=0
+if grep -q 'og:title' "$book_src/theme/head.hbs" 2>/dev/null; then head_had_card=1; fi
+
 # head.hbs is mdbook's own hook for this, injected into every page including the
 # 404, so nothing here has to rewrite rendered HTML.
-cat > "$book_src/theme/head.hbs" <<'HEAD'
+#
+# Appended, never truncated. The manual ships its own head.hbs carrying the
+# share card (fajarhide/omni#527), and `cat >` replaced it on every build, so no
+# page under /docs ever reached production with an og: tag. mdbook injects the
+# whole file and both halves want to be in <head>, so the two coexist. A
+# DOCS_REF older than #527 has no share card to keep, and >> creates the file,
+# which is why nothing here reads it first.
+cat >> "$book_src/theme/head.hbs" <<'HEAD'
 <link rel="stylesheet" href="{{ path_to_root }}wl/tokens.css">
 <link rel="stylesheet" href="{{ path_to_root }}wl/fonts.css">
 <link rel="preload" href="{{ path_to_root }}wl/fonts/inter-100-900.woff2" as="font" type="font/woff2" crossorigin>
@@ -148,6 +161,16 @@ cp -R "$out/." "$here/public/docs/"
 # rather than leaving a silent copy in the build log.
 pages="$(find "$here/public/docs" -name '*.html' | wc -l | tr -d ' ')"
 echo "docs: ${pages} pages rendered into public/docs from ${DOCS_REF}, styled by @weekndlabs/design ${ds_version}"
+
+# The overlay above is one character away from deleting the manual's share card
+# again, and a build that deletes it stays green: every page still renders, the
+# links just stop unfurling. Nothing else here would notice.
+if [ "$head_had_card" = 1 ]; then
+  grep -q 'og:title' "$here/public/docs/index.html" || {
+    echo "docs: nothing rendered og:title, the overlay replaced the manual's head.hbs" >&2
+    exit 1
+  }
+fi
 
 # Every link mdbook writes is relative, so the book only holds together under a
 # path that ends in a slash. /docs and /docs/ both return 200 on Vercel and only
