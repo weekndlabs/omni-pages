@@ -42,12 +42,19 @@
      invention here.
 
      Amber used to be the body colour in here, which made the demo block read
-     as a brand wash rather than as a terminal. It is now what a terminal
-     actually does with yellow: the live reading, and nothing else. */
+     as a brand wash rather than as a terminal. The live reading is now the same
+     blue as the accent on paper, so the page spends one colour instead of two.
+
+     `--phosphor-hot` is the terminal ramp's blue and not `--accent` itself,
+     although the two are the same oklch in the default theme. `--wl-ring` flips
+     with the page theme and the CRT ground does not, so under
+     `[data-theme='light']` the accent lands at 3.38:1 on this black and fails
+     AA. The ramp is defined once, so it holds at 6.01:1 in both. Re-run that
+     check before pointing this at anything outside `--wl-terminal-*`. */
   --crt:            var(--wl-terminal-ground);
   --phosphor:       var(--wl-terminal-foreground);
   --phosphor-dim:   var(--wl-terminal-dim);
-  --phosphor-hot:   var(--wl-terminal-yellow);
+  --phosphor-hot:   var(--wl-terminal-blue);
   /* Derived rather than picked, so the terminal keeps its internal contrast
      when the system moves the ramp. A hairline one step off the ground, and
      the colour a struck line lands on before it collapses. */
@@ -128,9 +135,12 @@ h1, h2, h3, h4 {
 .t-section { font-size: var(--wl-text-section); }
 
 /* The full stop is the mark, the same one weekndlabs.com puts after "agentic
-   era". It is --wl-ring, the system's accent, not this page's amber: amber
-   belongs to the terminal and this dot is the house signature. Decorative, so
-   the sentence still ends the same way with CSS off. */
+   era". Decorative, so the sentence still ends the same way with CSS off.
+
+   This used to be the one accent on paper while the terminal kept amber. The
+   terminal now reads in the same blue, so the page carries a single accent and
+   the only amber left in the product is the logo, which is a bitmap-shaped
+   brand asset and cannot read a token. */
 .text-brand { color: var(--accent); }
 
 .lede {
@@ -139,6 +149,10 @@ h1, h2, h3, h4 {
   max-width: var(--measure-text);
   line-height: var(--wl-leading-body);
 }
+
+/* The same emphasis a row value gets: full ink against the lede's soft ink,
+   never a second colour. Used on the two hero figures. */
+.lede strong { color: var(--ink); font-weight: var(--wl-weight-semibold); }
 
 .eyebrow {
   font-family: var(--font-mono);
@@ -528,20 +542,8 @@ code {
 .row-quiet { background: var(--paper-sunk); }
 .band-sunk .row-quiet { background: var(--paper-sunk); }
 
-/* Same primitive, narrow column. Used beside the hero instrument, where 190px
-   of key would leave the value cell too thin to read. */
-.rows-tight { margin-top: 12px; }
-.rows-tight .row { grid-template-columns: 78px minmax(0, 1fr); gap: 14px; padding: 11px 14px; }
-.rows-tight .row-k { font-size: var(--wl-text-meta); }
-.rows-tight .row-v { font-size: var(--wl-text-meta); }
-/* Echoes the diff marker column inside the terminal, so the two blocks read as
-   one thought rather than a caption parked under a picture. */
-.gutter {
-  font-family: var(--font-mono);
-  color: var(--accent);
-  display: inline-block;
-  width: 15px;
-}
+/* `.rows-tight` and `.gutter` lived here for the hero's Cut / Kept pair and went
+   out with it. Both were used in exactly one place. */
 
 /* Receipts sit inline at the end of a value, not on their own line. */
 .receipt {
