@@ -123,7 +123,19 @@ cat > "$book_src/theme/head.hbs" <<'HEAD'
 HEAD
 
 # --- render ------------------------------------------------------------------
-"$MDBOOK" build "$book_src"
+# The manual is two books since fajarhide/omni#539: English at /docs, Indonesian
+# at /docs/id. Its own build.sh renders both and lands the second inside the
+# first, so everything below still copies one tree, and a third language needs
+# no change here.
+#
+# Older refs have no build.sh. Falling back keeps `DOCS_REF=<old-tag>` building
+# rather than turning a pinned manual into a failed deploy.
+if [ -x "$book_src/build.sh" ]; then
+  "$book_src/build.sh" "$MDBOOK"
+else
+  echo "docs: ${DOCS_REF} predates docs/website/build.sh, rendering English only"
+  "$MDBOOK" build "$book_src"
+fi
 
 out="$book_src/book"
 [ -f "$out/index.html" ] || { echo "docs: mdbook produced no index.html" >&2; exit 1; }
