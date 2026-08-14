@@ -172,6 +172,12 @@ if [ "$head_had_card" = 1 ]; then
   }
 fi
 
+# The rest of the head: og:url, the canonical, and a description per page. They
+# need the URL a page is served at, and mdbook knows only the source path it
+# rendered from. Here rather than in the manual's own repository because nothing
+# there builds the book, so a step added there would never run.
+node "$here/scripts/docs-meta.mjs"
+
 # Every link mdbook writes is relative, so the book only holds together under a
 # path that ends in a slash. /docs and /docs/ both return 200 on Vercel and only
 # the second one resolves `css/general.css` inside the book; the first sends it
