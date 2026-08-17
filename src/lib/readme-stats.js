@@ -27,35 +27,35 @@
 const BENCHMARKS_URL =
 	'https://raw.githubusercontent.com/fajarhide/omni/main/docs/website/src/develop/benchmarks.md';
 
-/** Last-known-good, verified against the manual on 2026-08-13 (0.7.3 replay). */
+/** Last-known-good, verified against the manual on 2026-08-17 (0.7.5 replay). */
 export const FALLBACK = {
 	source: 'fallback',
-	totalCalls: '6,656',
-	overallSaved: '14.9%',
-	zeroSaveShare: '97.3%',
-	bytesIn: '6.47 MB',
-	bytesOut: '5.50 MB',
+	totalCalls: '5,984',
+	overallSaved: '69.6%',
+	zeroSaveShare: '96.1%',
+	bytesIn: '23.09 MB',
+	bytesOut: '7.03 MB',
 	// What the ledger exists for: the share of raw bytes the agent had already
 	// been shown, and how little of it the distillers reach. The gap between the
 	// two is the whole argument, so both are read rather than typed.
-	repeated: '22.9%',
-	repeatedAfterDistillers: '22.4%',
+	repeated: '68.4%',
+	repeatedAfterDistillers: '64.7%',
 	rows: [
-		{ command: 'build and test', calls: '69', input: '94 KB', filters: '76.9%', savings: '78.0%', pct: 78.0 },
-		{ command: 'file read', calls: '699', input: '1.60 MB', filters: '0.0%', savings: '25.0%', pct: 25.0 },
-		{ command: 'git, gh', calls: '661', input: '609 KB', filters: '4.4%', savings: '22.1%', pct: 22.1 },
-		{ command: 'search', calls: '828', input: '1.03 MB', filters: '4.8%', savings: '13.3%', pct: 13.3 },
-		{ command: 'infra', calls: '254', input: '193 KB', filters: '4.4%', savings: '8.2%', pct: 8.2 },
-		{ command: 'other', calls: '4,145', input: '2.95 MB', filters: '0.6%', savings: '6.9%', pct: 6.9 },
+		{ command: 'file read', calls: '884', input: '10.93 MB', filters: '39.2%', savings: '89.6%', pct: 89.6 },
+		{ command: 'other', calls: '3,703', input: '11.05 MB', filters: '29.1%', savings: '56.2%', pct: 56.2 },
+		{ command: 'build and test', calls: '36', input: '24 KB', filters: '10.8%', savings: '10.8%', pct: 10.8 },
+		{ command: 'git, gh', calls: '696', input: '475 KB', filters: '2.5%', savings: '7.0%', pct: 7.0 },
+		{ command: 'infra', calls: '65', input: '70 KB', filters: '0.0%', savings: '6.8%', pct: 6.8 },
+		{ command: 'search', calls: '600', input: '540 KB', filters: '2.3%', savings: '4.3%', pct: 4.3 },
 	],
 	// The three reproducible fixtures the hero demo cycles through, so every
 	// meter reading is a real measurement rather than a number chosen to look
 	// good. Deliberately spread across the range: one strong, one ordinary, one
 	// that barely pays for itself.
 	fixtures: {
-		'cargo test': { command: 'cargo test', input: '16,515 B', output: '1,178 B', savings: '92.9%' },
-		'git status': { command: 'git status', input: '496 B', output: '190 B', savings: '61.7%' },
-		'docker build': { command: 'docker build', input: '9,207 B', output: '5,904 B', savings: '35.9%' },
+		'cargo test': { command: 'cargo test', input: '16,515 B', output: '1,153 B', savings: '93.0%' },
+		'git status': { command: 'git status', input: '496 B', output: '165 B', savings: '66.7%' },
+		'docker build': { command: 'docker build', input: '9,207 B', output: '102 B', savings: '98.9%' },
 	},
 };
 
@@ -64,6 +64,23 @@ export const FIXTURE_KEYS = Object.keys(FALLBACK.fixtures);
 
 /** Strip markdown emphasis and inline code so `**96.8%**` becomes `96.8%`. */
 const clean = (cell) => cell.replace(/[*`]/g, '').trim();
+
+/**
+ * Is line `i` a real table header of at least `cols` columns, rather than a data
+ * row that happens to contain the words we key on?
+ *
+ * Keying on words alone is not enough, and this cost a release. 0.7.5 added a
+ * summary row reading `| ledger folds | 882 calls, 3,231 session markers |`,
+ * which carries both `calls` and `ledger` and sits above the real class table.
+ * It won the search, the reader started two lines below it on a two-column row,
+ * bailed on the column count and returned zero rows, so the whole parse failed
+ * validation and the page served the committed fallback. A header is followed by
+ * a `|---|` separator; a data row is not.
+ */
+function isHeader(lines, i, cols) {
+	const sep = lines[i + 1] ?? '';
+	return /^\|[\s:|-]+\|$/.test(sep.trim()) && lines[i].split('|').slice(1, -1).length >= cols;
+}
 
 /**
  * Pull the per-class breakdown: class, calls, input, filters, filters+ledger.
@@ -79,7 +96,7 @@ const clean = (cell) => cell.replace(/[*`]/g, '').trim();
 function parseClassTable(md) {
 	const lines = md.split('\n');
 	const header = lines.findIndex(
-		(l) => /^\|/.test(l) && /\bcalls\b/i.test(l) && /\bledger\b/i.test(l)
+		(l, i) => /^\|/.test(l) && /\bcalls\b/i.test(l) && /\bledger\b/i.test(l) && isHeader(lines, i, 5)
 	);
 	if (header === -1) return [];
 
@@ -111,7 +128,7 @@ function parseClassTable(md) {
 function parseFixture(md, want) {
 	const lines = md.split('\n');
 	const header = lines.findIndex(
-		(l) => /^\|/.test(l) && /\bcommand\b/i.test(l) && /\bdelivered\b/i.test(l)
+		(l, i) => /^\|/.test(l) && /\bcommand\b/i.test(l) && /\bdelivered\b/i.test(l) && isHeader(lines, i, 4)
 	);
 	if (header === -1) return null;
 
@@ -145,28 +162,49 @@ export function parseReadme(md) {
 	const fixtures = Object.fromEntries(
 		FIXTURE_KEYS.map((k) => [k, parseFixture(md, k) ?? FALLBACK.fixtures[k]])
 	);
-	// "(6.47 MB to 5.47 MB)" today, "(40.1 MB → 22.7 MB)" before 0.7.0.
-	const bytePair = md.match(/\(([\d.]+ [KMG]B)\s*(?:→|to)\s*([\d.]+ [KMG]B)\)/);
+	// Three shapes now. "(40.1 MB → 22.7 MB)" before 0.7.0, "(6.47 MB to 5.47 MB)"
+	// until 0.7.5, and since 0.7.5 a bare run of raw byte counts on the line under
+	// the headline: "23,086,649 to 15,557,823 to 7,026,021." Filters sit in the
+	// middle and the ledger at the end, and the page quotes end to end, so the
+	// middle term is dropped rather than averaged into anything.
+	const mbPair = md.match(/\(([\d.]+ [KMG]B)\s*(?:→|to)\s*([\d.]+ [KMG]B)\)/);
+	const rawRun = md.match(/^([\d,]{7,}) to (?:[\d,]{7,} to )?([\d,]{7,})\.?\s*$/m);
+	// Decimal MB, matching the unit the doc's own class table prints, so the hero
+	// and the table cannot disagree about what a megabyte is.
+	const toMB = (s) => (Number(s.replace(/,/g, '')) / 1e6).toFixed(2) + ' MB';
 	const stats = {
 		source: 'docs/website/src/develop/benchmarks.md@main',
 		rows,
 		fixtures,
-		overallSaved: grab(md, /\*\*([\d.]+)% fewer bytes\*\*/),
-		zeroSaveShare: grab(md, /\*\*([\d.]+)% of (?:those )?calls saved nothing/),
-		// "over **6,656 traces covering …**" today, "**9,965 real command
-		// executions**" before.
+		// The page quotes the end-to-end figure, so this is the with-ledger number
+		// in both wordings. 0.7.5 split the headline into two percentages in one
+		// bold span, "32.6% fewer bytes from the filters. 69.6% with the ledger",
+		// and taking the first match there would have published the filters alone
+		// under a label the page uses for the total.
+		overallSaved:
+			grab(md, /\*\*[\d.]+% fewer bytes from the filters\.\s*([\d.]+)% with the ledger/) ??
+			grab(md, /\*\*([\d.]+)% fewer bytes\*\*/),
+		// Prose before 0.7.5, a summary-table row since.
+		zeroSaveShare:
+			grab(md, /calls that saved nothing \|\s*\*\*([\d.]+)%/) ??
+			grab(md, /\*\*([\d.]+)% of (?:those )?calls saved nothing/),
+		// "**Corpus**: 5,984 traces" today, "over **6,656 traces covering …**"
+		// until 0.7.5, "**9,965 real command executions**" before 0.7.0.
 		totalCalls:
+			grab(md, /\*\*Corpus\*\*:\s*([\d,]+) traces\b/) ??
 			grab(md, /\*\*([\d,]+) traces\b/) ??
 			grab(md, /\*\*([\d,]+) real command\s*\n?\s*executions\*\*/),
-		bytesIn: bytePair?.[1] ?? null,
-		bytesOut: bytePair?.[2] ?? null,
+		bytesIn: mbPair?.[1] ?? (rawRun ? toMB(rawRun[1]) : null),
+		bytesOut: mbPair?.[2] ?? (rawRun ? toMB(rawRun[2]) : null),
 		// Prose rather than a table, so these fall back on their own instead of
 		// failing the whole read. A missing sentence should not blank a page whose
 		// tables parsed.
 		repeated:
+			grab(md, /raw bytes already shown once \|\s*\*\*([\d.]+)%/) ??
 			grab(md, /\*\*([\d.]+)% of raw bytes are lines the agent had already been shown\*\*/) ??
 			FALLBACK.repeated,
 		repeatedAfterDistillers:
+			grab(md, /raw bytes already shown once \|\s*\*\*[\d.]+%\*\* before filters,\s*([\d.]+)% after/) ??
 			grab(md, /\*\*([\d.]+)% still\s+are after every distiller/) ??
 			FALLBACK.repeatedAfterDistillers,
 	};
@@ -198,9 +236,21 @@ export async function getBenchmarkStats() {
 		console.log(`[benchmarks] ${parsed.rows.length} rows from ${parsed.source} (${parsed.overallSaved})`);
 		return parsed;
 	} catch (e) {
-		// Loud on purpose. This warning was the only trace of the page serving a
-		// stale corpus for a whole release, and nobody reads a quiet build log.
+		// The warning below was the only trace of the page serving a stale corpus,
+		// and it has now failed to be read twice: once when 0.7.0 moved to a
+		// per-class table, once when 0.7.5 rewrote the headline into two
+		// percentages. Both times the site published a corpus the repository had
+		// already replaced. A warning nobody reads is not a guard, so on a deploy
+		// this stops being advisory.
 		console.warn(`[benchmarks] USING COMMITTED FALLBACK, the live read failed: ${e.message}`);
+		if (process.env.VERCEL && !process.env.OMNI_ALLOW_STALE_BENCHMARKS) {
+			throw new Error(
+				`benchmark parse fell back (${e.message}). Refusing to publish figures ` +
+					`that could not be verified against the manual. Fix the parser in ` +
+					`src/lib/readme-stats.js, or set OMNI_ALLOW_STALE_BENCHMARKS=1 to ` +
+					`ship the committed fallback on purpose.`
+			);
+		}
 		return FALLBACK;
 	}
 }

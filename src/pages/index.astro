@@ -168,13 +168,15 @@ const limits = [
 	{
 		k: stats.zeroSaveShare,
 		sub: 'of all calls',
-		/* "181 calls" and the 5.3 KB are the manual's, not the parser's: the
-		   headline section of benchmarks.md names the count, and 5.3 KB is
-		   6,469,047 minus 5,506,627 over those 181. Deriving the count from
-		   `workingShare` instead gives 180, because 2.7% is already rounded, so
-		   the site would disagree with the manual by one. Re-read that section
-		   before touching either figure. */
-		v: `saved nothing at all. OMNI changes about 1 command in ${oneIn} and adds zero bytes to the rest, which is why it is safe to leave on for everything. All of the ${stats.overallSaved} headline comes from that ${workingShare}, 181 calls that each came back about 5.3 KB lighter, and not one call in ${stats.totalCalls} came out larger.`,
+		/* This used to end "all of the headline comes from that 2.7%, 181 calls
+		   that each came back about 5.3 KB lighter". Both figures were the 0.7.4
+		   manual's and neither survives its rewrite: the headline is now the
+		   with-ledger number, and the ledger folds 882 calls where 236 shrank
+		   under the filters, so the headline demonstrably does not all come from
+		   the calls this row counts. Rather than derive a replacement from two
+		   rows whose scopes the doc does not state, the claim is gone. What is
+		   left is what benchmarks.md states outright. */
+		v: `saved nothing at all. OMNI changes about 1 command in ${oneIn} and adds zero bytes to the rest, which is why it is safe to leave on for everything. Not one call in ${stats.totalCalls} came out larger.`,
 	},
 	{
 		k: '21 to 61 ms',
@@ -233,7 +235,7 @@ const ledger = [
 		v: `were lines the agent had already been shown, and ${stats.repeatedAfterDistillers} still are after every distiller has run. Filtering barely dents repetition, because repetition is not noise. It is signal that was already delivered.`,
 	},
 	{
-		k: fileRead?.savings ?? '25.0%',
+		k: fileRead?.savings ?? '89.6%',
 		sub: 'off file reads',
 		v: `the largest class in the corpus at ${fileRead?.calls ?? '699'} calls and ${fileRead?.input ?? '1.60 MB'}. The filters take ${fileRead?.filters ?? '0.0%'} of it, which is correct: you cannot strip lines from a file the agent asked to see without guessing which parts it meant. The ledger takes a quarter of it and guesses nothing.`,
 	},
@@ -332,7 +334,10 @@ const faq = [
 	},
 	{
 		q: 'How much does it actually save?',
-		a: `On the output that actually carries noise, ${best.command} is ${best.savings}. On file reads, where the filters can take nothing without guessing, the ledger still takes ${fileRead?.savings ?? '26.3%'}. Across the whole mix it averages ${stats.overallSaved}, because ${stats.zeroSaveShare} of ${stats.totalCalls} replayed commands saved nothing at all and OMNI added zero bytes to them. Both numbers are published, and the second is the one that tells you what the first is worth.`,
+		/* "where the filters can take nothing without guessing" was true when file
+		   reads read 0.0% from the filters. They read 39.2% now, so the clause was
+		   deleted rather than reworded. */
+		a: `On the output that actually carries noise, ${best.command} is ${best.savings}. On file reads it is ${fileRead?.savings ?? '89.6%'}, most of which is the ledger rather than the filters. Across the whole mix it averages ${stats.overallSaved}, because ${stats.zeroSaveShare} of ${stats.totalCalls} replayed commands saved nothing at all and OMNI added zero bytes to them. Both numbers are published, and the second is the one that tells you what the first is worth. That average also depends on what you run: the corpus behind it is a heavy week, and an ordinary one reads 14.9%.`,
 	},
 	{
 		q: 'Can it hide an error from my agent?',
@@ -417,7 +422,7 @@ const pipeline = [
 	    number is parsed from the manual, so the claim cannot drift. It carried
 	    "git 89%, cargo 91%, kubectl 77%" for a while, and none of the three
 	    appeared anywhere in the repository. */}
-	description={`Free Rust CLI. Output your AI agent has already been shown comes back as a handle, not the bytes again: ${fileRead?.savings ?? '25.0%'} off file reads, ${stats.overallSaved} across ${stats.totalCalls} real commands.`}
+	description={`Free Rust CLI. Output your AI agent has already been shown comes back as a handle, not the bytes again: ${fileRead?.savings ?? '89.6%'} off file reads, ${stats.overallSaved} across ${stats.totalCalls} real commands.`}
 	jsonLd={jsonLd}
 >
 	<main>
@@ -579,15 +584,19 @@ const pipeline = [
 					One marker carries all of it: <code>[OMNI: 40 lines already shown, omni retrieve bc7e821a4340073e]</code>. The count, what happened to those lines, and the handle that undoes it.
 				</p>
 
-				{/* The head-to-head is the strongest thing this project has measured and
-				    the page never mentioned it. These four figures are the only numbers
-				    on the page not parsed at build: readme-stats.js reads the class
-				    table, not this one. They come from the head-to-head in
-				    docs/website/src/develop/benchmarks.md, replayed 2026-08-12 on 0.7.3,
-				    and the link is here so a reader can check the row. Re-read that
-				    table before touching them. */}
+				{/* The only numbers on the page not parsed at build: readme-stats.js
+				    reads the class table, not the head-to-head one. They come from the
+				    head-to-head in docs/website/src/develop/benchmarks.md, replayed on
+				    0.7.5, and the link is here so a reader can check every row.
+
+				    Re-read that table before touching them, and re-read it whenever the
+				    corpus changes. The previous version of this sentence said our
+				    filters take 2.7% against rtk's 6.2% and conceded the row. Those were
+				    the 0.7.4 corpus's figures left behind on a page whose trace count is
+				    parsed, so once the parser was fixed the sentence would have
+				    attributed one corpus's result to another corpus's count. */}
 				<p class="fine" style="margin-top:14px;max-width:660px">
-					Head to head on the same {stats.totalCalls} traces, rtk's filters take 6.2% and ours take 2.7%, so their patterns beat ours by 3.5 points. The ledger adds 12.2 points on top of ours and 11.4 on top of theirs, which is why the ranking survives losing that row. Every row is published, that one included.
+					Head to head on the same {stats.totalCalls} traces, rtk's filters take 6.2% and ours take 32.6%. Bolting our ledger onto rtk's filters lifts them to 61.4%, still short of the 69.6% above, and the closest arm is headroom's dedup at 65.8%. The row we lose is lean-ctx, at 49.4% against our filters' 32.6% on a corpus built for exactly that. Every row is published, that one included.
 					{' '}
 					<span class="receipt"><a href="/docs/develop/benchmarks">benchmarks</a></span>
 				</p>
@@ -645,7 +654,14 @@ const pipeline = [
 					<span class="eyebrow">Benchmarks</span>
 					<h2 class="t-section">{stats.totalCalls} real commands, replayed on the release binary</h2>
 					<p class="lede">
-						One developer's actual usage over months, not a fixture set chosen to flatter the result. {stats.bytesIn} in, {stats.bytesOut} out.
+						One developer's actual usage, not a fixture set chosen to flatter the result. {stats.bytesIn} in, {stats.bytesOut} out.
+					</p>
+					{/* The manual opens its own headline with this warning, so the page
+					    that quotes the headline carries it too. Leaving it in the manual
+					    and putting only the percentage here is how a caveat gets lost:
+					    the number travels and the sentence qualifying it does not. */}
+					<p class="lede" style="margin-top:10px">
+						Read the corpus before the number. This window is unusual and it inflates everything below: 286 groups of byte-identical payloads account for 80.6% of these bytes, and 148 of the {stats.totalCalls} calls carry 64.7% of them. It was a week of building and benchmarking OMNI itself. The same harness over a week of ordinary work reads <strong>14.9%</strong>.
 					</p>
 				</header>
 
