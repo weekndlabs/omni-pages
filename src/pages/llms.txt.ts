@@ -40,9 +40,10 @@ All figures below are replayed on the release binary over ${s.totalCalls} real
 command executions from one developer's usage, ${s.bytesIn} in and ${s.bytesOut} out.
 
 - ${s.overallSaved} fewer bytes reach the model across the whole mix.
-- ${s.zeroSaveShare} of those calls saved nothing at all. OMNI handed the output
-  straight back, adding zero bytes. Every byte of the saving comes from the other
-  ${working}, where there was real noise to cut.
+- OMNI left ${s.zeroSaveShare} of those calls untouched and added zero bytes to
+  them, because taking anything would have been unsafe or would not have paid for
+  its own marker. Every byte of the saving comes from the other ${working}, which
+  is what the per-class rows below measure.
 - Best case ${best.savings} on \`${best.command}\` over ${best.calls} calls.
   Worst case ${worst.savings} on \`${worst.command}\` over ${worst.calls} calls.
 

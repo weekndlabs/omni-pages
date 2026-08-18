@@ -37,9 +37,12 @@ and no usage limit.
 
 ## Cost to run
 OMNI itself costs nothing. It reduces what you spend on model tokens, measured
-at ${s.overallSaved} fewer bytes across ${s.totalCalls} replayed commands, though
-${s.zeroSaveShare} of those commands save nothing at all and OMNI adds zero bytes
-to them. Run \`omni stats\` to measure your own.
+at ${s.overallSaved} fewer bytes across ${s.totalCalls} replayed commands. That
+average counts in the ${s.zeroSaveShare} of commands OMNI leaves untouched, adding
+zero bytes to them. It is an average over that mix rather than a promise for yours:
+the per-class rows are what predict your own workload, and they range from single
+digits on search to ${s.rows.find((r) => /file read/i.test(r.command))?.savings ?? '89.6%'} on file re-reads. Run
+\`omni stats\` to measure exactly that.
 
 The cost it does add is latency, roughly 21ms to 61ms per hooked command
 depending on how large your local history has grown.

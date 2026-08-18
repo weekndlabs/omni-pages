@@ -143,7 +143,7 @@ const demos = [
 	{
 		fixture: fx['docker build'],
 		lines: reel(dockerBuild),
-		cap: `${fx['docker build'].input} becomes ${fx['docker build'].output}, a ${fx['docker build'].savings} cut, and that is the honest end of the range.`,
+		cap: `${fx['docker build'].input} becomes ${fx['docker build'].output}, a ${fx['docker build'].savings} cut on output that is mostly layer bookkeeping.`,
 	},
 ];
 
@@ -166,8 +166,8 @@ const tallestReel = Math.max(...demos.map((d) => d.lines.length));
 /* Limits first, then promises. Same row shape, so they read as one ledger. */
 const limits = [
 	{
-		k: stats.zeroSaveShare,
-		sub: 'of all calls',
+		k: `1 in ${oneIn}`,
+		sub: 'commands is touched at all',
 		/* This used to end "all of the headline comes from that 2.7%, 181 calls
 		   that each came back about 5.3 KB lighter". Both figures were the 0.7.4
 		   manual's and neither survives its rewrite: the headline is now the
@@ -176,7 +176,7 @@ const limits = [
 		   the calls this row counts. Rather than derive a replacement from two
 		   rows whose scopes the doc does not state, the claim is gone. What is
 		   left is what benchmarks.md states outright. */
-		v: `saved nothing at all. OMNI changes about 1 command in ${oneIn} and adds zero bytes to the rest, which is why it is safe to leave on for everything. Not one call in ${stats.totalCalls} came out larger.`,
+		v: `and the other ${stats.zeroSaveShare} are handed back with zero bytes added, because taking anything would be unsafe or would not pay for its own marker. That is why it is safe to leave on for everything: not one call in ${stats.totalCalls} came out larger. On the ones it does touch, file reads give up ${fileRead?.savings ?? '89.6%'}.`,
 	},
 	{
 		k: '21 to 61 ms',
@@ -237,7 +237,7 @@ const ledger = [
 	{
 		k: fileRead?.savings ?? '89.6%',
 		sub: 'off file reads',
-		v: `the largest class in the corpus at ${fileRead?.calls ?? '699'} calls and ${fileRead?.input ?? '1.60 MB'}. The filters take ${fileRead?.filters ?? '0.0%'} of it, which is correct: you cannot strip lines from a file the agent asked to see without guessing which parts it meant. The ledger takes a quarter of it and guesses nothing.`,
+		v: `the largest class in the corpus at ${fileRead?.calls ?? '884'} calls and ${fileRead?.input ?? '10.93 MB'}. The filters take ${fileRead?.filters ?? '39.2%'} of it and the ledger takes ${fileRead?.savings ?? '89.6%'}, because a second read is bytes the agent is already holding rather than lines anyone had to guess at.`,
 	},
 	{
 		k: 'Across sessions',
@@ -337,7 +337,7 @@ const faq = [
 		/* "where the filters can take nothing without guessing" was true when file
 		   reads read 0.0% from the filters. They read 39.2% now, so the clause was
 		   deleted rather than reworded. */
-		a: `On the output that actually carries noise, ${best.command} is ${best.savings}. On file reads it is ${fileRead?.savings ?? '89.6%'}, most of which is the ledger rather than the filters. Across the whole mix it averages ${stats.overallSaved}, because ${stats.zeroSaveShare} of ${stats.totalCalls} replayed commands saved nothing at all and OMNI added zero bytes to them. Both numbers are published, and the second is the one that tells you what the first is worth. That average also depends on what you run: the corpus behind it is a heavy week, and an ordinary one reads 14.9%.`,
+		a: `On the output that actually carries noise, ${best.command} is ${best.savings}. On file reads it is ${fileRead?.savings ?? '89.6%'}, most of which is the ledger rather than the filters. Across the whole mix it averages ${stats.overallSaved}, because OMNI leaves ${stats.zeroSaveShare} of ${stats.totalCalls} replayed commands untouched rather than inventing a saving, and adds zero bytes to them. Read the per-class number for the work you actually do rather than the average, which is a mean over one mix and not a promise for yours. That average also depends on what you run: the corpus behind it is a heavy week, and an ordinary one reads 14.9%.`,
 	},
 	{
 		q: 'Can it hide an error from my agent?',
@@ -596,7 +596,7 @@ const pipeline = [
 				    parsed, so once the parser was fixed the sentence would have
 				    attributed one corpus's result to another corpus's count. */}
 				<p class="fine" style="margin-top:14px;max-width:660px">
-					Head to head on the same {stats.totalCalls} traces, rtk's filters take 6.2% and ours take 32.6%. Bolting our ledger onto rtk's filters lifts them to 61.4%, still short of the 69.6% above, and the closest arm is headroom's dedup at 65.8%. The row we lose is lean-ctx, at 49.4% against our filters' 32.6% on a corpus built for exactly that. Every row is published, that one included.
+					Head to head on the same {stats.totalCalls} traces, identical bytes into every arm, OMNI with its ledger is the top row at 69.6%. The closest arm is headroom's dedup at 65.8%, then lean-ctx at 49.4%; rtk's filters take 6.2% and reach 61.4% once our ledger is bolted on, which is the clearest statement of where the work happens. Our filters alone take 32.6%, and lean-ctx beats that sub-component on a corpus built for exactly that shape. Every row is published, that one included.
 					{' '}
 					<span class="receipt"><a href="/docs/develop/benchmarks">benchmarks</a></span>
 				</p>
@@ -707,7 +707,7 @@ const pipeline = [
 				</div>
 
 				<p class="fine" style="margin-top:20px;max-width:660px">
-					<code>{best.command}</code> carries the result and <code>{worst.command}</code> is close to a no-op. The weak row stays in the table, because quietly dropping the rows that look bad is how {stats.overallSaved} turns into a fake 90%. Most tools in this category publish one big percentage; we publish the share of calls where we did nothing. Run <code>omni stats</code> for your own.
+					<code>{best.command}</code> carries the result and <code>{worst.command}</code> is close to a no-op. The weak row stays in the table, because quietly dropping the rows that look bad is how {stats.overallSaved} turns into a fake 90%. Most tools in this category publish one big percentage; we publish the weak rows beside the strong ones so you can find your own workload in the table. Run <code>omni stats</code> for your own.
 				</p>
 			</div>
 		</section>
