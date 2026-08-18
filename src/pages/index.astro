@@ -337,7 +337,7 @@ const faq = [
 		/* "where the filters can take nothing without guessing" was true when file
 		   reads read 0.0% from the filters. They read 39.2% now, so the clause was
 		   deleted rather than reworded. */
-		a: `On the output that actually carries noise, ${best.command} is ${best.savings}. On file reads it is ${fileRead?.savings ?? '89.6%'}, most of which is the ledger rather than the filters. Across the whole mix it averages ${stats.overallSaved}, because OMNI leaves ${stats.zeroSaveShare} of ${stats.totalCalls} replayed commands untouched rather than inventing a saving, and adds zero bytes to them. Read the per-class number for the work you actually do, and the average as a floor. That average also depends on what you run: the corpus behind it is a heavy week, and an ordinary one reads 14.9%.`,
+		a: `On the output that actually carries noise, ${best.command} is ${best.savings}. On file reads it is ${fileRead?.savings ?? '89.6%'}, most of which is the ledger rather than the filters. Across the whole mix it averages ${stats.overallSaved}, because OMNI leaves ${stats.zeroSaveShare} of ${stats.totalCalls} replayed commands untouched rather than inventing a saving, and adds zero bytes to them. Read the per-class number for the work you actually do rather than the average, which is a mean over one mix and not a promise for yours. That average also depends on what you run: the corpus behind it is a heavy week, and an ordinary one reads 14.9%.`,
 	},
 	{
 		q: 'Can it hide an error from my agent?',
