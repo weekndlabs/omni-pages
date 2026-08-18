@@ -166,8 +166,8 @@ const tallestReel = Math.max(...demos.map((d) => d.lines.length));
 /* Limits first, then promises. Same row shape, so they read as one ledger. */
 const limits = [
 	{
-		k: stats.zeroSaveShare,
-		sub: 'of all calls',
+		k: `1 in ${oneIn}`,
+		sub: 'commands is touched at all',
 		/* This used to end "all of the headline comes from that 2.7%, 181 calls
 		   that each came back about 5.3 KB lighter". Both figures were the 0.7.4
 		   manual's and neither survives its rewrite: the headline is now the
@@ -176,7 +176,7 @@ const limits = [
 		   the calls this row counts. Rather than derive a replacement from two
 		   rows whose scopes the doc does not state, the claim is gone. What is
 		   left is what benchmarks.md states outright. */
-		v: `saved nothing at all. OMNI changes about 1 command in ${oneIn} and adds zero bytes to the rest, which is why it is safe to leave on for everything. Not one call in ${stats.totalCalls} came out larger.`,
+		v: `and the other ${stats.zeroSaveShare} are handed back with zero bytes added, because taking anything would be unsafe or would not pay for its own marker. That is why it is safe to leave on for everything: not one call in ${stats.totalCalls} came out larger. On the ones it does touch, file reads give up ${fileRead?.savings ?? '89.6%'}.`,
 	},
 	{
 		k: '21 to 61 ms',
@@ -337,7 +337,7 @@ const faq = [
 		/* "where the filters can take nothing without guessing" was true when file
 		   reads read 0.0% from the filters. They read 39.2% now, so the clause was
 		   deleted rather than reworded. */
-		a: `On the output that actually carries noise, ${best.command} is ${best.savings}. On file reads it is ${fileRead?.savings ?? '89.6%'}, most of which is the ledger rather than the filters. Across the whole mix it averages ${stats.overallSaved}, because ${stats.zeroSaveShare} of ${stats.totalCalls} replayed commands saved nothing at all and OMNI added zero bytes to them. Both numbers are published, and the second is the one that tells you what the first is worth. That average also depends on what you run: the corpus behind it is a heavy week, and an ordinary one reads 14.9%.`,
+		a: `On the output that actually carries noise, ${best.command} is ${best.savings}. On file reads it is ${fileRead?.savings ?? '89.6%'}, most of which is the ledger rather than the filters. Across the whole mix it averages ${stats.overallSaved}, because OMNI leaves ${stats.zeroSaveShare} of ${stats.totalCalls} replayed commands untouched rather than inventing a saving, and adds zero bytes to them. Read the per-class number for the work you actually do, and the average as a floor. That average also depends on what you run: the corpus behind it is a heavy week, and an ordinary one reads 14.9%.`,
 	},
 	{
 		q: 'Can it hide an error from my agent?',
