@@ -143,7 +143,7 @@ const demos = [
 	{
 		fixture: fx['docker build'],
 		lines: reel(dockerBuild),
-		cap: `${fx['docker build'].input} becomes ${fx['docker build'].output}, a ${fx['docker build'].savings} cut, and that is the honest end of the range.`,
+		cap: `${fx['docker build'].input} becomes ${fx['docker build'].output}, a ${fx['docker build'].savings} cut on output that is mostly layer bookkeeping.`,
 	},
 ];
 
@@ -237,7 +237,7 @@ const ledger = [
 	{
 		k: fileRead?.savings ?? '89.6%',
 		sub: 'off file reads',
-		v: `the largest class in the corpus at ${fileRead?.calls ?? '699'} calls and ${fileRead?.input ?? '1.60 MB'}. The filters take ${fileRead?.filters ?? '0.0%'} of it, which is correct: you cannot strip lines from a file the agent asked to see without guessing which parts it meant. The ledger takes a quarter of it and guesses nothing.`,
+		v: `the largest class in the corpus at ${fileRead?.calls ?? '884'} calls and ${fileRead?.input ?? '10.93 MB'}. The filters take ${fileRead?.filters ?? '39.2%'} of it and the ledger takes ${fileRead?.savings ?? '89.6%'}, because a second read is bytes the agent is already holding rather than lines anyone had to guess at.`,
 	},
 	{
 		k: 'Across sessions',
@@ -707,7 +707,7 @@ const pipeline = [
 				</div>
 
 				<p class="fine" style="margin-top:20px;max-width:660px">
-					<code>{best.command}</code> carries the result and <code>{worst.command}</code> is close to a no-op. The weak row stays in the table, because quietly dropping the rows that look bad is how {stats.overallSaved} turns into a fake 90%. Most tools in this category publish one big percentage; we publish the share of calls where we did nothing. Run <code>omni stats</code> for your own.
+					<code>{best.command}</code> carries the result and <code>{worst.command}</code> is close to a no-op. The weak row stays in the table, because quietly dropping the rows that look bad is how {stats.overallSaved} turns into a fake 90%. Most tools in this category publish one big percentage; we publish the weak rows beside the strong ones so you can find your own workload in the table. Run <code>omni stats</code> for your own.
 				</p>
 			</div>
 		</section>
