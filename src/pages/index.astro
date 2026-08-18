@@ -596,7 +596,7 @@ const pipeline = [
 				    parsed, so once the parser was fixed the sentence would have
 				    attributed one corpus's result to another corpus's count. */}
 				<p class="fine" style="margin-top:14px;max-width:660px">
-					Head to head on the same {stats.totalCalls} traces, rtk's filters take 6.2% and ours take 32.6%. Bolting our ledger onto rtk's filters lifts them to 61.4%, still short of the 69.6% above, and the closest arm is headroom's dedup at 65.8%. The row we lose is lean-ctx, at 49.4% against our filters' 32.6% on a corpus built for exactly that. Every row is published, that one included.
+					Head to head on the same {stats.totalCalls} traces, identical bytes into every arm, OMNI with its ledger is the top row at 69.6%. The closest arm is headroom's dedup at 65.8%, then lean-ctx at 49.4%; rtk's filters take 6.2% and reach 61.4% once our ledger is bolted on, which is the clearest statement of where the work happens. Our filters alone take 32.6%, and lean-ctx beats that sub-component on a corpus built for exactly that shape. Every row is published, that one included.
 					{' '}
 					<span class="receipt"><a href="/docs/develop/benchmarks">benchmarks</a></span>
 				</p>
