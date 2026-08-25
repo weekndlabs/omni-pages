@@ -4,6 +4,8 @@ description: "omni stats advertised seven views and two of them were the same th
 date: 2026-08-26T05:00:00Z
 tag: Release Note
 author: OMNI Core Team
+image: /media/omni-0.7.8.png
+imageAlt: "OMNI v0.7.8 release card, headed Six views and a synonym, with three figures: 161 rows down to 2 for --limit 2, 7 views offered down to 6, 3 frames drawn down to 1"
 ---
 
 This one came out of reading `omni stats` closely instead of running it. The report

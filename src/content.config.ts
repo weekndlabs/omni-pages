@@ -10,6 +10,11 @@ const blogCollection = defineCollection({
     tag: z.string().optional(),
     author: z.string().optional(),
     featured: z.boolean().optional().default(false),
+    // The social preview for this post, as an absolute path under public/.
+    // Layout already falls back to /media/og.png, so a post without one is
+    // unchanged. Release notes set it to that release's card.
+    image: z.string().optional(),
+    imageAlt: z.string().optional(),
   }),
 });
 

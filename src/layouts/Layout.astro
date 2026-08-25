@@ -8,6 +8,7 @@ interface Props {
 	title: string;
     description: string;
     image?: string;
+    imageAlt?: string;
     author?: string;
     /** ISO date. Only set on articles, so non-articles emit no article metadata. */
     publishDate?: string;
@@ -21,6 +22,9 @@ const {
     title,
     description,
     image = '/media/og.png',
+    // Travels with . A page that overrides one and not the other
+    // describes a picture it is not showing.
+    imageAlt = 'OMNI, noise-canceling context and long-term memory for AI coding agents',
     author = 'Fajar Hidayat',
     publishDate,
     jsonLd,
@@ -114,7 +118,7 @@ const structuredData = jsonLd ?? defaultJsonLd;
 		    the same on every URL. */}
 		<meta property="og:image:width" content="2400" />
 		<meta property="og:image:height" content="1260" />
-		<meta property="og:image:alt" content="OMNI, noise-canceling context and long-term memory for AI coding agents" />
+		<meta property="og:image:alt" content={imageAlt} />
 		{isArticle && (
 			<Fragment>
 				<meta property="article:author" content={author} />
