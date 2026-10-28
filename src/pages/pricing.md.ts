@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getBenchmarkStats } from '../lib/readme-stats.js';
+import { getBenchmarkStats, extremes } from '../lib/readme-stats.js';
 
 /**
  * Machine-readable pricing for AI agents evaluating tools on a user's behalf.
@@ -15,6 +15,7 @@ import { getBenchmarkStats } from '../lib/readme-stats.js';
  */
 export const GET: APIRoute = async () => {
 	const s = await getBenchmarkStats();
+	const { best, worst } = extremes(s.rows);
 
 	return new Response(
 		`# Pricing, OMNI
@@ -28,8 +29,8 @@ and no usage limit.
 - Limits: none
 - Account required: no
 - Telemetry: none. Everything runs locally and no data leaves your machine.
-- Includes: the full distillation pipeline, the RewindStore, cross-session
-  memory, the MCP server, custom TOML filters, and every CLI command.
+- Includes: the distillers, the ledger, the local archive behind \`omni retrieve\`,
+  cross-session memory, the MCP server, and every CLI command.
 
 ## Support
 - Community only, via GitHub issues: https://github.com/fajarhide/omni/issues
@@ -40,8 +41,8 @@ OMNI itself costs nothing. It reduces what you spend on model tokens, measured
 at ${s.overallSaved} fewer bytes across ${s.totalCalls} replayed commands. That
 average counts in the ${s.zeroSaveShare} of commands OMNI leaves untouched, adding
 zero bytes to them. It is an average over that mix rather than a promise for yours:
-the per-class rows are what predict your own workload, and they range from single
-digits on search to ${s.rows.find((r) => /file read/i.test(r.command))?.savings ?? '89.6%'} on file re-reads. Run
+the per-class rows are what predict your own workload, and they range from
+${worst.savings} on ${worst.command} to ${best.savings} on ${best.command}. Run
 \`omni stats\` to measure exactly that.
 
 The cost it does add is latency, roughly 21ms to 61ms per hooked command
