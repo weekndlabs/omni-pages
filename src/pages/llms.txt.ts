@@ -37,9 +37,11 @@ agent. Nothing is sent anywhere. There is no account and no dashboard.
 ## Measured results
 
 All figures below are replayed on the release binary over ${s.totalCalls} real
-command executions from one developer's usage, ${s.bytesIn} in and ${s.bytesOut} out.
+command executions from one developer's usage. That week was mostly short shell
+plumbing with little to cut, so it is a measurement of that mix, not a promise for yours.
 
-- ${s.overallSaved} fewer bytes reach the model across the whole mix.
+- ${s.filtersSaved} fewer bytes from the distillers, ${s.overallSaved} once the ledger folds
+  output the agent had already been shown.
 - OMNI left ${s.zeroSaveShare} of those calls untouched and added zero bytes to
   them, because taking anything would have been unsafe or would not have paid for
   its own marker. Every byte of the saving comes from the other ${working}, which
@@ -51,10 +53,8 @@ Per class, with what the distillers take and what the ledger adds on top:
 
 ${s.rows.map((r) => `- ${r.command}: ${r.calls} calls, ${r.input} in, ${r.filters} from the distillers, ${r.savings} with the ledger`).join('\n')}
 
-${s.repeated} of raw bytes are lines the agent had already been shown, and ${s.repeatedAfterDistillers} still
-are after every distiller has run. That gap is what the ledger exists for. The
-largest class in the corpus is file reads, where the distillers correctly take
-nothing, because you cannot strip lines from a file the agent asked to see.
+The figure moves a lot with the workload, and the manual publishes every run.
+Run \`omni stats\` for your own.
 
 A tool claiming to save 90% of every command is telling you it summarised output
 you needed. OMNI earns its place on noisy, repetitive tooling output and gets out

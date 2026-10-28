@@ -1,0 +1,4 @@
+git: on feature/omni | staged:2 mod:2 untracked:1
+Staged: src/main.rs, src/lib.rs
+Modified: Cargo.toml, README.md
+[OMNI: 12 lines omitted, omni retrieve 2a4f08eb59bf14a0 for full output]

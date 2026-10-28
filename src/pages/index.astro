@@ -1,275 +1,70 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getBenchmarkStats, extremes } from '../lib/readme-stats.js';
+import { getReleases } from '../lib/changelog.js';
+import { loadReels } from '../lib/demo.js';
 
 const GITHUB_REPO = 'https://github.com/fajarhide/omni';
 const GITHUB_RELEASES = `${GITHUB_REPO}/releases`;
 
-const getVersionLabel = (version) => {
-	if (version.includes('-rc')) return 'Release candidate';
-	if (version.includes('-alpha')) return 'Alpha';
-	if (version.includes('-beta')) return 'Beta';
-	return 'Stable';
-};
+/* For the structured data. The CHANGELOG the /releases page already parses,
+   rather than a literal that went stale (it read v0.6.9 seven releases later)
+   whenever the GitHub API rate-limited the build. */
+const { releases } = await getReleases();
+const latestVersion = `v${releases[0].version}`;
 
-let latestVersion = 'v0.6.9';
-let versionLabel = getVersionLabel(latestVersion);
-
-try {
-	const response = await fetch('https://api.github.com/repos/fajarhide/omni/releases/latest');
-	if (response.ok) {
-		const data = await response.json();
-		latestVersion = data.tag_name;
-		versionLabel = getVersionLabel(latestVersion);
-	}
-} catch (e) {
-	console.error('Failed to fetch latest OMNI version:', e);
-}
-
-// Benchmark figures are read from the OMNI README on `main` at build time.
+// Benchmark figures are read from the OMNI manual on `main` at build time.
 // Do not hardcode them here. See src/lib/readme-stats.js.
 const stats = await getBenchmarkStats();
 const { best, worst } = extremes(stats.rows);
-const fileRead = stats.rows.find((r) => /file read/i.test(r.command));
-const workingShare = (100 - parseFloat(stats.zeroSaveShare)).toFixed(1) + '%';
-/* Derived, not written down. The copy said "about 1 command in 10" while the
-   parsed share was 2.7%, which is 1 in 37. A page selling published honesty
-   cannot carry a number that is four times out. */
-const oneIn = Math.round(100 / (100 - parseFloat(stats.zeroSaveShare)));
 
-/* Hero demo. Three real command shapes, with the lines OMNI drops marked so the
-   block can subtract them in place. `n` is the noise flag, `keep` highlights the
-   part that survives. Every byte figure comes from the README fixture table, and
-   the three are chosen to span the range on purpose: a command that pays for
-   itself, an ordinary one, and one that barely does. A page arguing against fake
-   90% claims cannot show three 90% demos.
+/* Real fixtures run through a real `omni exec`, see scripts/make-demo.sh. The
+   page used to show lines written by hand under a caption saying they were
+   reproducible, which is fabricated output in the first screen of a tool whose
+   pitch is that it never fabricates output. */
+const { version: demoVersion, reels } = loadReels();
+const tallestReel = Math.max(...reels.map((r) => r.rawLines.length));
+const gs = reels.find((r) => r.name === 'git-status');
 
-   Every path and module below exists in the omni repository on `main`. They were
-   invented once (`src/rewind/`, `src/distill/`, `pipeline/score.rs`) and that is
-   fabricated output in the first screen of a tool whose pitch is that it never
-   fabricates output. Check against `git ls-tree` before editing one. */
-const cargoTest = [
-	{ t: '$ cargo test', prompt: true },
-	{ t: `   Compiling omni ${latestVersion} (/Users/f/omni)`, n: true },
-	{ t: '   Compiling serde v1.0.210', n: true },
-	{ t: '   Compiling regex v1.10.6', n: true },
-	{ t: '    Finished test profile in 41.20s', n: true },
-	{ t: '     Running unittests src/lib.rs', n: true },
-	{ t: 'test pipeline::scorer::keeps_stack_frames ... ok', n: true },
-	{ t: 'test pipeline::scorer::drops_progress_bars ... ok', n: true },
-	{ t: 'test pipeline::format::json_passthrough ... ok', n: true },
-	{ t: 'test ledger::folds_a_run_already_shown ... ok', n: true },
-	{ t: 'test store::sqlite::roundtrip_sha256 ... ok', n: true },
-	{ t: '... 478 more passing tests ...', n: true },
-	{ t: 'test distillers::test::parses_summary ... FAILED', keep: true },
-	{ t: '', n: true },
-	{ t: 'failures:' },
-	{ t: '    thread panicked at src/distillers/test.rs:118:9', keep: true },
-	{ t: '    assertion `left == right` failed' },
-	{ t: '      left: 490' },
-	{ t: '     right: 500' },
-	{ t: '', n: true },
-	{ t: 'test result: FAILED. 490 passed; 10 failed', keep: true },
+const installs = [
+	{ tab: 'Homebrew', cmd: 'brew install fajarhide/tap/omni' },
+	{ tab: 'curl', cmd: 'curl -fsSL omni.weekndlabs.com/install | bash' },
+	{ tab: 'PowerShell', cmd: 'irm omni.weekndlabs.com/install.ps1 | iex' },
 ];
 
-/* The six hint lines git prints every single time, gone. What changed, stays. */
-const gitStatus = [
-	{ t: '$ git status', prompt: true },
-	{ t: 'On branch main' },
-	{ t: "Your branch is ahead of 'origin/main' by 2 commits." },
-	{ t: '  (use "git push" to publish your local commits)', n: true },
-	{ t: '', n: true },
-	{ t: 'Changes not staged for commit:' },
-	{ t: '  (use "git add <file>..." to update what will be committed)', n: true },
-	{ t: '  (use "git restore <file>..." to discard changes)', n: true },
-	{ t: '        modified:   src/pipeline/scorer.rs', keep: true },
-	{ t: '        modified:   src/distillers/test.rs', keep: true },
-	{ t: '', n: true },
-	{ t: 'Untracked files:' },
-	{ t: '  (use "git add <file>..." to include in what will be committed)', n: true },
-	{ t: '        tests/fixtures/docker-build.txt', keep: true },
-	{ t: '', n: true },
-	{ t: 'no changes added to commit (use "git add" to track them)', n: true },
-];
-
-/* The honest one. A successful build is mostly layer bookkeeping, but the
-   bookkeeping is only a third of the bytes, so a third is all it saves. */
-const dockerBuild = [
-	{ t: '$ docker build -t omni:ci .', prompt: true },
-	{ t: '#1 [internal] load build definition from Dockerfile' },
-	{ t: '#1 transferring dockerfile: 412B done', n: true },
-	{ t: '#1 DONE 0.0s', n: true },
-	{ t: '#2 [internal] load .dockerignore' },
-	{ t: '#2 transferring context: 108B done', n: true },
-	{ t: '#2 DONE 0.0s', n: true },
-	{ t: '#3 [internal] load metadata for docker.io/library/rust:1.79' },
-	{ t: '#3 DONE 1.2s', n: true },
-	{ t: '#4 [builder 1/5] FROM docker.io/library/rust:1.79' },
-	{ t: '#4 CACHED' },
-	{ t: '#5 [internal] load build context' },
-	{ t: '#5 transferring context: 2.14MB done', n: true },
-	{ t: '#5 DONE 0.3s', n: true },
-	{ t: '#8 [builder 4/5] RUN cargo build --release' },
-	{ t: '#8 24.61 warning: unused import: `std::fmt`', keep: true },
-	{ t: '#8 24.61   --> src/store/sqlite.rs:4:5', keep: true },
-	{ t: '#8 DONE 61.4s', n: true },
-	{ t: '#9 exporting to image' },
-	{ t: '#9 writing image sha256:9f2c1a3e8b04', keep: true },
-	{ t: '#9 naming to docker.io/library/omni:ci done', keep: true },
-];
-
-/* Noise lines get an ordinal so the strike can walk down the block one line at
-   a time. That walk is the whole point: it shows the scoring pass happening. */
-const reel = (lines) => {
-	let n = 0;
-	return lines.map((line) => ({ ...line, i: line.n ? n++ : null }));
-};
-
-const fx = stats.fixtures;
-
-/* One entry per command in the reel. `cap` is the measurement, and it is the only
-   prose the block gets: the strike itself shows what went and what stayed. */
-const demos = [
+/* What it does. One row per behaviour, each with the receipt that proves it
+   where one exists. The latency row is quiet because it is a cost, and it is
+   on the page because a tool that sits on every command should say what it
+   charges. "21 to 61 ms" deliberately lags an 11.1 ms A/B in the manual, see
+   project memory; move the manual first. */
+const does = [
 	{
-		fixture: fx['cargo test'],
-		lines: reel(cargoTest),
-		cap: `${fx['cargo test'].input} of test output becomes ${fx['cargo test'].output}, a ${fx['cargo test'].savings} cut.`,
-	},
-	{
-		fixture: fx['git status'],
-		lines: reel(gitStatus),
-		cap: `${fx['git status'].input} becomes ${fx['git status'].output}, a ${fx['git status'].savings} cut on a command your agent runs constantly.`,
-	},
-	{
-		fixture: fx['docker build'],
-		lines: reel(dockerBuild),
-		cap: `${fx['docker build'].input} becomes ${fx['docker build'].output}, a ${fx['docker build'].savings} cut on output that is mostly layer bookkeeping.`,
-	},
-];
-
-/* The bar names the case with the context string straight out of the README
-   fixture table ("490 passed, 10 failed", "dirty", "heavy noise"), so the label
-   is a parsed measurement rather than one more claim to keep true. The position
-   tells a reader who lands mid cycle that two more cases are coming. */
-demos.forEach((d, i) => {
-	// Split at the parenthetical so a narrow bar can drop the context rather than
-	// truncate it mid word. "1 of 3 · cargo test" survives on its own.
-	const [, cmd, ctx = ''] = d.fixture.command.match(/^([^(]+)(\(.*\))?$/);
-	d.label = `${i + 1} of ${demos.length} · ${cmd.trim()}`;
-	d.context = ctx;
-});
-
-/* The reel switches between blocks of different length, so the body is pinned to
-   the tallest. Nothing on the page may move while it plays. */
-const tallestReel = Math.max(...demos.map((d) => d.lines.length));
-
-/* Limits first, then promises. Same row shape, so they read as one ledger. */
-const limits = [
-	{
-		k: `1 in ${oneIn}`,
-		sub: 'commands is touched at all',
-		/* This used to end "all of the headline comes from that 2.7%, 181 calls
-		   that each came back about 5.3 KB lighter". Both figures were the 0.7.4
-		   manual's and neither survives its rewrite: the headline is now the
-		   with-ledger number, and the ledger folds 882 calls where 236 shrank
-		   under the filters, so the headline demonstrably does not all come from
-		   the calls this row counts. Rather than derive a replacement from two
-		   rows whose scopes the doc does not state, the claim is gone. What is
-		   left is what benchmarks.md states outright. */
-		v: `and the other ${stats.zeroSaveShare} are handed back with zero bytes added, because taking anything would be unsafe or would not pay for its own marker. That is why it is safe to leave on for everything: not one call in ${stats.totalCalls} came out larger. On the ones it does touch, file reads give up ${fileRead?.savings ?? '89.6%'}.`,
-	},
-	{
-		k: '21 to 61 ms',
-		sub: 'per hooked command',
-		v: 'and the cost grows with your history rather than with the payload. A 496 byte <code>git status</code> takes about 21ms against a fresh database and about 61ms against a 205 MB one. A 16.5 KB <code>cargo test</code> takes 24ms and 65ms. Budget for it.',
-	},
-	{
-		k: 'exit != 0',
-		sub: 'never compressed',
-		v: 'Failing commands pass through whole, structured output is never touched, and a distiller that cannot parse its input stays quiet instead of guessing.',
-	},
-];
-
-const promises = [
-	{
-		k: 'Reversible',
-		/* Both bounds are published because the unbounded version of this sentence
-		   was false until v0.6.9: the archive gate never fired, and 0 of 8,968
-		   distillations carried a hash. The receipt is the issue that found it.
-		   The 30 day window is the manual's own limit on a handle, and it is the
-		   one thing "nothing is ever lost" cannot promise. */
-		v: 'Everything cut is archived to local SQLite keyed by SHA-256, for inputs up to 64 KB. The marker carries the handle and <code>omni retrieve</code> prints the original on any host. Above the cap nothing is archived and the marker says so, with the size. The archive is a rolling 30 day window, so a handle older than that will not resolve.',
-		proof: { label: 'issue 271', href: `${GITHUB_REPO}/issues/271` },
-	},
-	{
-		k: 'Never invents',
-		v: 'A distiller that parsed no signal hands back the raw output. It will not write a green "no errors" line that nothing supports.',
+		k: 'Drops noise',
+		v: 'A distiller written for the command keeps errors, stack frames and what changed, and drops progress bars, passing tests and the hints git prints every time. If it cannot parse the output, it hands it back untouched rather than guessing.',
 		proof: { label: 'issue 143', href: `${GITHUB_REPO}/issues/143` },
 	},
 	{
-		k: 'Never hides',
-		v: 'Any command that exits non-zero passes through untouched. A buried error costs more than an uncompressed one.',
+		k: 'Folds repeats',
+		v: 'Output the agent has already been shown this session comes back as one marker with a handle, because those bytes are already in its context. A file it asks to read is always delivered whole. When the context compacts, OMNI forgets what it had shown.',
+	},
+	{
+		k: 'Keeps everything',
+		v: 'Everything cut is archived to local SQLite keyed by SHA-256, for inputs up to 64 KB, and <code>omni retrieve</code> prints it back on any host. Above that size the marker says so. Handles last a rolling 30 days.',
+		proof: { label: 'issue 271', href: `${GITHUB_REPO}/issues/271` },
+	},
+	{
+		k: 'Leaves failures alone',
+		v: `A command that exits non-zero reaches the agent whole, and JSON, YAML, NDJSON and CSV go through byte for byte. Most commands are not touched at all: ${stats.zeroSaveShare} in the current benchmark, with zero bytes added.`,
 		proof: { label: 'issue 120', href: `${GITHUB_REPO}/issues/120` },
 	},
 	{
-		k: 'Never mangles',
-		v: 'JSON, YAML, NDJSON and CSV go through byte for byte, because a corrupted payload costs more than a missed compression.',
-		proof: { label: 'pipeline::format', href: `${GITHUB_REPO}/tree/main/src/pipeline` },
-	},
-];
-
-/* The ledger. It is where most of the saving now comes from, and the page had the
-   evidence for it in the benchmark table while the pitch never mentioned it: file
-   read is the largest class, the filters take 0.0% of it, and the ledger takes the
-   rest. Numbers here are parsed except the 214 bytes, which is the README's own
-   second-read fixture and lives in prose there rather than in the benchmark doc. */
-const ledger = [
-	{
-		k: '214 B',
-		sub: 'the second read',
-		v: 'A file your agent reads twice costs full price, then this. The repeat comes back as one marker carrying a handle, because those bytes are already in its context, and <code>omni retrieve</code> hands the file back in full if it is ever needed.',
+		k: 'Remembers the project',
+		v: '<code>omni remember</code> stores rules and gotchas, <code>omni goal</code> restates the objective on every prompt, and a new session, or a new editor, starts with a summary of the last one.',
 	},
 	{
-		k: stats.repeated,
-		sub: 'of raw bytes',
-		v: `were lines the agent had already been shown, and ${stats.repeatedAfterDistillers} still are after every distiller has run. Filtering barely dents repetition, because repetition is not noise. It is signal that was already delivered.`,
-	},
-	{
-		k: fileRead?.savings ?? '89.6%',
-		sub: 'off file reads',
-		v: `the largest class in the corpus at ${fileRead?.calls ?? '884'} calls and ${fileRead?.input ?? '10.93 MB'}. The filters take ${fileRead?.filters ?? '39.2%'} of it and the ledger takes ${fileRead?.savings ?? '89.6%'}, because a second read is bytes the agent is already holding rather than lines anyone had to guess at.`,
-	},
-	{
-		k: 'Across sessions',
-		v: 'The store is one SQLite file keyed by project path rather than by agent, so a second agent in the same directory gets a handle for command output an earlier session produced. That marker reads <code>not shown here</code> and not <code>already shown</code>, because this agent has genuinely never seen those bytes. A file read never folds this way: the agent asked for that file, so it gets it whole.',
-	},
-	{
-		k: 'A compaction ends it',
-		v: 'The licence to replace forty lines with a handle is that the agent is still holding those lines. When the context window compacts, that stops being true, so OMNI deliberately forgets what it had shown. It cannot stop a compaction, only push it further out.',
+		k: 'What it costs',
+		v: 'About 21 ms per hooked command on a fresh database and about 61 ms against a 205 MB one, growing with your history rather than with the output. Budget for it.',
 		quiet: true,
-	},
-];
-
-const memory = [
-	{
-		k: 'New session',
-		was: 'You re-explain the project layout, which module is broken, and that it is Postgres rather than MySQL.',
-		now: 'The agent already has it. You carry on from where you stopped.',
-	},
-	{
-		k: 'Bug you already fixed',
-		was: 'The agent walks into the same framework quirk it solved yesterday, because nothing kept the answer.',
-		now: 'The agent pulls the stored fix back through omni_recall before it repeats the mistake.',
-	},
-	{
-		k: 'Cursor to Claude Code',
-		was: 'New editor, new agent, no context. You start over.',
-		now: 'The session summary is injected on the way in. The new agent is current.',
-	},
-	{
-		k: 'Agent drifts off task',
-		was: 'Three prompts later it is refactoring something you never asked about.',
-		now: 'omni goal restates the objective on every prompt.',
 	},
 ];
 
@@ -296,152 +91,63 @@ const hosts = [
 	},
 ];
 
-/* A subset of `omni help`, not the whole of it. Every entry exists in BOTH the
- * released binary and main.
- *
- * Do not add a command from docs/ without running `omni <cmd> --help` against an
- * installed build first. Three entries here were wrong: `omni trust` is documented
- * in HOW_TO_USE.md but the binary answers "unknown command", `omni rewind` shipped
- * in v0.6.3 then got deleted on main, and `omni learn` went with the filter layer
- * in 0.7.4, which the manual had already stopped documenting. This list told
- * readers to run it for two releases after the answer became "there are no filters
- * to add".
- */
+/* A subset of `omni help`. Every entry exists in the released binary: run
+   `omni <cmd> --help` against an installed build before adding one, because
+   three commands taken from docs/ once turned out not to exist. */
 const commands = [
-	{ k: 'omni init', v: 'Wire the hook into Claude Code, Cursor, Windsurf, Codex or Antigravity. Interactive.' },
+	{ k: 'omni init', v: 'Wire the hook and the MCP server into your agent. Interactive.' },
 	{ k: 'omni doctor --fix', v: 'Check the hooks and the MCP wiring, then repair whatever is broken.' },
-	{ k: 'omni stats', v: 'What it actually saved on your machine. Takes <code>--today</code>, <code>--week</code>, <code>--month</code>.' },
-	{ k: 'omni retrieve', v: 'Print what a marker archived, by the 16 characters inside it. Works on every host, MCP or not.' },
-	{ k: 'omni diff', v: 'The last raw input beside what the agent received. This is how you check its work.' },
-	{ k: 'omni dashboard', v: 'The same numbers <code>omni stats</code> reads, in a browser. Loopback only, read only.' },
-	{ k: 'omni session --status', v: 'Context pressure, stored engrams, and the errors still open in this session.' },
-	{ k: 'omni goal', v: 'Set the objective once. OMNI restates it on every prompt so the agent stops drifting.' },
-	{ k: 'omni remember', v: 'Store a project rule or a gotcha in local SQLite. Recalled by semantic search later.' },
+	{ k: 'omni stats', v: 'What it actually saved on your machine, and from which commands.' },
+	{ k: 'omni retrieve', v: 'Print what a marker archived, by the 16 characters inside it.' },
 	{ k: 'omni reset', v: 'Take it back out. Clean uninstall, keeping a backup of your config.' },
 ];
 
-/* Questions people actually ask before installing something that sits between
-   their agent and their terminal. Answers are kept to roughly 40 to 60 words so
-   they survive extraction into an AI answer without losing their meaning. */
-const faq = [
-	{
-		q: 'Does OMNI delete my logs?',
-		a: 'No. What it cuts is archived to a local SQLite store keyed by SHA-256, and the marker carries the handle that pulls the original back. Inputs over 64 KB are not archived, and the marker on those says so with the size. Nothing leaves your machine.',
-	},
-	{
-		q: 'Will it slow down my terminal?',
-		a: `Yes, measurably. OMNI runs on every hooked command and the cost grows with your history. A 496 byte git status takes about 21ms against a fresh database and about 61ms against a 205 MB one. A 16.5 KB cargo test takes about 24ms and 65ms.`,
-	},
-	{
-		q: 'How much does it actually save?',
-		/* "where the filters can take nothing without guessing" was true when file
-		   reads read 0.0% from the filters. They read 39.2% now, so the clause was
-		   deleted rather than reworded. */
-		a: `On the output that actually carries noise, ${best.command} is ${best.savings}. On file reads it is ${fileRead?.savings ?? '89.6%'}, most of which is the ledger rather than the filters. Across the whole mix it averages ${stats.overallSaved}, because OMNI leaves ${stats.zeroSaveShare} of ${stats.totalCalls} replayed commands untouched rather than inventing a saving, and adds zero bytes to them. Read the per-class number for the work you actually do rather than the average, which is a mean over one mix and not a promise for yours. That average also depends on what you run: the corpus behind it is a heavy week, and an ordinary one reads 14.9%.`,
-	},
-	{
-		q: 'Can it hide an error from my agent?',
-		a: 'No. Any command that exits non-zero passes through verbatim, uncompressed. Structured output such as JSON, YAML, NDJSON and CSV is never touched. A distiller that cannot parse its input returns the raw output rather than summarising it.',
-	},
-	{
-		q: 'Which agents does it work with?',
-		a: 'Fifteen hosts across three tiers, listed above under Supported agents, and what you get differs by tier. Only a host that can rewrite its own tool output gets shell distillation; the rest get memory and no claim of more. It installs as a shell hook rather than a wrapper, so nothing about how you work changes.',
-	},
-	{
-		q: 'Can I add filters for my own tools?',
-		a: 'There are no filters to add. The pattern-matching layer was retired in 0.7.4 after it measured at 2,018 bytes over 6,656 commands, 0.031% of the corpus, while costing 5 to 7ms of the hook\'s 10ms budget. What remains is the Rust distillers and the ledger, both compiled in, so the set that runs is the set the tests cover. If a tool needs handling, open an issue and it ships in the binary for everyone.',
-	},
-	{
-		q: 'How do I get back something OMNI folded?',
-		a: 'omni retrieve <handle>, where the handle is the 16 characters inside the marker. It works on every host, with or without MCP, and agents that have the MCP server wired can call omni_retrieve instead. The archive is a rolling 30 day window, so a handle older than that will not resolve.',
-	},
-	{
-		q: 'What does OMNI cost?',
-		a: 'Nothing. It is Apache 2.0 licensed with no paid tier, no account and no telemetry. If it saves you nothing, omni stats will tell you so and omni reset removes it.',
-	},
-];
-
-// Product plus FAQ. Both describe this page, so both belong in its graph.
-const jsonLd = [
-	{
-		'@context': 'https://schema.org',
-		'@type': 'SoftwareApplication',
-		name: 'OMNI',
-		alternateName: 'OMNI context engine',
-		applicationCategory: 'DeveloperApplication',
-		applicationSubCategory: 'Command line tool',
-		operatingSystem: 'macOS, Linux, Windows',
-		description: 'Noise-canceling context and long-term memory for AI coding agents. Cuts terminal noise before the agent reads it, and remembers your project between sessions.',
-		url: 'https://omni.weekndlabs.com',
-		downloadUrl: 'https://github.com/fajarhide/omni/releases',
-		codeRepository: 'https://github.com/fajarhide/omni',
-		programmingLanguage: 'Rust',
-		license: 'https://github.com/fajarhide/omni/blob/main/LICENSE',
-		softwareVersion: latestVersion.replace(/^v/, ''),
-		isAccessibleForFree: true,
-		offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-		author: { '@type': 'Person', name: 'Fajar Hidayat', url: 'https://github.com/fajarhide' },
-		featureList: [
-			'Distills noisy terminal output before it reaches the model',
-			'Archives everything it removes to a local SQLite store, retrievable by hash',
-			'Passes failing commands and structured data through untouched',
-			'Carries project memory across sessions and across editors',
-			'Runs as an MCP server and a shell hook',
-		],
-	},
-	{
-		'@context': 'https://schema.org',
-		'@type': 'FAQPage',
-		mainEntity: faq.map((f) => ({
-			'@type': 'Question',
-			name: f.q,
-			acceptedAnswer: { '@type': 'Answer', text: f.a },
-		})),
-	},
-];
-
-/* The order is `Read → Guard → Score → Distill → [Collapse] → Ledger → Persist`,
-   copied from the manual's pipeline page rather than remembered. This list had
-   Collapse before Distill, which is the mistake the manual itself carried for two
-   releases, and it had no Ledger stage at all while the benchmark table three
-   sections up printed a "With ledger" column. */
-const pipeline = [
-	{ k: 'Read', v: 'A shell hook catches stdout on its way to the agent. Nothing about how you work changes.' },
-	{ k: 'Guard', v: 'Non-zero exit, or JSON, YAML, NDJSON, CSV? Straight through. <strong>This branch is taken more often than not.</strong>', quiet: true },
-	{ k: 'Score', v: 'Every line gets a weight. Stack frames and errors score high, progress bars and passing tests score low.' },
-	{ k: 'Distill', v: 'A command-specific reader runs on the raw text. Returning the input is always allowed, inventing a summary is not.' },
-	{ k: 'Collapse', v: 'A fallback rather than a step, taken only when the distilled form failed to earn its keep. Runs of near-identical lines fold into a count.' },
-	{ k: 'Ledger', v: 'What survives is checked against what this session has already been shown. A run of lines the agent is still holding becomes one marker and a handle. <strong>This is where most of the saving now comes from.</strong>' },
-	{ k: 'Persist', v: 'Everything cut is hashed into local SQLite before the marker is written, so a handle never names content that was not stored. Inputs over 64 KB are the one exception, and they say so.' },
-];
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@type': 'SoftwareApplication',
+	name: 'OMNI',
+	alternateName: 'OMNI context engine',
+	applicationCategory: 'DeveloperApplication',
+	applicationSubCategory: 'Command line tool',
+	operatingSystem: 'macOS, Linux, Windows',
+	description: 'A shell hook for AI coding agents. Trims command output the model does not need, folds output it has already seen into a handle, and archives every byte it cuts.',
+	url: 'https://omni.weekndlabs.com',
+	downloadUrl: GITHUB_RELEASES,
+	codeRepository: GITHUB_REPO,
+	programmingLanguage: 'Rust',
+	license: `${GITHUB_REPO}/blob/main/LICENSE`,
+	softwareVersion: latestVersion.replace(/^v/, ''),
+	isAccessibleForFree: true,
+	offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+	author: { '@type': 'Person', name: 'Fajar Hidayat', url: 'https://github.com/fajarhide' },
+	featureList: [
+		'Distills noisy terminal output before it reaches the model',
+		'Archives everything it removes to a local SQLite store, retrievable by hash',
+		'Passes failing commands and structured data through untouched',
+		'Carries project memory across sessions and across editors',
+		'Runs as an MCP server and a shell hook',
+	],
+};
 ---
 
 <Layout
-	title="OMNI, stop paying to re-read the same terminal output"
-	{/* Kept under 160 characters so the whole line survives the SERP. Every
-	    number is parsed from the manual, so the claim cannot drift. It carried
-	    "git 89%, cargo 91%, kubectl 77%" for a while, and none of the three
-	    appeared anywhere in the repository. */}
-	description={`Free Rust CLI. Output your AI agent has already been shown comes back as a handle, not the bytes again: ${fileRead?.savings ?? '89.6%'} off file reads, ${stats.overallSaved} across ${stats.totalCalls} real commands.`}
+	title="OMNI, less noise in your coding agent's context"
+	description="Free Rust CLI for AI coding agents. Trims command output the model does not need, folds what it has already seen into a handle, and archives every byte it cuts."
 	jsonLd={jsonLd}
 >
 	<main>
-		<!-- HERO -->
 		<section class="hero">
 			<div class="wrap">
 				<div class="hero-grid">
-					<div>
-						{/* One claim, in the words the README leads with. The line here was
-						    "Claude is not expensive. Your terminal is.", which is the
-						    not-X-but-Y shape, and the lede under it carried five sentences
-						    of everything the page says further down. */}
-						<h1 class="t-display">Stop paying to <span class="text-brand">re-read</span><br />the same output<span class="text-brand">.</span></h1>
+					<div class="hero-copy">
+						{/* No percentage up here. The figure moves twentyfold between two
+						    weeks of the same developer's work, so the one claim that holds
+						    on any workload is what OMNI will and will not do. The numbers
+						    are further down, with their corpus beside them. */}
+						<h1 class="t-display">Your agent reads less noise, and loses nothing<span class="text-brand">.</span></h1>
 
-						{/* Both figures are emphasised, not only the big one. Bolding the
-						    best case and leaving the aggregate in body weight is the move
-						    the band below calls out, and it would be this page doing it. */}
 						<p class="lede">
-							OMNI is a shell hook for your coding agent. It drops the noise from command output before the model reads it, and returns what the model has already been shown as a handle rather than the bytes again: <strong>{best.savings}</strong> off {best.command} output, <strong>{stats.overallSaved}</strong> across all {stats.totalCalls} replayed commands.
+							OMNI is a shell hook for coding agents. It trims output the model does not need, folds what it has already seen into a short marker, and archives every cut so <code>omni retrieve</code> can print it again. A failing command reaches the model whole.
 						</p>
 
 						<div class="hero-actions">
@@ -452,183 +158,145 @@ const pipeline = [
 							<a href="#numbers" class="btn btn-ghost">See the numbers</a>
 						</div>
 
-						<div class="install">
-							<div class="install-row">
-								<span class="sigil" aria-hidden="true">$</span>
-								<code>brew install fajarhide/tap/omni</code>
-								<button class="copy" data-copy="brew install fajarhide/tap/omni" aria-label="Copy the install command">
-									<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-								</button>
-							</div>
-							<p class="install-alt">
-								<span>Then <code>omni init</code>. Also on</span>
-								<button class="linkish" data-copy="curl -fsSL omni.weekndlabs.com/install | bash">curl</button>
-								<span>and</span>
-								<button class="linkish" data-copy="irm omni.weekndlabs.com/install.ps1 | iex">PowerShell</button>
-							</p>
-						</div>
 					</div>
 
-					<!-- SIGNATURE: the subtraction happens in front of you.
-					     The release badge sits here rather than above the headline,
-					     so nothing stands between the reader and the first line. -->
-					<div>
-						<p class="release">
-							<span class="release-dot" aria-hidden="true"></span>
-							<span id="omni-version">{latestVersion}</span>
-							<span aria-hidden="true">/</span>
-							<span id="omni-status" data-status={versionLabel.toLowerCase().replace(' ', '-')}>{versionLabel}</span>
-						</p>
-
+					<div class="hero-demo">
+						{/* The signature: the raw output, then the noise struck through and
+						    collapsed, then what the agent actually received. The third reel
+						    is a failing run, and nothing happens to it. That is the promise
+						    the rest of the page makes, shown rather than told. */}
 						<figure class="crt" id="demo">
 							<figcaption class="crt-bar">
-								<span class="crt-case">
-								<span id="reel-label">{demos[0].label}</span>
-								<span class="crt-ctx" id="reel-ctx">{demos[0].context}</span>
-							</span>
+								<span class="crt-case" id="reel-label">{reels[0].label}</span>
 								<span class="crt-read">
 									<span class="crt-phase" id="phase">raw</span>
-									<span class="crt-meter" id="meter">{demos[0].fixture.input}</span>
+									<span class="crt-meter" id="meter">{reels[0].inBytes}</span>
 								</span>
 							</figcaption>
 							<div class="crt-body" style={`--rows:${tallestReel}`}>
-								{demos.map((d, di) => (
-									<div class="reel" data-reel={di} hidden={di !== 0}>
-										{d.lines.map((line) => (
-											<div class={`ln${line.n ? ' ln-noise' : ''}`} style={line.i === null ? undefined : `--i:${line.i}`}>
-												<span class="mark" aria-hidden="true">{line.n ? '−' : ' '}</span>
-												<span class={`txt${line.keep ? ' keep' : ''}${line.prompt ? ' prompt' : ''}`}>{line.t}</span>
-											</div>
-										))}
+								{reels.map((r, ri) => (
+									<div class="reel" data-reel={ri} hidden={ri !== 0}>
+										<div class="raw">
+											{r.rawLines.map((line, li) => (
+												<div class={`ln${line.skip ? ' ln-skip' : ''}`} style={`--i:${li}`}><span class="mark" aria-hidden="true">{line.prompt ? '$' : ' '}</span><span class="txt">{line.t}</span></div>
+											))}
+										</div>
+										<div class="out">
+											{r.outLines.map((line) => (
+												<div class="ln"><span class="mark" aria-hidden="true">+</span><span class="txt">{line.t}</span></div>
+											))}
+										</div>
 									</div>
 								))}
 							</div>
 							<div class="crt-foot">
-								<span id="reel-saved">{demos[0].fixture.savings} smaller</span>
-								<span>nothing deleted, all of it hashed to disk</span>
+								<span id="reel-saved">{reels[0].verdict}</span>
+								<span id="reel-exit">exit {reels[0].exit}, omni {demoVersion}</span>
 							</div>
 						</figure>
-						{/* A Cut / Kept pair used to sit here, one paragraph each, changing
-						    with the reel. The strike already shows both: noise is struck and
-						    collapses, what survives is highlighted. Two paragraphs restating
-						    that is what made this column taller than the one beside it. */}
-						<p class="crt-cap">
-							Reproducible on <code>tests/fixtures/</code>: <span id="reel-cap">{demos[0].cap}</span>
-						</p>
+						<p class="crt-cap" id="reel-cap">{reels[0].cap}</p>
 					</div>
 				</div>
 			</div>
 		</section>
 
-		<!-- LIMITS AND PROMISES, one ledger -->
-		<section class="band band-sunk" id="limits">
-			<div class="wrap">
+		{/* Install gets its own band, centred under the hero, so the hero is one
+		    argument (headline beside the demo) and the install is one action. */}
+		<section class="band" id="install">
+			<div class="wrap install-wrap">
+				<h2 class="install-h">Install</h2>
+				{/* One row, three installers. Radios rather than script so the switch
+				    works without JS and the arrow keys move between them; every command
+				    is still printed, one tab away, never hidden behind a link. */}
+				<div class="install" role="group" aria-label="Install OMNI">
+					{installs.map((i, n) => (
+						<input class="os-radio" type="radio" name="os" id={`os-${n}`} checked={n === 0} />
+					))}
+					<div class="install-head">
+						{installs.map((i, n) => <label class="os-tab" for={`os-${n}`}>{i.tab}</label>)}
+					</div>
+					{installs.map((i, n) => (
+						<div class="install-row" data-os={n}>
+							<span class="sigil" aria-hidden="true">$</span>
+							<code>{i.cmd}</code>
+							<button class="copy" type="button" data-copy={i.cmd} aria-label={`Copy: ${i.cmd}`}>
+								<svg class="i-copy" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+								<svg class="i-ok" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+							</button>
+						</div>
+					))}
+					<p class="install-then">Then run <code>omni init</code> to wire it into your agent. <span id="copy-status" role="status" aria-live="polite"></span></p>
+				</div>
+			</div>
+		</section>
+
+
+		{/* RHYTHM 2: Why and Numbers are the two sections that break the
+		    heading-plus-rows shape. The example is static and on paper, because
+		    the page has one instrument and it is the one that animates. */}
+		<section class="band band-sunk" id="why">
+			<div class="wrap split">
 				<header class="band-head">
-					<span class="eyebrow">Read this before installing</span>
-					<h2 class="t-section">Where it fails, then what it promises</h2>
+					<span class="eyebrow">Why</span>
+					<h2 class="t-section">Your agent pays to read every line a command prints</h2>
 					<p class="lede">
-						A tool that asks to sit between you and your output should lead with the parts that go badly.
+						Progress bars, a few hundred passing tests, the same git hints every time, a file it read ten minutes ago. Each line costs tokens and pushes something useful further back in the context window. Some of it is noise, and some of it the agent is already holding.
 					</p>
 				</header>
 
+				<figure class="pair">
+					<div class="pair-side">
+						<p class="pair-h"><span>What <code>git status</code> printed</span> <span class="pair-n">{gs.inBytes}</span></p>
+						<pre class="pair-body pair-raw">{gs.rawText}</pre>
+					</div>
+					<div class="pair-side">
+						<p class="pair-h"><span>What the agent read</span> <span class="pair-n">{gs.outBytes}</span></p>
+						<pre class="pair-body">{gs.outText}</pre>
+					</div>
+					<figcaption class="fine">
+						The <code>git_status_dirty.txt</code> fixture through <code>omni exec</code> {demoVersion}. The handle in the last line prints the original back.
+					</figcaption>
+				</figure>
+			</div>
+		</section>
+
+		<section class="band" id="what">
+			<div class="wrap">
+				<header class="band-head">
+					<span class="eyebrow">What it does</span>
+					<h2 class="t-section">Five things on every command, and one cost</h2>
+				</header>
+
 				<dl class="rows">
-					{limits.map((r) => (
-						<div class="row row-quiet">
-							<dt class="row-k is-mono">{r.k}<span class="sub">{r.sub}</span></dt>
-							<dd class="row-v" set:html={r.v} />
-						</div>
-					))}
-					{promises.map((r) => (
-						<div class="row">
+					{does.map((r) => (
+						<div class={`row${r.quiet ? ' row-quiet' : ''}`}>
 							<dt class="row-k">{r.k}</dt>
-							{/* set:html, the same as every other row on this page. This one
-							    cell interpolated the string raw, so the Reversible row printed
-							    its own code tags as visible text. */}
 							<dd class="row-v">
 								<span set:html={r.v} />
-								{' '}
-								<span class="receipt">
-									<a href={r.proof.href} target="_blank" rel="noopener noreferrer">{r.proof.label}</a>
-								</span>
+								{r.proof && (
+									<Fragment>
+										{' '}
+										<span class="receipt">
+											<a href={r.proof.href} target="_blank" rel="noopener noreferrer">{r.proof.label}</a>
+										</span>
+									</Fragment>
+								)}
 							</dd>
 						</div>
 					))}
 				</dl>
 
-				<p class="fine" style="margin-top:18px;max-width:660px">
-					Any tool claiming to save 90% of every command is telling you it summarised output you needed.
+				<p class="fine fine-after">
+					If OMNI panics, it fails open: the raw output passes through and your agent never notices.
 				</p>
 			</div>
 		</section>
-		<!-- LEDGER -->
-		<section class="band" id="ledger">
+
+		<section class="band band-sunk" id="hosts">
 			<div class="wrap">
 				<header class="band-head">
-					<span class="eyebrow">Where the saving comes from</span>
-					<h2 class="t-section">The second read is free</h2>
-					<p class="lede">
-						A filter removes a line because a pattern calls it noise. The ledger removes it because your agent is already holding it. Filters are what every tool in this category ships. The ledger is the part that is not.
-					</p>
-				</header>
-
-				<dl class="rows">
-					{ledger.map((r) => (
-						<div class={`row${r.quiet ? ' row-quiet' : ''}`}>
-							<dt class={`row-k${r.sub ? ' is-mono' : ''}`}>{r.k}{r.sub && <span class="sub">{r.sub}</span>}</dt>
-							<dd class="row-v" set:html={r.v} />
-						</div>
-					))}
-				</dl>
-
-				<p class="fine" style="margin-top:18px;max-width:660px">
-					One marker carries all of it: <code>[OMNI: 40 lines already shown, omni retrieve bc7e821a4340073e]</code>. The count, what happened to those lines, and the handle that undoes it.
-				</p>
-
-				{/* The only numbers on the page not parsed at build: readme-stats.js
-				    reads the class table, not the head-to-head one. They come from the
-				    head-to-head in docs/website/src/develop/benchmarks.md, replayed on
-				    0.7.5, and the link is here so a reader can check every row.
-
-				    Re-read that table before touching them, and re-read it whenever the
-				    corpus changes. The previous version of this sentence said our
-				    filters take 2.7% against rtk's 6.2% and conceded the row. Those were
-				    the 0.7.4 corpus's figures left behind on a page whose trace count is
-				    parsed, so once the parser was fixed the sentence would have
-				    attributed one corpus's result to another corpus's count. */}
-				<p class="fine" style="margin-top:14px;max-width:660px">
-					Head to head on the same {stats.totalCalls} traces, identical bytes into every arm, OMNI with its ledger is the top row at 69.6%. The closest arm is headroom's dedup at 65.8%, then lean-ctx at 49.4%; rtk's filters take 6.2% and reach 61.4% once our ledger is bolted on, which is the clearest statement of where the work happens. Our filters alone take 32.6%, and lean-ctx beats that sub-component on a corpus built for exactly that shape. Every row is published, that one included.
-					{' '}
-					<span class="receipt"><a href="/docs/develop/benchmarks">benchmarks</a></span>
-				</p>
-			</div>
-		</section>
-		<!-- MEMORY -->
-		<section class="band band-sunk" id="memory">
-			<div class="wrap">
-				<header class="band-head">
-					<span class="eyebrow">The other half</span>
-					<h2 class="t-section">Your agent also forgets everything overnight</h2>
-				</header>
-
-				<dl class="rows">
-					{memory.map((m) => (
-						<div class="row">
-							<dt class="row-k">{m.k}</dt>
-							<dd class="row-v">
-								<span class="was">{m.was}</span>
-								<span class="now">{m.now}</span>
-							</dd>
-						</div>
-					))}
-				</dl>
-			</div>
-		</section>
-		<!-- HOST TIERS -->
-		<section class="band" id="hosts">
-			<div class="wrap">
-				<header class="band-head">
-					<span class="eyebrow">Supported agents</span>
-					<h2 class="t-section">What each host lets OMNI do</h2>
+					<span class="eyebrow">Where it works</span>
+					<h2 class="t-section">What each agent lets OMNI do</h2>
 					<p class="lede">
 						Only a host that can rewrite its own tool output gets shell distillation. The rest get memory, and no claim of more. <code>omni doctor</code> prints the tier for every host you have installed.
 					</p>
@@ -647,27 +315,23 @@ const pipeline = [
 				</dl>
 			</div>
 		</section>
-		<!-- NUMBERS -->
-		<section class="band band-sunk" id="numbers">
-			<div class="wrap">
+
+		<section class="band" id="numbers">
+			<div class="wrap split">
 				<header class="band-head">
-					<span class="eyebrow">Benchmarks</span>
-					<h2 class="t-section">{stats.totalCalls} real commands, replayed on the release binary</h2>
+					<span class="eyebrow">Numbers</span>
+					<h2 class="t-section">{stats.overallSaved} fewer bytes on the current benchmark, and why that is low</h2>
 					<p class="lede">
-						One developer's actual usage, not a fixture set chosen to flatter the result. {stats.bytesIn} in, {stats.bytesOut} out.
-					</p>
-					{/* The manual opens its own headline with this warning, so the page
-					    that quotes the headline carries it too. Leaving it in the manual
-					    and putting only the percentage here is how a caveat gets lost:
-					    the number travels and the sentence qualifying it does not. */}
-					<p class="lede" style="margin-top:10px">
-						Read the corpus before the number. This window is unusual and it inflates everything below: 286 groups of byte-identical payloads account for 80.6% of these bytes, and 148 of the {stats.totalCalls} calls carry 64.7% of them. It was a week of building and benchmarking OMNI itself. The same harness over a week of ordinary work reads <strong>14.9%</strong>.
+						{stats.totalCalls} commands from one developer's week, replayed on the release binary: {stats.filtersSaved} from the distillers, {stats.overallSaved} once the ledger folds repeats, and {stats.zeroSaveShare} of calls left untouched. That week was mostly short shell plumbing with little to cut. The figure moves a lot with the workload, which is why the manual publishes every run, including the ones that read worse.
 					</p>
 				</header>
 
+				<div>
 				<div class="ledger-wrap">
 					<table class="ledger">
-						<caption>Read from the manual on main at build time, so the two cannot drift apart.</caption>
+						<caption>
+							Read from the manual on main at build time, so the two cannot drift apart. Best class {best.command} at {best.savings}, worst {worst.command} at {worst.savings}.
+						</caption>
 						<thead>
 							<tr>
 								<th scope="col">Class</th>
@@ -684,59 +348,35 @@ const pipeline = [
 									<td class="n">{row.calls}</td>
 									<td class="n">{row.input}</td>
 									<td class="n">{row.filters}</td>
-									<td class="saved"><span class="bar" style={`--w:${row.pct}%`}><span>{row.savings}</span></span></td>
+									{/* Scaled to the best row, so the bars compare classes
+									    rather than all sitting at a few pixels wide. */}
+									<td class="saved"><span class="bar" style={`--w:${(row.pct / best.pct) * 100}%`}><span>{row.savings}</span></span></td>
 								</tr>
 							))}
 						</tbody>
 					</table>
 				</div>
 
-				<div class="stats">
-					<div class="stat">
-						<span class="stat-n">{stats.overallSaved}</span>
-						<span class="stat-l">fewer bytes across the whole mix</span>
-					</div>
-					<div class="stat">
-						<span class="stat-n">{best.savings}</span>
-						<span class="stat-l">best case, <code>{best.command}</code> over {best.calls} calls</span>
-					</div>
-					<div class="stat">
-						<span class="stat-n">{worst.savings}</span>
-						<span class="stat-l">worst case, <code>{worst.command}</code> over {worst.calls} calls</span>
-					</div>
-				</div>
-
-				<p class="fine" style="margin-top:20px;max-width:660px">
-					<code>{best.command}</code> carries the result and <code>{worst.command}</code> is close to a no-op. The weak row stays in the table, because quietly dropping the rows that look bad is how {stats.overallSaved} turns into a fake 90%. Most tools in this category publish one big percentage; we publish the weak rows beside the strong ones so you can find your own workload in the table. Run <code>omni stats</code> for your own.
+				{/* No figures from the head-to-head here. They are not parsed, and a
+				    hardcoded comparison beside a parsed trace count is how this
+				    paragraph once credited one corpus's result to another. */}
+				<p class="fine fine-after">
+					The manual also replays rtk, lean-ctx, caveman and headroom on the same bytes and publishes every arm, including the ones where OMNI loses.
+					{' '}
+					<span class="receipt"><a href="/docs/develop/benchmarks">benchmarks</a></span>
+					{' '}Run <code>omni stats</code> for your own.
 				</p>
+				</div>
 			</div>
 		</section>
-		<!-- FAQ -->
-		<section class="band" id="faq">
-			<div class="wrap">
-				<header class="band-head">
-					<span class="eyebrow">Questions</span>
-					<h2 class="t-section">What people ask before installing it</h2>
-				</header>
 
-				<dl class="rows">
-					{faq.map((f) => (
-						<div class="row">
-							<dt class="row-k">{f.q}</dt>
-							<dd class="row-v">{f.a}</dd>
-						</div>
-					))}
-				</dl>
-			</div>
-		</section>
-		<!-- COMMANDS -->
-		<section class="band band-sunk" id="cli">
+		<section class="band band-sunk" id="start">
 			<div class="wrap">
 				<header class="band-head">
-					<span class="eyebrow">The CLI</span>
-					<h2 class="t-section">The ten you will use, all of them local</h2>
+					<span class="eyebrow">Commands</span>
+					<h2 class="t-section">Apache 2.0, no account, no paid tier</h2>
 					<p class="lede">
-						<code>omni help</code> lists the rest. No account, and nothing about your machine leaves it.
+						Everything runs on your machine. If it saves you nothing, <code>omni stats</code> will say so and <code>omni reset</code> removes it. <code>omni help</code> lists the rest.
 					</p>
 				</header>
 
@@ -748,52 +388,20 @@ const pipeline = [
 						</div>
 					))}
 				</dl>
-			</div>
-		</section>
-		<!-- PIPELINE -->
-		<section class="band" id="how">
-			<div class="wrap">
-				<header class="band-head">
-					<span class="eyebrow">How it works</span>
-					<h2 class="t-section">Seven stages, and the second one usually ends it</h2>
-				</header>
 
-				<dl class="rows">
-					{pipeline.map((s) => (
-						<div class={`row${s.quiet ? ' row-quiet' : ''}`}>
-							<dt class="row-k">{s.k}</dt>
-							<dd class="row-v" set:html={s.v} />
-						</div>
-					))}
-				</dl>
+				<p class="fine fine-after">
+					There are no filters to write. The pattern layer was retired in 0.7.4, and what runs is the Rust distillers and the ledger, compiled in. If a tool needs handling, open an issue and it ships in the binary.
+				</p>
 
-				<p class="fine" style="margin-top:18px;max-width:660px">
-					If OMNI panics it fails open: the raw output passes through and your agent never notices. That is the design, not a safety net bolted on afterwards.
-				</p>
-			</div>
-		</section>
-		<!-- CLOSE -->
-		<section class="band band-sunk" id="start">
-			<div class="wrap wrap-text">
-				<h2 class="t-section">Apache 2.0, no account, no paid tier</h2>
-				<p class="lede" style="margin:14px 0 24px">
-					Built by one developer who got tired of paying to read progress bars. If it saves you nothing, <code>omni stats</code> will say so and <code>omni reset</code> removes it. That is the whole deal.
-				</p>
-				<div class="hero-actions" style="margin-bottom:0">
-					<a href={GITHUB_REPO} class="btn btn-solid" target="_blank" rel="noopener noreferrer">
-						<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-						Read the source
-					</a>
-					<a href={GITHUB_RELEASES} class="btn btn-ghost" target="_blank" rel="noopener noreferrer">Releases</a>
+				<div class="hero-actions close-actions">
+					<a href={GITHUB_REPO} class="btn btn-solid" target="_blank" rel="noopener noreferrer">Read the source</a>
+					<a href={GITHUB_RELEASES} class="btn btn-ghost" target="_blank" rel="noopener noreferrer">Release notes</a>
 				</div>
 			</div>
 		</section>
 	</main>
 
-	<script define:vars={{ reels: demos.map((d) => ({ ...d.fixture, label: d.label, context: d.context, cap: d.cap, noise: d.lines.filter((l) => l.n).length })) }}>
-		// The signature: the subtraction runs on a slow loop while the block is on
-		// screen, so a reader who arrives mid-cycle still sees it happen. Three
-		// commands take turns, because one 93% demo would misrepresent the tool.
+	<script define:vars={{ reels: reels.map(({ label, exit, inBytes, outBytes, verdict, cap, passed, rawLines }) => ({ label, exit, inBytes, outBytes, verdict, cap, passed, rows: rawLines.length })), demoVersion }}>
 		const demo = document.getElementById('demo');
 		const el = (id) => document.getElementById(id);
 		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -809,18 +417,29 @@ const pipeline = [
 			demo.querySelectorAll('.reel').forEach((r) => {
 				r.hidden = Number(r.dataset.reel) !== i;
 			});
-			el('reel-label').textContent = reels[i].label;
-			el('reel-ctx').textContent = reels[i].context;
-			el('reel-saved').textContent = reels[i].savings + ' smaller';
-			el('reel-cap').textContent = reels[i].cap;
-			el('meter').textContent = reels[i].input;
+			const r = reels[i];
+			el('reel-label').textContent = r.label;
+			el('reel-saved').textContent = r.verdict;
+			el('reel-cap').textContent = r.cap;
+			el('meter').textContent = r.inBytes;
+			el('reel-exit').textContent = `exit ${r.exit}, omni ${demoVersion}`;
+		}
+
+		// The verdict for one reel. A failing run is never struck: the phase just
+		// says what OMNI did with it, which was nothing.
+		function settle(i) {
+			const r = reels[i];
+			if (r.passed) {
+				setPhase('passed through', true);
+				return;
+			}
+			demo.classList.add('scoring', 'cut');
+			setPhase('distilled', true);
+			el('meter').textContent = r.outBytes;
 		}
 
 		if (demo && reduced) {
-			// No loop and no cycling. One command, shown already distilled.
-			demo.classList.add('scoring', 'cut');
-			setPhase('distilled', true);
-			el('meter').textContent = reels[0].output;
+			settle(0);
 		} else if (demo) {
 			let onScreen = false;
 			new IntersectionObserver(
@@ -835,54 +454,47 @@ const pipeline = [
 					while (!onScreen) await wait(400);
 					show(i);
 					setPhase('raw', false);
-					await wait(1600);                        // the output as the shell wrote it
+					await wait(1600);                          // the output as the shell wrote it
+					if (reels[i].passed) {
+						setPhase(`exit ${reels[i].exit}`, true);
+						await wait(1400);
+						settle(i);
+						await wait(4200);
+						continue;
+					}
 					demo.classList.add('scoring');
 					setPhase('scoring', true);
-					await wait(reels[i].noise * 110 + 400);  // the strike walks every noise line
-					demo.classList.add('cut');
-					setPhase('distilled', true);
-					el('meter').textContent = reels[i].output;
-					await wait(4200);                        // hold on what survived
+					await wait(reels[i].rows * 90 + 400);       // the strike walks every line
+					settle(i);
+					await wait(4200);                          // hold on what the agent got
 					demo.classList.remove('scoring', 'cut');
-					await wait(700);                         // let the lines come back up
+					setPhase('raw', false);
+					await wait(700);
 				}
 			})();
 		}
 
-		// Copy buttons.
+		// Copy buttons. Success is shown only once the clipboard has said yes; the
+		// old handler showed a tick before the promise settled, so a denied write
+		// still read as copied.
+		const status = el('copy-status');
 		document.querySelectorAll('[data-copy]').forEach((btn) => {
-			btn.addEventListener('click', () => {
-				const text = btn.getAttribute('data-copy');
-				if (!text) return;
-				navigator.clipboard.writeText(text);
-				const original = btn.innerHTML;
-				btn.innerHTML = btn.classList.contains('copy')
-					? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>'
-					: 'Copied';
-				setTimeout(() => { btn.innerHTML = original; }, 1800);
+			btn.addEventListener('click', async () => {
+				const text = btn.dataset.copy;
+				let ok = true;
+				try {
+					await navigator.clipboard.writeText(text);
+				} catch {
+					ok = false;
+				}
+				btn.dataset.state = ok ? 'ok' : 'fail';
+				status.textContent = ok ? 'Copied.' : 'Copy failed. Select the command and copy it by hand.';
+				clearTimeout(btn._t);
+				btn._t = setTimeout(() => {
+					delete btn.dataset.state;
+					status.textContent = '';
+				}, ok ? 1800 : 6000);
 			});
 		});
-
-		// Keep the release badge current between deploys.
-		fetch('https://api.github.com/repos/fajarhide/omni/releases/latest')
-			.then((r) => (r.ok ? r.json() : null))
-			.then((data) => {
-				if (!data) return;
-				const v = document.getElementById('omni-version');
-				const s = document.getElementById('omni-status');
-				if (v && data.tag_name !== v.textContent) {
-					v.textContent = data.tag_name;
-					const tag = data.tag_name;
-					const label = tag.includes('-rc') ? 'Release candidate'
-						: tag.includes('-alpha') ? 'Alpha'
-						: tag.includes('-beta') ? 'Beta'
-						: 'Stable';
-					if (s) {
-						s.textContent = label;
-						s.setAttribute('data-status', label.toLowerCase().replace(' ', '-'));
-					}
-				}
-			})
-			.catch(() => {});
 	</script>
 </Layout>

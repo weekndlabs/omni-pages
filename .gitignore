@@ -28,3 +28,6 @@ pnpm-debug.log*
 
 # Rendered manual, fetched from fajarhide/omni at build time.
 public/docs/
+
+# antislop audit reports, kept local
+anti-slop/

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseReadme, extremes, FALLBACK, FIXTURE_KEYS } from './readme-stats.js';
+import { parseReadme, currentRun, extremes, FALLBACK, FIXTURE_KEYS } from './readme-stats.js';
 
 // A slice of the manual as 0.7.5 rewrote it, which is the shape the site actually
 // reads. The previous fixture here was a paraphrase of the 0.7.4 doc, and it kept
@@ -89,22 +89,74 @@ Replayed 2026-08-11 on 0.7.0 over **6,656 traces covering 2026-08-04 02:56 to
 Some trailing prose.
 `;
 
+// The doc since 2026-08-24: the current run on top, between machine-written
+// markers, and every older run kept below it under its own heading. Abridged from
+// docs/website/src/develop/benchmarks.md, with the 0.7.5 run appended as it sits
+// in the real file. The page shipped figures from both runs at once before
+// currentRun() existed, which is what the first test below pins.
+const DOC_CURRENT = `
+# Benchmarks
+
+## Correction, 2026-09-03: every ledger figure below is overstated
+
+| arm | as published | with the guards visible |
+| --- | --- | --- |
+| omni, with the ledger | 4.9% | **3.0%** |
+
+## The current run, 2026-08-24, and the first one that will still exist next month
+
+**Corpus**: 9,478 traces, 8,458,937 bytes, 70 sessions, all \`agent_id='claude_code'\`,
+0 terminal rows, 0 errored.
+
+**0.8% from the filters. 2.4% with the ledger**, on 0.7.11. 98.8% of calls saved
+nothing, 1.2% shrank, and **no call came back larger**.
+
+<!-- omni:corpus-table:start -->
+| Class | Calls | Input | Filters | + ledger | Available | Captured |
+|---|---|---|---|---|---|---|
+| other | 6,457 | 4.81 MB | 0.8% | 2.8% | 15.9% | **12.6%** |
+| file read | 1,056 | 1.89 MB | 0.0% | 1.5% | 17.7% | **8.5%** |
+| git | 899 | 0.86 MB | 0.0% | 1.3% | 19.8% | **6.7%** |
+| search | 810 | 0.77 MB | 3.4% | 3.4% | 6.5% | **0.0%** |
+| infra | 215 | 0.14 MB | 2.4% | 2.7% | 5.5% | **5.2%** |
+| build and test | 41 | 0.02 MB | 9.0% | 10.7% | 21.7% | **8.6%** |
+| **aggregate** | 9,478 | 8.49 MB | 0.8% | 2.4% | 15.7% | **10.3%** |
+<!-- omni:corpus-table:end -->
+
+## The 0.7.5 run, 2026-08-14, which can no longer be re-derived
+${DOC_NOW}`;
+
+test('reads the current run, never a figure from an older run below it', () => {
+	const s = parseReadme(DOC_CURRENT);
+	assert.equal(s.totalCalls, '9,478');
+	assert.equal(s.overallSaved, '2.4%');
+	assert.equal(s.filtersSaved, '0.8%');
+	assert.equal(s.zeroSaveShare, '98.8%');
+	assert.deepEqual(
+		s.rows.map((r) => [r.command, r.savings]),
+		FALLBACK.rows.map((r) => [r.command, r.savings])
+	);
+});
+
+test('fixtures are read from the whole doc, since they belong to no corpus', () => {
+	const s = parseReadme(DOC_CURRENT);
+	assert.equal(s.fixtures['git status'].output, '165 B');
+});
+
+test('currentRun returns the whole doc when there are no markers', () => {
+	assert.equal(currentRun(DOC_NOW), DOC_NOW);
+	assert.ok(!currentRun(DOC_CURRENT).includes('69.6%'));
+});
+
 test('reads the headline figures the page renders', () => {
 	const s = parseReadme(DOC_NOW);
 	// 32.6% is the filters alone and sits first in the same bold span. The page
 	// labels this figure as the total, so taking the first percentage would have
 	// published the smaller number under the larger one's name.
 	assert.equal(s.overallSaved, '69.6%');
+	assert.equal(s.filtersSaved, '32.6%');
 	assert.equal(s.zeroSaveShare, '96.1%');
 	assert.equal(s.totalCalls, '5,984');
-});
-
-test('converts the raw byte run to the unit the class table prints', () => {
-	const s = parseReadme(DOC_NOW);
-	// "23,086,649 to 15,557,823 to 7,026,021": end to end, so the middle term
-	// (filters only) is dropped rather than averaged into anything.
-	assert.equal(s.bytesIn, '23.09 MB');
-	assert.equal(s.bytesOut, '7.03 MB');
 });
 
 test('a summary row naming calls and ledger does not win the header search', () => {
@@ -116,12 +168,6 @@ test('a summary row naming calls and ledger does not win the header search', () 
 	assert.equal(s.rows.length, 6);
 	assert.ok(!s.rows.some((r) => /ledger folds/i.test(r.command)));
 	assert.equal(s.rows[0].command, 'other');
-});
-
-test('reads the repetition figures out of the summary table', () => {
-	const s = parseReadme(DOC_NOW);
-	assert.equal(s.repeated, '68.4%');
-	assert.equal(s.repeatedAfterDistillers, '64.7%');
 });
 
 test('parses the per-class table, not the head-to-head or the fixtures', () => {
@@ -157,8 +203,6 @@ test('still reads the 0.7.4 wording, byte pair and table', () => {
 	assert.equal(s.overallSaved, '15.4%');
 	assert.equal(s.zeroSaveShare, '97.3%');
 	assert.equal(s.totalCalls, '6,656');
-	assert.equal(s.bytesIn, '6.47 MB');
-	assert.equal(s.bytesOut, '5.47 MB');
 	assert.equal(s.rows.length, 3);
 });
 
@@ -168,8 +212,7 @@ test('still takes the pre-0.7.0 arrow and wording', () => {
 		'**9,965 real command\nexecutions**'
 	);
 	const s = parseReadme(old);
-	assert.equal(s.bytesIn, '40.1 MB');
-	assert.equal(s.bytesOut, '22.7 MB');
+	assert.equal(s.overallSaved, '15.4%');
 	assert.equal(s.totalCalls, '9,965');
 });
 
@@ -178,15 +221,6 @@ test('returns null rather than half-parsed numbers', () => {
 	// header carries no `ledger` and nothing matches.
 	const broken = DOC_NOW.replace('| class | calls | input | filters | + ledger |', '| class | input |');
 	assert.equal(parseReadme(broken), null);
-});
-
-test('a missing repetition row falls back without failing the whole read', () => {
-	// A reworded summary should cost the page two figures, not the benchmark
-	// table it parsed correctly on the same pass.
-	const s = parseReadme(DOC_NOW.replace('| raw bytes already shown once |', '| repetition |'));
-	assert.notEqual(s, null);
-	assert.equal(s.repeated, FALLBACK.repeated);
-	assert.equal(s.repeatedAfterDistillers, FALLBACK.repeatedAfterDistillers);
 });
 
 test('the fallback is a shape the page can render', () => {
@@ -208,8 +242,8 @@ test('the fallback is pinned, so it cannot be changed on one side only', () => {
 	// live doc would put a network call in the suite, and a suite that fails when
 	// GitHub is slow is a suite people learn to ignore. The deploy-time guard in
 	// getBenchmarkStats is what catches real drift.
-	assert.equal(FALLBACK.totalCalls, '5,984');
-	assert.equal(FALLBACK.overallSaved, '69.6%');
-	assert.equal(FALLBACK.zeroSaveShare, '96.1%');
-	assert.equal(FALLBACK.repeated, '68.4%');
+	assert.equal(FALLBACK.totalCalls, '9,478');
+	assert.equal(FALLBACK.overallSaved, '2.4%');
+	assert.equal(FALLBACK.filtersSaved, '0.8%');
+	assert.equal(FALLBACK.zeroSaveShare, '98.8%');
 });

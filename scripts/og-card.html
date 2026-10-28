@@ -5,8 +5,8 @@
   The share card, rendered by scripts/make-og.mjs. Do not edit public/media/og.png
   by hand and do not type a number into this file.
 
-  Every {{placeholder}} below is substituted from src/lib/readme-stats.js, the same
-  parser the landing page renders from, so the card cannot drift from the page the
+  Every {{placeholder}} below is substituted from src/demo/, the same real fixture
+  output the landing page's hero plays, so the card cannot drift from the page the
   way the one it replaced did. That card shipped 58.9% across 1,810 executions for
   three weeks after the corpus became 6,656, and carried an invented category name
   and a logo that was not the mark.
@@ -135,21 +135,20 @@
   </div>
 
   <p class="eyebrow">SHELL HOOK &middot; MCP SERVER &middot; APACHE 2.0</p>
-  <h1>Stop paying to re&#8209;read the same output<span class="dot">.</span></h1>
+  <h1>Your agent reads less noise, and loses nothing<span class="dot">.</span></h1>
   <p class="lede">
-    It drops the noise from command output before the model reads it, and returns
-    what the model has already been shown as a handle. Nothing deleted, nothing
-    invented.
+    It trims command output the model does not need and archives every byte it
+    cuts. A command that fails reaches the model whole.
   </p>
 
   <div class="figures">
     <div>
-      <div class="fig-n">{{BEST}}</div>
-      <div class="fig-l">off {{BEST_CLASS}} output</div>
+      <div class="fig-n">{{BUILD_SAVED}}</div>
+      <div class="fig-l">off a successful cargo build</div>
     </div>
     <div>
-      <div class="fig-n">{{OVERALL}}</div>
-      <div class="fig-l">across all {{CALLS}} replayed commands</div>
+      <div class="fig-n">0 B</div>
+      <div class="fig-l">taken from a failing cargo test</div>
     </div>
   </div>
 </div>
@@ -160,15 +159,7 @@
       <span>GIT STATUS</span>
       <span><b>{{FIXTURE_IN}}</b></span>
     </div>
-    <div class="ln"><span class="mark">$</span><span>git status</span></div>
-    <div class="ln"><span class="mark"></span><span>On branch main</span></div>
-    <div class="ln"><span class="mark">&minus;</span><span class="cut">(use "git push" to publish your commits)</span></div>
-    <div class="ln"><span class="mark"></span><span>Changes not staged for commit:</span></div>
-    <div class="ln"><span class="mark">&minus;</span><span class="cut">(use "git add &lt;file&gt;..." to update)</span></div>
-    <div class="ln"><span class="mark">&minus;</span><span class="cut">(use "git restore &lt;file&gt;..." to discard)</span></div>
-    <div class="ln"><span class="mark"></span><span class="keep">&nbsp;&nbsp;modified: src/pipeline/scorer.rs</span></div>
-    <div class="ln"><span class="mark"></span><span class="keep">&nbsp;&nbsp;modified: src/distillers/test.rs</span></div>
-    <div class="ln"><span class="mark">&minus;</span><span class="cut">no changes added to commit</span></div>
+{{CRT_LINES}}
     <div class="crt-foot">
       <span>{{FIXTURE_OUT}} delivered, {{FIXTURE_SAVED}} smaller</span>
       <span>nothing deleted, hashed to disk</span>

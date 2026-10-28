@@ -27,26 +27,20 @@
 const BENCHMARKS_URL =
 	'https://raw.githubusercontent.com/fajarhide/omni/main/docs/website/src/develop/benchmarks.md';
 
-/** Last-known-good, verified against the manual on 2026-08-17 (0.7.5 replay). */
+/** Last-known-good, verified against the manual on 2026-10-28 (the 2026-08-24 corpus, 0.7.11). */
 export const FALLBACK = {
 	source: 'fallback',
-	totalCalls: '5,984',
-	overallSaved: '69.6%',
-	zeroSaveShare: '96.1%',
-	bytesIn: '23.09 MB',
-	bytesOut: '7.03 MB',
-	// What the ledger exists for: the share of raw bytes the agent had already
-	// been shown, and how little of it the distillers reach. The gap between the
-	// two is the whole argument, so both are read rather than typed.
-	repeated: '68.4%',
-	repeatedAfterDistillers: '64.7%',
+	totalCalls: '9,478',
+	overallSaved: '2.4%',
+	filtersSaved: '0.8%',
+	zeroSaveShare: '98.8%',
 	rows: [
-		{ command: 'file read', calls: '884', input: '10.93 MB', filters: '39.2%', savings: '89.6%', pct: 89.6 },
-		{ command: 'other', calls: '3,703', input: '11.05 MB', filters: '29.1%', savings: '56.2%', pct: 56.2 },
-		{ command: 'build and test', calls: '36', input: '24 KB', filters: '10.8%', savings: '10.8%', pct: 10.8 },
-		{ command: 'git, gh', calls: '696', input: '475 KB', filters: '2.5%', savings: '7.0%', pct: 7.0 },
-		{ command: 'infra', calls: '65', input: '70 KB', filters: '0.0%', savings: '6.8%', pct: 6.8 },
-		{ command: 'search', calls: '600', input: '540 KB', filters: '2.3%', savings: '4.3%', pct: 4.3 },
+		{ command: 'other', calls: '6,457', input: '4.81 MB', filters: '0.8%', savings: '2.8%', pct: 2.8 },
+		{ command: 'file read', calls: '1,056', input: '1.89 MB', filters: '0.0%', savings: '1.5%', pct: 1.5 },
+		{ command: 'git', calls: '899', input: '0.86 MB', filters: '0.0%', savings: '1.3%', pct: 1.3 },
+		{ command: 'search', calls: '810', input: '0.77 MB', filters: '3.4%', savings: '3.4%', pct: 3.4 },
+		{ command: 'infra', calls: '215', input: '0.14 MB', filters: '2.4%', savings: '2.7%', pct: 2.7 },
+		{ command: 'build and test', calls: '41', input: '0.02 MB', filters: '9.0%', savings: '10.7%', pct: 10.7 },
 	],
 	// The three reproducible fixtures the hero demo cycles through, so every
 	// meter reading is a real measurement rather than a number chosen to look
@@ -156,22 +150,31 @@ const grab = (md, re) => {
  * an old doc, which no longer exists, but because the failure this file is named
  * after was a prose edit nobody thought of as a breaking change.
  */
-export function parseReadme(md) {
+/**
+ * The section that holds the doc's machine-written corpus table, or the whole doc
+ * when there is no such table (every shape before 2026-08-24).
+ *
+ * The manual keeps older runs below the current one, labelled rather than deleted.
+ * Searching the whole file let each regex take its first hit from a different run,
+ * and the page shipped 9,478 traces from one corpus beside 69.6% and 23.09 MB from
+ * another that the doc had marked as overstated. Every corpus figure is read from
+ * this one section; only the fixtures, which do not depend on a corpus, are not.
+ */
+export function currentRun(md) {
+	const at = md.indexOf('<!-- omni:corpus-table:start -->');
+	if (at === -1) return md;
+	const start = md.lastIndexOf('\n## ', at);
+	const end = md.indexOf('\n## ', at);
+	return md.slice(Math.max(start, 0), end === -1 ? undefined : end);
+}
+
+export function parseReadme(doc) {
+	const md = currentRun(doc);
 	const rows = parseClassTable(md);
 	// Each fixture falls back on its own, so one renamed row cannot blank the hero.
 	const fixtures = Object.fromEntries(
-		FIXTURE_KEYS.map((k) => [k, parseFixture(md, k) ?? FALLBACK.fixtures[k]])
+		FIXTURE_KEYS.map((k) => [k, parseFixture(doc, k) ?? FALLBACK.fixtures[k]])
 	);
-	// Three shapes now. "(40.1 MB → 22.7 MB)" before 0.7.0, "(6.47 MB to 5.47 MB)"
-	// until 0.7.5, and since 0.7.5 a bare run of raw byte counts on the line under
-	// the headline: "23,086,649 to 15,557,823 to 7,026,021." Filters sit in the
-	// middle and the ledger at the end, and the page quotes end to end, so the
-	// middle term is dropped rather than averaged into anything.
-	const mbPair = md.match(/\(([\d.]+ [KMG]B)\s*(?:→|to)\s*([\d.]+ [KMG]B)\)/);
-	const rawRun = md.match(/^([\d,]{7,}) to (?:[\d,]{7,} to )?([\d,]{7,})\.?\s*$/m);
-	// Decimal MB, matching the unit the doc's own class table prints, so the hero
-	// and the table cannot disagree about what a megabyte is.
-	const toMB = (s) => (Number(s.replace(/,/g, '')) / 1e6).toFixed(2) + ' MB';
 	const stats = {
 		source: 'docs/website/src/develop/benchmarks.md@main',
 		rows,
@@ -181,38 +184,26 @@ export function parseReadme(md) {
 		// bold span, "32.6% fewer bytes from the filters. 69.6% with the ledger",
 		// and taking the first match there would have published the filters alone
 		// under a label the page uses for the total.
+		// Since 2026-08-24 the same pair reads "**0.8% from the filters. 2.4% with
+		// the ledger**", without "fewer bytes".
 		overallSaved:
-			grab(md, /\*\*[\d.]+% fewer bytes from the filters\.\s*([\d.]+)% with the ledger/) ??
+			grab(md, /\*\*[\d.]+% (?:fewer bytes )?from the filters\.\s*([\d.]+)% with the ledger/) ??
 			grab(md, /\*\*([\d.]+)% fewer bytes\*\*/),
-		// Prose before 0.7.5, a summary-table row since.
+		filtersSaved: grab(md, /\*\*([\d.]+)% (?:fewer bytes )?from the filters\./),
+		// Prose before 0.7.5, a summary-table row until 2026-08-24, prose again since.
 		zeroSaveShare:
 			grab(md, /calls that saved nothing \|\s*\*\*([\d.]+)%/) ??
-			grab(md, /\*\*([\d.]+)% of (?:those )?calls saved nothing/),
+			grab(md, /\*\*([\d.]+)% of (?:those )?calls saved nothing/) ??
+			grab(md, /([\d.]+)% of calls saved\s+nothing/),
 		// "**Corpus**: 5,984 traces" today, "over **6,656 traces covering …**"
 		// until 0.7.5, "**9,965 real command executions**" before 0.7.0.
 		totalCalls:
 			grab(md, /\*\*Corpus\*\*:\s*([\d,]+) traces\b/) ??
 			grab(md, /\*\*([\d,]+) traces\b/) ??
 			grab(md, /\*\*([\d,]+) real command\s*\n?\s*executions\*\*/),
-		bytesIn: mbPair?.[1] ?? (rawRun ? toMB(rawRun[1]) : null),
-		bytesOut: mbPair?.[2] ?? (rawRun ? toMB(rawRun[2]) : null),
-		// Prose rather than a table, so these fall back on their own instead of
-		// failing the whole read. A missing sentence should not blank a page whose
-		// tables parsed.
-		repeated:
-			grab(md, /raw bytes already shown once \|\s*\*\*([\d.]+)%/) ??
-			grab(md, /\*\*([\d.]+)% of raw bytes are lines the agent had already been shown\*\*/) ??
-			FALLBACK.repeated,
-		repeatedAfterDistillers:
-			grab(md, /raw bytes already shown once \|\s*\*\*[\d.]+%\*\* before filters,\s*([\d.]+)% after/) ??
-			grab(md, /\*\*([\d.]+)% still\s+are after every distiller/) ??
-			FALLBACK.repeatedAfterDistillers,
 	};
-	if (stats.repeated && !stats.repeated.endsWith('%')) stats.repeated += '%';
-	if (stats.repeatedAfterDistillers && !stats.repeatedAfterDistillers.endsWith('%')) {
-		stats.repeatedAfterDistillers += '%';
-	}
 	if (stats.overallSaved) stats.overallSaved += '%';
+	if (stats.filtersSaved) stats.filtersSaved += '%';
 	if (stats.zeroSaveShare) stats.zeroSaveShare += '%';
 
 	const sane = (p) => Number.isFinite(p) && p >= 0 && p <= 100;
@@ -221,7 +212,7 @@ export function parseReadme(md) {
 		rows.every((r) => r.command && sane(r.pct)) &&
 		sane(parseFloat(stats.overallSaved)) &&
 		sane(parseFloat(stats.zeroSaveShare)) &&
-		Boolean(stats.totalCalls && stats.bytesIn && stats.bytesOut);
+		Boolean(stats.totalCalls);
 
 	return valid ? stats : null;
 }

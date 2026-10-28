@@ -8,9 +8,10 @@
    Two rules hold the system together:
      1. Mono type means a machine emitted it. Sans means a person wrote it.
         Never mix the two inside one block.
-     2. Yellow appears only inside the terminal, and only on the live reading.
-        It is the instrument's colour, so it never leaks onto the page. The
-        page's own accent is --accent, the same one weekndlabs.com uses.
+     2. The page spends one accent, --accent, the blue weekndlabs.com uses.
+        The terminal keeps its own ramp (--wl-terminal-*) so it holds AA on
+        its black ground in both themes, but not its own hue: its live
+        reading is the same blue.
 
    Every value below comes from @weekndlabs/design. Nothing in this file, and
    nothing in any component, may name a colour, a family or a measure directly:
@@ -56,10 +57,10 @@
   --phosphor-dim:   var(--wl-terminal-dim);
   --phosphor-hot:   var(--wl-terminal-blue);
   /* Derived rather than picked, so the terminal keeps its internal contrast
-     when the system moves the ramp. A hairline one step off the ground, and
-     the colour a struck line lands on before it collapses. */
+     when the system moves the ramp. A hairline one step off the ground.
+     There used to be a darker "struck" colour here as well; it measured
+     2.40:1 on the ground, and the line-through already says "removed". */
   --crt-rule:       oklch(from var(--wl-terminal-ground) calc(l + 0.05) c h);
-  --phosphor-struck: oklch(from var(--wl-terminal-dim) calc(l - 0.22) c h);
 
   /* The accent, on paper. Links, rules under them, the focus ring, the dot
      after the headline. --wl-ring is what weekndlabs.com spends it on, and
@@ -156,13 +157,12 @@ h1, h2, h3, h4 {
 
 .eyebrow {
   font-family: var(--font-mono);
-  font-size: var(--wl-text-label);
-  letter-spacing: var(--wl-tracking-label);
-  text-transform: uppercase;
+  font-size: var(--wl-text-meta);
   color: var(--ink-soft);
 }
 
 .fine { font-size: var(--wl-text-meta); color: var(--ink-soft); }
+.fine-after { margin-top: 18px; max-width: 660px; }
 
 code {
   font-family: var(--font-mono);
@@ -215,7 +215,7 @@ code {
 .btn-solid:hover { background: oklch(from var(--wl-primary) calc(l - 0.06) c h); transform: translateY(-1px); }
 .btn-ghost { background: transparent; color: var(--ink); }
 .btn-ghost:hover { background: var(--paper-sunk); }
-.btn-sm { padding: var(--wl-space-2) var(--wl-space-3); font-size: var(--wl-text-meta); min-height: 36px; }
+.btn-sm { padding: var(--wl-space-2) var(--wl-space-3); font-size: var(--wl-text-meta); min-height: 44px; }
 
 /* --------------------------------------------------------------------------
    Navbar
@@ -245,6 +245,7 @@ code {
   font-weight: 700;
   font-size: var(--wl-text-lede);
   letter-spacing: 0.01em;
+  min-height: 44px;
 }
 /* One square mark everywhere: navbar, favicon, README. Pin the height and let
    the width follow, so a future non-square lockup still fits. The radius is the
@@ -271,8 +272,8 @@ code {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   background: transparent;
   border: 1px solid var(--rule);
   border-radius: var(--wl-radius-control);
@@ -285,7 +286,7 @@ code {
 .theme-toggle .i-sun { display: none; }
 [data-theme='dark'] .theme-toggle .i-moon { display: none; }
 [data-theme='dark'] .theme-toggle .i-sun { display: inline; }
-.nav-toggle { display: none; background: none; border: 0; color: var(--ink); cursor: pointer; padding: 8px; }
+.nav-toggle { display: none; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; background: none; border: 0; color: var(--ink); cursor: pointer; }
 
 /* --------------------------------------------------------------------------
    Hero
@@ -296,38 +297,51 @@ code {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
   gap: 56px;
-  align-items: start;
+  align-items: center;
 }
 .hero h1 { margin-bottom: 22px; }
 .hero .lede { margin-bottom: 30px; }
-.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 34px; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
 
-.release {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  font-family: var(--font-mono);
-  font-size: var(--wl-text-meta);
-  color: var(--ink-soft);
-  border: 1px solid var(--rule);
-  border-radius: var(--wl-radius-control);
-  padding: 4px 10px;
-  /* Sits directly above the terminal in the right column, so the headline is
-     the first thing in the left column with nothing stacked on top of it. */
-  margin-bottom: 10px;
+
+/* Install strip. Reads as a field you copy from, not a hero CTA. Every
+   command a reader might paste is printed, never hidden behind a button. */
+/* minmax(0, 1fr): a bare track takes the nowrap command as its floor and
+   pushed the strip to 461px inside a 390px viewport. */
+/* Its own band, centred, at the width of the longest command. */
+.install-wrap { max-width: 600px; text-align: center; }
+.install-h { font-size: var(--wl-text-title); margin-bottom: 4px; }
+.install { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; text-align: left; }
+/* The tabs are labels for visually hidden radios, so the switch needs no
+   script and the arrow keys move between installers. */
+.os-radio { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.install-head { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 4px; }
+.os-tab {
+  display: inline-flex; align-items: center;
+  min-height: 44px; padding: 0 10px;
+  font-size: var(--wl-text-meta); color: var(--ink-soft);
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
 }
-.release-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
-.release [data-status="stable"] { color: var(--ink); }
+.os-tab:hover { color: var(--ink); }
+.install-then { margin-top: 8px; font-size: var(--wl-text-meta); color: var(--ink-soft); text-align: center; }
+.install-row { display: none; }
+.install:has(#os-0:checked) [data-os='0'],
+.install:has(#os-1:checked) [data-os='1'],
+.install:has(#os-2:checked) [data-os='2'] { display: flex; }
+.install:has(#os-0:checked) [for='os-0'],
+.install:has(#os-1:checked) [for='os-1'],
+.install:has(#os-2:checked) [for='os-2'] { color: var(--ink); border-bottom-color: var(--accent); }
+.install:has(#os-0:focus-visible) [for='os-0'],
+.install:has(#os-1:focus-visible) [for='os-1'],
+.install:has(#os-2:focus-visible) [for='os-2'] { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-/* Install strip. Reads as a field you copy from, not a hero CTA. */
-.install { border-top: 1px solid var(--rule); padding-top: 20px; }
 .install-row {
-  display: flex;
   align-items: center;
   gap: 10px;
   background: var(--crt);
   border-radius: var(--wl-radius-control);
-  padding: 12px 14px;
+  padding: 0 0 0 14px;
   font-family: var(--font-mono);
   font-size: var(--wl-text-meta);
   color: var(--phosphor);
@@ -344,28 +358,22 @@ code {
   margin-left: auto;
   flex: none;
   background: none;
-  border: 1px solid var(--phosphor-dim);
-  border-radius: var(--wl-radius-control);
+  border: 0;
+  border-left: 1px solid var(--crt-rule);
+  border-radius: 0 var(--wl-radius-control) var(--wl-radius-control) 0;
   color: var(--phosphor);
   cursor: pointer;
-  padding: 6px;
   display: flex;
-  min-width: 32px; min-height: 32px;
+  min-width: 44px; min-height: 44px;
   align-items: center; justify-content: center;
   transition: background var(--wl-duration-fast) var(--wl-ease-out);
 }
-.copy:hover { background: rgba(255, 176, 0, 0.14); }
-.install-alt {
-  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
-  margin-top: 12px; font-size: var(--wl-text-meta); color: var(--ink-soft);
-}
-.linkish {
-  background: none; border: 0; cursor: pointer;
-  font-family: var(--font-mono); font-size: var(--wl-text-meta);
-  color: var(--accent); border-bottom: 1px solid var(--rule-strong);
-  padding: 2px 0;
-}
-.linkish:hover { border-bottom-color: var(--accent); }
+.copy:hover { background: var(--crt-rule); }
+.copy .i-ok { display: none; }
+.copy[data-state='ok'] .i-copy { display: none; }
+.copy[data-state='ok'] .i-ok { display: block; color: var(--phosphor-hot); }
+.copy[data-state='fail'] { color: var(--phosphor-dim); }
+
 
 /* --------------------------------------------------------------------------
    THE SIGNATURE, subtraction in place
@@ -394,7 +402,6 @@ code {
 /* The case label is the only part of the bar that can lose characters. The
    phase and the meter are the reading, so they never shrink. */
 .crt-case { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.crt-ctx { margin-left: 0.5ch; }
 .crt-read { display: flex; align-items: center; gap: 10px; flex: none; }
 .crt-phase {
   color: var(--phosphor-dim);
@@ -417,40 +424,38 @@ code {
   min-height: calc(var(--rows, 21) * 1.55em + 28px);
 }
 .reel[hidden] { display: none; }
-.crt-body .prompt { color: var(--phosphor-dim); }
-.crt-body .keep { color: var(--phosphor); }
 
-/* Every line carries a gutter cell, so the collapse reads as a diff. */
+/* Every line carries a gutter cell, so the swap reads as a diff: raw lines
+   have none, what the agent received is marked `+`. */
 .ln {
   display: grid;
-  grid-template-columns: 14px 1fr;
+  grid-template-columns: 14px minmax(0, 1fr);
   gap: 8px;
   white-space: pre;
-  transition: opacity var(--wl-duration-slow) var(--wl-ease-out), height var(--wl-duration-slow) var(--wl-ease-out), margin var(--wl-duration-slow) var(--wl-ease-out);
+  transition: opacity var(--wl-duration-slow) var(--wl-ease-out), height var(--wl-duration-slow) var(--wl-ease-out);
   height: 1.55em;
   overflow: hidden;
 }
 .ln > .mark { color: var(--phosphor-dim); user-select: none; }
-.ln-noise > .txt { color: var(--phosphor-dim); }
+/* The page's own elision, not OMNI's output, so it reads in the person's
+   face rather than the machine's. */
+.ln-skip > .txt { font-family: var(--font-body); font-style: italic; color: var(--phosphor-dim); }
+.out { display: none; }
+.out .mark { color: var(--phosphor-hot); }
 
 /* Two beats, looped while the block is on screen.
-   1. `scoring`: the strike walks down the noise one line at a time, so the
-      scoring pass is visible rather than instantaneous.
-   2. `cut`: the struck lines collapse, leaving the verdict. */
-.crt.scoring .ln-noise > .txt,
-.crt.scoring .ln-noise > .mark {
+   1. `scoring`: the strike walks down the raw output one line at a time.
+   2. `cut`: the raw lines collapse and what the agent received takes their
+      place. A reel that passed through never gets either class. */
+.crt.scoring .raw .ln:not(:first-child) > .txt {
   animation: strike var(--wl-duration-slow) var(--wl-ease-out) forwards;
-  animation-delay: calc(var(--i) * var(--wl-duration-fast));
+  animation-delay: calc(var(--i) * 90ms);
 }
 @keyframes strike {
-  to { color: var(--phosphor-struck); text-decoration-line: line-through; }
+  to { color: var(--phosphor-dim); text-decoration-line: line-through; }
 }
-
-.crt.cut .ln-noise {
-  height: 0;
-  opacity: 0;
-  transition-delay: calc(var(--i) * 26ms);
-}
+.crt.cut .raw .ln:not(:first-child) { height: 0; opacity: 0; transition-delay: calc(var(--i) * 20ms); }
+.crt.cut .out { display: block; }
 
 .crt-foot {
   border-top: 1px solid var(--crt-rule);
@@ -467,25 +472,36 @@ code {
 }
 
 /* --------------------------------------------------------------------------
-   Stat row
+   Split sections. RHYTHM 2 in DESIGN.md: Why and Numbers put the argument on
+   the left and the evidence beside it, where every other section stacks.
    -------------------------------------------------------------------------- */
 
-.stats {
+.split {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  border-top: 1px solid var(--rule);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+  gap: 56px;
+  align-items: start;
 }
-.stat { padding: 18px 0 4px; padding-right: 24px; }
-.stat + .stat { border-left: 1px solid var(--rule); padding-left: 24px; }
-.stat-n {
+.split > .band-head { margin-bottom: 0; }
+
+/* The Why example. Paper, not a second terminal: the page has one instrument. */
+.pair { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+.pair-h { font-size: var(--wl-text-meta); color: var(--ink-soft); margin-bottom: 6px; display: flex; justify-content: space-between; gap: 12px; }
+.pair-n { font-family: var(--font-mono); color: var(--ink); }
+.pair-body {
+  margin: 0;
   font-family: var(--font-mono);
-  font-size: var(--wl-text-display);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-  display: block;
-  margin-bottom: 6px;
+  font-size: var(--wl-text-label);
+  line-height: 1.55;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--wl-radius-control);
+  padding: 12px 14px;
+  white-space: pre;
+  overflow-x: auto;
 }
-.stat-l { font-size: var(--wl-text-meta); color: var(--ink-soft); line-height: 1.45; display: block; }
+.pair-raw { color: var(--ink-soft); }
 
 /* --------------------------------------------------------------------------
    Rows
@@ -554,7 +570,6 @@ code {
 .receipt a { color: var(--accent); border-bottom: 1px solid var(--rule-strong); }
 .receipt a:hover { border-bottom-color: var(--accent); }
 
-/* Before / after inside one value cell. */
 /* The host list reads as a set of product names, so it gets the mono treatment
    the rest of the page gives to fixed strings, and the sentence under it stays
    in the body face. */
@@ -564,18 +579,6 @@ code {
   font-size: var(--wl-text-meta);
   color: var(--ink);
   margin-bottom: 6px;
-}
-
-.was { color: var(--ink-soft); }
-.now { color: var(--ink); display: block; margin-top: 4px; }
-.now::before {
-  content: 'now';
-  font-family: var(--font-mono);
-  font-size: var(--wl-text-label);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-right: 8px;
 }
 
 /* --------------------------------------------------------------------------
@@ -619,18 +622,14 @@ code {
   transform: translateY(-50%);
   height: 15px;
   width: var(--w);
-  background: rgba(122, 78, 0, 0.16);
+  /* The accent at low alpha: a second hue here would be the page's only one. */
+  background: oklch(from var(--accent) l c h / 0.22);
   border-radius: var(--wl-radius-control);
   z-index: 0;
 }
 .bar > span { position: relative; z-index: 1; }
 
-/* --------------------------------------------------------------------------
-   Closing
-   -------------------------------------------------------------------------- */
-
-.close { text-align: left; }
-.close .lede { margin: 18px 0 28px; }
+.close-actions { margin: 28px 0 0; }
 
 /* --------------------------------------------------------------------------
    Footer
@@ -642,8 +641,8 @@ code {
 .footer-brand .mark { font-family: var(--font-display); font-weight: 700; font-size: var(--wl-text-lede); display: block; margin-bottom: 8px; }
 .footer-brand p { color: var(--ink-soft); }
 .footer-links { display: flex; gap: 56px; flex-wrap: wrap; }
-.link-group .link-h { font-size: var(--wl-text-meta); font-family: var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); font-weight: 400; margin-bottom: 12px; }
-.link-group a { display: block; margin-bottom: 8px; color: var(--ink-soft); border-bottom: 1px solid transparent; width: fit-content; }
+.link-group .link-h { font-size: var(--wl-text-meta); font-family: var(--font-mono); color: var(--ink-soft); font-weight: 400; margin-bottom: 2px; }
+.link-group a { display: block; padding-block: 10px; color: var(--ink-soft); border-bottom: 1px solid transparent; width: fit-content; }
 .link-group a:hover { color: var(--ink); border-bottom-color: var(--ink); }
 .footer-bottom { margin-top: 44px; padding-top: 20px; border-top: 1px solid var(--rule); color: var(--ink-soft); font-size: var(--wl-text-meta); }
 .footer-bottom a { border-bottom: 1px solid var(--rule-strong); }
@@ -734,7 +733,7 @@ code {
      that `auto` floor is the widest line in the terminal, which pushed the whole
      hero to 493px inside a 390px viewport. */
   .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 40px; }
-  .stat + .stat { border-left: 0; padding-left: 0; }
+  .split { grid-template-columns: minmax(0, 1fr); gap: 26px; }
 }
 
 @media (max-width: 720px) {
@@ -755,9 +754,6 @@ code {
   .nav-links a { padding: 12px 0; border-bottom: 1px solid var(--rule); }
   .nav-toggle { display: flex; }
   .nav-end .btn { display: none; }
-  /* "1 of 3 · cargo test" fits. The "(490 passed, 10 failed)" behind it does
-     not, and half of it is worse than none of it. */
-  .crt-ctx { display: none; }
   .row { grid-template-columns: minmax(0, 1fr); gap: 5px; padding: 13px 15px; }
   .post-row, .post-row.is-lead { grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 22px 0; }
   .footer-links { gap: 32px; }
@@ -859,7 +855,7 @@ code {
 /* Same row primitive, stacked. The key here is a full post title, and a 190px
    key column wrapped every one of them to three lines beside a one-line value. */
 .more .row { grid-template-columns: minmax(0, 1fr); gap: 5px; }
-.more .row-k a { border-bottom: 1px solid var(--rule-strong); }
+.more .row-k a { border-bottom: 1px solid var(--rule-strong); display: inline-block; min-height: 44px; }
 .more .row-k a:hover { border-bottom-color: var(--accent); }
 .more .row-v { font-size: var(--wl-text-meta); }
 
@@ -867,7 +863,7 @@ code {
   display: flex;
   justify-content: space-between;
   gap: 20px;
-  padding: 18px 0;
+  padding: 7px 0;
   border-top: 1px solid var(--rule);
   border-bottom: 1px solid var(--rule);
   margin-bottom: 24px;
@@ -877,7 +873,7 @@ code {
    across the middle of the row and it stops being clear which is which. */
 .stepper > * { max-width: 46%; }
 .step-next { text-align: right; }
-.stepper a { color: var(--ink-soft); max-width: 48%; border-bottom: 1px solid transparent; }
+.stepper a { color: var(--ink-soft); max-width: 48%; border-bottom: 1px solid transparent; padding-block: 12px; }
 .stepper a:hover { color: var(--ink); border-bottom-color: var(--ink); }
 .step-next { text-align: right; margin-left: auto; }
 

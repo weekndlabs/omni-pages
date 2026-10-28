@@ -1,0 +1,4 @@
+# name	exit	command, written by scripts/make-demo.sh with omni 0.7.13
+cargo-build	0	cargo build --release
+git-status	0	git status
+cargo-test	101	cargo test
