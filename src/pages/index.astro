@@ -241,7 +241,7 @@ const ledger = [
 	},
 	{
 		k: 'Across sessions',
-		v: 'The store is one SQLite file keyed by project path rather than by agent, so a second agent in the same directory gets a handle for output an earlier session produced. That marker reads <code>from an earlier session</code> and not <code>already shown</code>, because this agent has genuinely never seen those bytes.',
+		v: 'The store is one SQLite file keyed by project path rather than by agent, so a second agent in the same directory gets a handle for command output an earlier session produced. That marker reads <code>not shown here</code> and not <code>already shown</code>, because this agent has genuinely never seen those bytes. A file read never folds this way: the agent asked for that file, so it gets it whole.',
 	},
 	{
 		k: 'A compaction ends it',
