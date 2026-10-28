@@ -22,6 +22,9 @@ const postDates = new Map(
 
 export default defineConfig({
   site: SITE,
+  /* Smartypants turned `--all` in a heading into an em dash, so two posts
+     printed commands that do not exist. Posts quote CLI flags constantly. */
+  markdown: { smartypants: false },
   integrations: [
     // Release-candidate notes stay online and crawlable, but out of the
     // sitemap and out of the index. See src/lib/blog.js.

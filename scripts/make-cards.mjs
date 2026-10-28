@@ -1,6 +1,6 @@
 /**
  * Render public/media/og.png, the share card on every page of this site and on all
- * 64 manual pages, from the benchmark parser.
+ * 64 manual pages, from the real fixture output in src/demo/.
  *
  *     node scripts/make-cards.mjs
  *
@@ -24,7 +24,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, unlinkSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
-import { getBenchmarkStats, extremes } from '../src/lib/readme-stats.js';
+import { shorten } from '../src/lib/demo-format.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '..');
@@ -35,9 +35,23 @@ const CHROME =
 	process.env.CHROME_PATH ||
 	'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 
-const stats = await getBenchmarkStats();
-const { best } = extremes(stats.rows);
-const fx = stats.fixtures['git status'];
+/* The card plays the hero's real reels rather than the benchmark headline: the
+   headline moves twentyfold with the workload, and a card is cached by every
+   network it was ever shared to. */
+const demo = (f) => readFileSync(resolve(root, 'src/demo', f), 'utf8');
+const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const size = (t) => Buffer.byteLength(t);
+const pct = (raw, out) => `${((1 - size(out) / size(raw)) * 100).toFixed(1)}%`;
+
+const gsRaw = demo('git-status.raw.txt');
+const gsOut = demo('git-status.out.txt');
+const line = (mark, cls, t) => `    <div class="ln"><span class="mark">${mark}</span><span class="${cls}">${esc(t) || '&nbsp;'}</span></div>`;
+const crtLines = [
+	line('$', '', 'git status'),
+	// A struck empty line renders as a lone dash, so blank lines are left out.
+	...shorten(gsRaw).filter((l) => l.t.trim()).slice(0, 4).map((l) => line('&minus;', 'cut', l.t)),
+	...shorten(gsOut).map((l) => line('+', 'keep', l.t)),
+].join('\n');
 
 const CARDS = [
 	{
@@ -46,13 +60,11 @@ const CARDS = [
 		size: '1200,630',
 		scale: 2,
 		values: {
-			BEST: best.savings,
-			BEST_CLASS: best.command,
-			OVERALL: stats.overallSaved,
-			CALLS: stats.totalCalls,
-			FIXTURE_IN: fx.input,
-			FIXTURE_OUT: fx.output,
-			FIXTURE_SAVED: fx.savings,
+			BUILD_SAVED: pct(demo('cargo-build.raw.txt'), demo('cargo-build.out.txt')),
+			CRT_LINES: crtLines,
+			FIXTURE_IN: `${size(gsRaw).toLocaleString('en-US')} B`,
+			FIXTURE_OUT: `${size(gsOut).toLocaleString('en-US')} B`,
+			FIXTURE_SAVED: pct(gsRaw, gsOut),
 		},
 	},
 ];
@@ -94,4 +106,4 @@ for (const card of CARDS) {
 	console.log(`${card.out}`);
 }
 
-console.log(`${stats.overallSaved} across ${stats.totalCalls}, best ${best.savings} on ${best.command}`);
+console.log(`git status ${size(gsRaw)} B to ${size(gsOut)} B`);
