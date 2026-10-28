@@ -72,7 +72,8 @@ straight to the final state.
    shape: Why and Numbers use a split layout, with the heading and prose on the left and
    the evidence on the right. Every other section keeps the standard shape.
 2. **On a phone the demo comes before install.** The first screen shows the headline, the
-   lede, the two buttons and then the terminal. Desktop keeps the two columns.
+   lede, the two buttons and then the terminal. Install is its own centred band under the
+   hero, so the hero holds one argument and the install band one action.
 3. **Why carries one concrete example.** A static before and after of the `git status`
    fixture, measured from `src/demo/`. It sits on paper rather than in a second terminal,
    because the page has one instrument and that one animates.

@@ -196,32 +196,40 @@ const jsonLd = {
 						</figure>
 						<p class="crt-cap" id="reel-cap">{reels[0].cap}</p>
 					</div>
-					{/* One row, three installers. Radios rather than script so the switch
-					    works without JS and the arrow keys move between them; every command
-					    is still printed, one tab away, never hidden behind a link. */}
-					<div class="hero-install install" role="group" aria-label="Install OMNI">
-						{installs.map((i, n) => (
-							<input class="os-radio" type="radio" name="os" id={`os-${n}`} checked={n === 0} />
-						))}
-						<div class="install-head">
-							{installs.map((i, n) => <label class="os-tab" for={`os-${n}`}>{i.tab}</label>)}
-							<span class="install-then">then <code>omni init</code></span>
-						</div>
-						{installs.map((i, n) => (
-							<div class="install-row" data-os={n}>
-								<span class="sigil" aria-hidden="true">$</span>
-								<code>{i.cmd}</code>
-								<button class="copy" type="button" data-copy={i.cmd} aria-label={`Copy: ${i.cmd}`}>
-									<svg class="i-copy" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-									<svg class="i-ok" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-								</button>
-							</div>
-						))}
-						<p class="install-status" id="copy-status" role="status" aria-live="polite"></p>
-					</div>
 				</div>
 			</div>
 		</section>
+
+		{/* Install gets its own band, centred under the hero, so the hero is one
+		    argument (headline beside the demo) and the install is one action. */}
+		<section class="band" id="install">
+			<div class="wrap install-wrap">
+				<h2 class="install-h">Install</h2>
+				{/* One row, three installers. Radios rather than script so the switch
+				    works without JS and the arrow keys move between them; every command
+				    is still printed, one tab away, never hidden behind a link. */}
+				<div class="install" role="group" aria-label="Install OMNI">
+					{installs.map((i, n) => (
+						<input class="os-radio" type="radio" name="os" id={`os-${n}`} checked={n === 0} />
+					))}
+					<div class="install-head">
+						{installs.map((i, n) => <label class="os-tab" for={`os-${n}`}>{i.tab}</label>)}
+					</div>
+					{installs.map((i, n) => (
+						<div class="install-row" data-os={n}>
+							<span class="sigil" aria-hidden="true">$</span>
+							<code>{i.cmd}</code>
+							<button class="copy" type="button" data-copy={i.cmd} aria-label={`Copy: ${i.cmd}`}>
+								<svg class="i-copy" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+								<svg class="i-ok" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+							</button>
+						</div>
+					))}
+					<p class="install-then">Then run <code>omni init</code> to wire it into your agent. <span id="copy-status" role="status" aria-live="polite"></span></p>
+				</div>
+			</div>
+		</section>
+
 
 		{/* RHYTHM 2: Why and Numbers are the two sections that break the
 		    heading-plus-rows shape. The example is static and on paper, because
