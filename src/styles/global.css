@@ -309,32 +309,40 @@ code {
 .hero-install { grid-area: install; }
 .hero h1 { margin-bottom: 22px; }
 .hero .lede { margin-bottom: 30px; }
-.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 34px; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 28px; }
 
-.release {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  font-family: var(--font-mono);
-  font-size: var(--wl-text-meta);
-  color: var(--ink-soft);
-  border: 1px solid var(--rule);
-  border-radius: var(--wl-radius-control);
-  padding: 4px 10px;
-  /* Sits directly above the terminal in the right column, so the headline is
-     the first thing in the left column with nothing stacked on top of it. */
-  margin-bottom: 10px;
-}
-.release-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
-.release [data-status="stable"] { color: var(--ink); }
 
 /* Install strip. Reads as a field you copy from, not a hero CTA. Every
    command a reader might paste is printed, never hidden behind a button. */
 /* minmax(0, 1fr): a bare track takes the nowrap command as its floor and
    pushed the strip to 461px inside a 390px viewport. */
-.install { border-top: 1px solid var(--rule); padding-top: 20px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.install { border-top: 1px solid var(--rule); padding-top: 8px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; }
+/* The tabs are labels for visually hidden radios, so the switch needs no
+   script and the arrow keys move between installers. */
+.os-radio { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.install-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0 4px; }
+.os-tab {
+  display: inline-flex; align-items: center;
+  min-height: 44px; padding: 0 10px;
+  font-size: var(--wl-text-meta); color: var(--ink-soft);
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+.os-tab:first-of-type { padding-left: 0; }
+.os-tab:hover { color: var(--ink); }
+.install-then { margin-left: auto; font-size: var(--wl-text-meta); color: var(--ink-soft); }
+.install-row { display: none; }
+.install:has(#os-0:checked) [data-os='0'],
+.install:has(#os-1:checked) [data-os='1'],
+.install:has(#os-2:checked) [data-os='2'] { display: flex; }
+.install:has(#os-0:checked) [for='os-0'],
+.install:has(#os-1:checked) [for='os-1'],
+.install:has(#os-2:checked) [for='os-2'] { color: var(--ink); border-bottom-color: var(--accent); }
+.install:has(#os-0:focus-visible) [for='os-0'],
+.install:has(#os-1:focus-visible) [for='os-1'],
+.install:has(#os-2:focus-visible) [for='os-2'] { outline: 2px solid var(--accent); outline-offset: 2px; }
+.install-status { font-size: var(--wl-text-meta); color: var(--ink-soft); min-height: 1.5em; }
 .install-row {
-  display: flex;
   align-items: center;
   gap: 10px;
   background: var(--crt);
@@ -352,8 +360,8 @@ code {
   color: var(--phosphor); white-space: nowrap; font-size: inherit;
   overflow-x: auto; min-width: 0;
 }
-.install-os { margin-left: auto; flex: none; color: var(--phosphor-dim); font-size: var(--wl-text-label); }
 .copy {
+  margin-left: auto;
   flex: none;
   background: none;
   border: 0;
@@ -371,7 +379,7 @@ code {
 .copy[data-state='ok'] .i-copy { display: none; }
 .copy[data-state='ok'] .i-ok { display: block; color: var(--phosphor-hot); }
 .copy[data-state='fail'] { color: var(--phosphor-dim); }
-.install-alt { margin-top: 4px; font-size: var(--wl-text-meta); color: var(--ink-soft); }
+
 
 /* --------------------------------------------------------------------------
    THE SIGNATURE, subtraction in place
@@ -757,7 +765,6 @@ code {
   .nav-links a { padding: 12px 0; border-bottom: 1px solid var(--rule); }
   .nav-toggle { display: flex; }
   .nav-end .btn { display: none; }
-  .install-os { display: none; }
   .row { grid-template-columns: minmax(0, 1fr); gap: 5px; padding: 13px 15px; }
   .post-row, .post-row.is-lead { grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 22px 0; }
   .footer-links { gap: 32px; }

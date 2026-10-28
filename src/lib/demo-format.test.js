@@ -14,7 +14,7 @@ test('long output keeps head and tail and counts what it dropped', () => {
 	assert.equal(out[0].t, 'line 0');
 	assert.equal(out.at(-1).t, 'line 99');
 	assert.ok(out[HEAD].skip);
-	assert.match(out[HEAD].t, /\b87 lines\b/);
+	assert.match(out[HEAD].t, new RegExp(`\\b${100 - HEAD - TAIL} lines\\b`));
 });
 
 test('bytes reads like the manual prints it', () => {

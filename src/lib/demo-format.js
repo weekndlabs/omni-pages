@@ -4,8 +4,8 @@
    every reel, and a 378 line test run would fill the screen. Long output keeps
    its head and its tail, the parts a reader checks, and says how much the page
    left out. The elision is the page's, never OMNI's, and is styled apart. */
-export const HEAD = 9;
-export const TAIL = 4;
+export const HEAD = 6;
+export const TAIL = 3;
 
 export function shorten(text) {
 	const lines = text.replace(/\n$/, '').split('\n').map((t) => ({ t }));

@@ -7,9 +7,9 @@ import { loadReels } from '../lib/demo.js';
 const GITHUB_REPO = 'https://github.com/fajarhide/omni';
 const GITHUB_RELEASES = `${GITHUB_REPO}/releases`;
 
-/* The CHANGELOG the /releases page already parses, rather than a literal that
-   went stale (it read v0.6.9 seven releases later) whenever the GitHub API
-   rate-limited the build. The script at the bottom still refreshes it live. */
+/* For the structured data. The CHANGELOG the /releases page already parses,
+   rather than a literal that went stale (it read v0.6.9 seven releases later)
+   whenever the GitHub API rate-limited the build. */
 const { releases } = await getReleases();
 const latestVersion = `v${releases[0].version}`;
 
@@ -27,9 +27,9 @@ const tallestReel = Math.max(...reels.map((r) => r.rawLines.length));
 const gs = reels.find((r) => r.name === 'git-status');
 
 const installs = [
-	{ label: 'macOS, Linux', cmd: 'brew install fajarhide/tap/omni' },
-	{ label: 'Any Unix', cmd: 'curl -fsSL omni.weekndlabs.com/install | bash' },
-	{ label: 'Windows', cmd: 'irm omni.weekndlabs.com/install.ps1 | iex' },
+	{ tab: 'Homebrew', cmd: 'brew install fajarhide/tap/omni' },
+	{ tab: 'curl', cmd: 'curl -fsSL omni.weekndlabs.com/install | bash' },
+	{ tab: 'PowerShell', cmd: 'irm omni.weekndlabs.com/install.ps1 | iex' },
 ];
 
 /* What it does. One row per behaviour, each with the receipt that proves it
@@ -147,7 +147,7 @@ const jsonLd = {
 						<h1 class="t-display">Your agent reads less noise, and loses nothing<span class="text-brand">.</span></h1>
 
 						<p class="lede">
-							OMNI is a shell hook for coding agents. It trims command output the model does not need, replaces output the model has already seen with a short marker, and archives everything it cuts so <code>omni retrieve</code> can print it again. A command that fails reaches the model whole.
+							OMNI is a shell hook for coding agents. It trims output the model does not need, folds what it has already seen into a short marker, and archives every cut so <code>omni retrieve</code> can print it again. A failing command reaches the model whole.
 						</p>
 
 						<div class="hero-actions">
@@ -161,13 +161,6 @@ const jsonLd = {
 					</div>
 
 					<div class="hero-demo">
-						<p class="release">
-							<span class="release-dot" aria-hidden="true"></span>
-							<span id="omni-version">{latestVersion}</span>
-							<span aria-hidden="true">/</span>
-							<span id="omni-status" data-status="stable">Stable</span>
-						</p>
-
 						{/* The signature: the raw output, then the noise struck through and
 						    collapsed, then what the agent actually received. The third reel
 						    is a failing run, and nothing happens to it. That is the promise
@@ -198,31 +191,33 @@ const jsonLd = {
 							</div>
 							<div class="crt-foot">
 								<span id="reel-saved">{reels[0].verdict}</span>
-								<span>exit {reels[0].exit}, real output from omni exec {demoVersion}</span>
+								<span id="reel-exit">exit {reels[0].exit}, omni {demoVersion}</span>
 							</div>
 						</figure>
-						<p class="crt-cap">
-							Fixtures from <code>tests/fixtures/</code>, long ones shortened where marked: <span id="reel-cap">{reels[0].cap}</span>
-						</p>
+						<p class="crt-cap" id="reel-cap">{reels[0].cap}</p>
 					</div>
-					<div class="hero-install">
-					{/* All three installers are printed. The curl and PowerShell ones
-					    used to sit behind link-styled buttons, so a reader pasted a
-					    pipe-to-shell command they had never seen. */}
-					<div class="install">
-						{installs.map((i) => (
-							<div class="install-row">
+					{/* One row, three installers. Radios rather than script so the switch
+					    works without JS and the arrow keys move between them; every command
+					    is still printed, one tab away, never hidden behind a link. */}
+					<div class="hero-install install" role="group" aria-label="Install OMNI">
+						{installs.map((i, n) => (
+							<input class="os-radio" type="radio" name="os" id={`os-${n}`} checked={n === 0} />
+						))}
+						<div class="install-head">
+							{installs.map((i, n) => <label class="os-tab" for={`os-${n}`}>{i.tab}</label>)}
+							<span class="install-then">then <code>omni init</code></span>
+						</div>
+						{installs.map((i, n) => (
+							<div class="install-row" data-os={n}>
 								<span class="sigil" aria-hidden="true">$</span>
 								<code>{i.cmd}</code>
-								<span class="install-os">{i.label}</span>
 								<button class="copy" type="button" data-copy={i.cmd} aria-label={`Copy: ${i.cmd}`}>
 									<svg class="i-copy" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
 									<svg class="i-ok" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
 								</button>
 							</div>
 						))}
-						<p class="install-alt">Then <code>omni init</code>. <span id="copy-status" role="status" aria-live="polite"></span></p>
-					</div>
+						<p class="install-status" id="copy-status" role="status" aria-live="polite"></p>
 					</div>
 				</div>
 			</div>
@@ -419,7 +414,7 @@ const jsonLd = {
 			el('reel-saved').textContent = r.verdict;
 			el('reel-cap').textContent = r.cap;
 			el('meter').textContent = r.inBytes;
-			demo.querySelector('.crt-foot span:last-child').textContent = `exit ${r.exit}, real output from omni exec ${demoVersion}`;
+			el('reel-exit').textContent = `exit ${r.exit}, omni ${demoVersion}`;
 		}
 
 		// The verdict for one reel. A failing run is never struck: the phase just
@@ -493,27 +488,5 @@ const jsonLd = {
 				}, ok ? 1800 : 6000);
 			});
 		});
-
-		// Keep the release badge current between deploys.
-		fetch('https://api.github.com/repos/fajarhide/omni/releases/latest')
-			.then((r) => (r.ok ? r.json() : null))
-			.then((data) => {
-				if (!data) return;
-				const v = el('omni-version');
-				const s = el('omni-status');
-				if (v && data.tag_name !== v.textContent) {
-					v.textContent = data.tag_name;
-					const tag = data.tag_name;
-					const label = tag.includes('-rc') ? 'Release candidate'
-						: tag.includes('-alpha') ? 'Alpha'
-						: tag.includes('-beta') ? 'Beta'
-						: 'Stable';
-					if (s) {
-						s.textContent = label;
-						s.setAttribute('data-status', label.toLowerCase().replace(' ', '-'));
-					}
-				}
-			})
-			.catch(() => {});
 	</script>
 </Layout>
