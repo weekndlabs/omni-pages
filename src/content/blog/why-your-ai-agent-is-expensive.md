@@ -7,6 +7,8 @@ author: OMNI Deep Dive
 featured: true
 ---
 
+> **Note, October 2026.** The figures in this post come from an early benchmark of 1,810 commands and no longer match the current release. The current numbers, with the corpus they were measured on, are on the [front page](/#numbers) and in the [benchmark doc](/docs/develop/benchmarks).
+
 If you are using Claude Code, Cursor, or any autonomous AI agent for daily software development, you have likely noticed two glaring and painful trends: your Anthropic or OpenAI API bills are escalating exponentially, and the deeper you get into a session, the "dumber" and more repetitive the AI's responses become.
 
 The hard truth? It is not the model's fault. It is the way you are passing context. And more specifically, it is what you are allowing the AI to read blindly.
