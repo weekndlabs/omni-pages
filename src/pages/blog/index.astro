@@ -2,9 +2,13 @@
 import Layout from '../../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
 import { RC_SLUG, wordsIn } from '../../lib/blog.js';
+import { eraOf } from '../../lib/cover.js';
+import Cover from '../../components/Cover.astro';
 
 const all = await getCollection('blog');
-const sorted = all.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+/* Same-day releases (0.8.0 and 0.8.1 both shipped on Oct 29) fall back to the
+   id, which carries the version, so the later release still lists first. */
+const sorted = all.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf() || b.id.localeCompare(a.id));
 
 /* Fourteen of the forty-two posts are release-candidate notes. Listed inline
    they buried everything else, so they get their own compact group at the end.
@@ -15,6 +19,13 @@ const candidates = sorted.filter((p) => RC_SLUG.test(p.id));
 const lead = posts.find((p) => p.data.featured);
 const rest = posts.filter((p) => p !== lead);
 
+/* One thread per era, newest first: the posts since the rename, then the OMNI
+   history under its own name. */
+const eras = [
+	{ name: 'Contexere', posts: rest.filter((p) => eraOf(p.data.date) === 'contexere') },
+	{ name: 'OMNI', posts: rest.filter((p) => eraOf(p.data.date) === 'omni') },
+].filter((e) => e.posts.length);
+
 const fmt = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 const iso = (d) => d.toISOString();
 
@@ -24,10 +35,10 @@ const iso = (d) => d.toISOString();
 const jsonLd = {
 	'@context': 'https://schema.org',
 	'@type': 'Blog',
-	name: 'OMNI Journal',
+	name: 'Contexere Journal',
 	url: 'https://omni.weekndlabs.com/blog',
 	inLanguage: 'en',
-	publisher: { '@type': 'Organization', name: 'OMNI', url: 'https://omni.weekndlabs.com' },
+	publisher: { '@type': 'Organization', name: 'Contexere', url: 'https://omni.weekndlabs.com' },
 	blogPost: posts.map((p) => ({
 		'@type': 'BlogPosting',
 		headline: p.data.title,
@@ -40,8 +51,8 @@ const jsonLd = {
 ---
 
 <Layout
-	title="OMNI journal, release notes and benchmark write-ups"
-	description="Release notes, architecture write-ups, and the benchmark work behind OMNI, the Rust CLI that cuts terminal noise before your AI coding agent reads it."
+	title="Contexere journal, release notes and benchmark write-ups"
+	description="Release notes, architecture write-ups, and the benchmark work behind Contexere, formerly OMNI, the context layer for AI coding agents."
 	jsonLd={jsonLd}
 >
 	<div class="wrap wrap-doc">
@@ -65,15 +76,24 @@ const jsonLd = {
 				</a>
 			)}
 
-			{rest.map((post) => (
-				<a href={`/blog/${post.id}`} class="post-row">
-					<time class="post-when" datetime={iso(post.data.date)}>{fmt(post.data.date)}</time>
-					<div>
-						{post.data.tag && <span class="post-tag">{post.data.tag}</span>}
-						<h2><span class="post-title">{post.data.title}</span></h2>
-						<p class="post-excerpt">{post.data.description}</p>
-					</div>
-				</a>
+			{eras.map((era) => (
+				<section class="era">
+					<h2 class="era-h">{era.name}</h2>
+					<ol class="thread">
+						{era.posts.map((post) => (
+							<li>
+								<a href={`/blog/${post.id}`} class="thread-row">
+									<Cover size="row" title={post.data.title} image={post.data.image} imageAlt={post.data.imageAlt} />
+									<div>
+										<time class="post-when" datetime={iso(post.data.date)}>{fmt(post.data.date)}</time>
+										<h3 class="post-title">{post.data.title}</h3>
+										<p class="post-excerpt">{post.data.description}</p>
+									</div>
+								</a>
+							</li>
+						))}
+					</ol>
+				</section>
 			))}
 		</div>
 

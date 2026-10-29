@@ -1,10 +1,12 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Mark from '../components/Mark.astro';
 import { getBenchmarkStats, extremes } from '../lib/readme-stats.js';
 import { getReleases } from '../lib/changelog.js';
 import { loadReels } from '../lib/demo.js';
 
-const GITHUB_REPO = 'https://github.com/fajarhide/omni';
+const GITHUB_REPO = 'https://github.com/fajarhide/contexere';
+const DISCORD = 'https://discord.gg/zHTuvZhF2M';
 const GITHUB_RELEASES = `${GITHUB_REPO}/releases`;
 
 /* For the structured data. The CHANGELOG the /releases page already parses,
@@ -27,7 +29,7 @@ const tallestReel = Math.max(...reels.map((r) => r.rawLines.length));
 const gs = reels.find((r) => r.name === 'git-status');
 
 const installs = [
-	{ tab: 'Homebrew', cmd: 'brew install fajarhide/tap/omni' },
+	{ tab: 'Homebrew', cmd: 'brew install fajarhide/tap/contexere' },
 	{ tab: 'curl', cmd: 'curl -fsSL omni.weekndlabs.com/install | bash' },
 	{ tab: 'PowerShell', cmd: 'irm omni.weekndlabs.com/install.ps1 | iex' },
 ];
@@ -95,18 +97,18 @@ const hosts = [
    `omni <cmd> --help` against an installed build before adding one, because
    three commands taken from docs/ once turned out not to exist. */
 const commands = [
-	{ k: 'omni init', v: 'Wire the hook and the MCP server into your agent. Interactive.' },
-	{ k: 'omni doctor --fix', v: 'Check the hooks and the MCP wiring, then repair whatever is broken.' },
-	{ k: 'omni stats', v: 'What it actually saved on your machine, and from which commands.' },
+	{ k: 'contexere init', v: 'Wire the hook and the MCP server into your agent. Interactive.' },
+	{ k: 'contexere doctor --fix', v: 'Check the hooks and the MCP wiring, then repair whatever is broken.' },
+	{ k: 'contexere stats', v: 'What it actually saved on your machine, and from which commands.' },
 	{ k: 'omni retrieve', v: 'Print what a marker archived, by the 16 characters inside it.' },
-	{ k: 'omni reset', v: 'Take it back out. Clean uninstall, keeping a backup of your config.' },
+	{ k: 'contexere reset', v: 'Take it back out. Clean uninstall, keeping a backup of your config.' },
 ];
 
 const jsonLd = {
 	'@context': 'https://schema.org',
 	'@type': 'SoftwareApplication',
-	name: 'OMNI',
-	alternateName: 'OMNI context engine',
+	name: 'Contexere',
+	alternateName: 'OMNI',
 	applicationCategory: 'DeveloperApplication',
 	applicationSubCategory: 'Command line tool',
 	operatingSystem: 'macOS, Linux, Windows',
@@ -131,8 +133,8 @@ const jsonLd = {
 ---
 
 <Layout
-	title="OMNI, less noise in your coding agent's context"
-	description="Free Rust CLI for AI coding agents. Trims command output the model does not need, folds what it has already seen into a handle, and archives every byte it cuts."
+	title="Contexere, the context layer for every coding agent you use"
+	description="One place for the skills, credentials and memory of every AI coding agent. Shipping today: a free Rust hook that trims output the model does not need and archives every byte it cuts."
 	jsonLd={jsonLd}
 >
 	<main>
@@ -140,27 +142,34 @@ const jsonLd = {
 			<div class="wrap">
 				<div class="hero-grid">
 					<div class="hero-copy">
-						{/* No percentage up here. The figure moves twentyfold between two
-						    weeks of the same developer's work, so the one claim that holds
-						    on any workload is what OMNI will and will not do. The numbers
-						    are further down, with their corpus beside them. */}
-						<h1 class="t-display">Your agent reads less noise, and loses nothing<span class="text-brand">.</span></h1>
+						{/* Mission first, then the moment that started it. No percentage up
+						    here: what ships today is named in one line, and the figures are
+						    further down with their corpus beside them. */}
+						<h1 class="t-display">One place for the <span class="th1">skills</span>, <span class="th2">credentials</span> and <span class="th3">memory</span> of every agent you use<span class="text-brand">.</span></h1>
 
-						<p class="lede">
-							OMNI is a shell hook for coding agents. It trims output the model does not need, folds what it has already seen into a short marker, and archives every cut so <code>omni retrieve</code> can print it again. A failing command reaches the model whole.
-						</p>
+						<p class="lede">Because switching from Claude Code to Codex should not mean starting over.</p>
 
 						<div class="hero-actions">
-							<a href={GITHUB_REPO} class="btn btn-solid" target="_blank" rel="noopener noreferrer">
-								<svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-								Read the source
-							</a>
-							<a href="#numbers" class="btn btn-ghost">See the numbers</a>
+							<a href="#install" class="btn btn-accent">Install</a>
+							<a href={DISCORD} class="btn btn-ghost" target="_blank" rel="noopener noreferrer">Join Discord</a>
 						</div>
-
+						<p class="hero-cmd"><code>brew install fajarhide/tap/contexere</code></p>
+						<p class="hero-note">Shipping today: the context and token layer. Memory and skills across agents are next.</p>
 					</div>
+					<div class="hero-art" aria-hidden="true"><Mark cropped size={560} /></div>
+				</div>
+			</div>
+		</section>
 
-					<div class="hero-demo">
+		{/* What ships today, shown rather than told. The terminal moved here from the
+		    hero when the hero became the mission. */}
+		<section class="band" id="today">
+			<div class="wrap today-grid">
+				<header class="band-head">
+					<span class="eyebrow">Works today</span>
+					<p class="lede">The context and token layer: repeated reads fold to one line, noisy builds keep the result, credentials are redacted before the model reads them.</p>
+				</header>
+				<div class="hero-demo">
 						{/* The signature: the raw output, then the noise struck through and
 						    collapsed, then what the agent actually received. The third reel
 						    is a failing run, and nothing happens to it. That is the promise
@@ -196,7 +205,6 @@ const jsonLd = {
 						</figure>
 						<p class="crt-cap" id="reel-cap">{reels[0].cap}</p>
 					</div>
-				</div>
 			</div>
 		</section>
 
@@ -208,7 +216,7 @@ const jsonLd = {
 				{/* One row, three installers. Radios rather than script so the switch
 				    works without JS and the arrow keys move between them; every command
 				    is still printed, one tab away, never hidden behind a link. */}
-				<div class="install" role="group" aria-label="Install OMNI">
+				<div class="install" role="group" aria-label="Install Contexere">
 					{installs.map((i, n) => (
 						<input class="os-radio" type="radio" name="os" id={`os-${n}`} checked={n === 0} />
 					))}
@@ -225,7 +233,7 @@ const jsonLd = {
 							</button>
 						</div>
 					))}
-					<p class="install-then">Then run <code>omni init</code> to wire it into your agent. <span id="copy-status" role="status" aria-live="polite"></span></p>
+					<p class="install-then">Then run <code>contexere init</code> to wire it into your agent. <span id="copy-status" role="status" aria-live="polite"></span></p>
 				</div>
 			</div>
 		</section>

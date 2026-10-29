@@ -64,10 +64,9 @@ const structuredData = jsonLd ?? defaultJsonLd;
 ---
 
 <!doctype html>
-{/* data-theme is written before first paint by the script in <head>. The
-    attribute starts as light so a reader with JavaScript off gets the paper
-    version rather than the design system's bare dark default. */}
-<html lang="en" data-theme="light">
+{/* data-theme is written before first paint by the script in <head>. It
+    starts as dark, Contexere's own ground, for a reader with JavaScript off. */}
+<html lang="en" data-theme="dark">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -88,18 +87,19 @@ const structuredData = jsonLd ?? defaultJsonLd;
 		    chrome one shade off. Matching the toggle would need JS to rewrite the
 		    tag on every switch, which is more moving parts than the mismatch is
 		    worth. */}
-		<meta name="theme-color" media="(prefers-color-scheme: light)" content="#FAFAFA" />
-		<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#131316" />
+		<meta name="theme-color" media="(prefers-color-scheme: light)" content="#EEF0F6" />
+		<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#14172A" />
 
 		{/* Before first paint, so the page never flashes the wrong theme. A stored
-		    choice wins over the OS; nothing stored means follow the OS. Kept inline
+		    choice wins over the OS; nothing stored means dark unless the OS asks
+		    for light. Kept inline
 		    and tiny for that reason: a deferred module would run after paint. */}
 		<script is:inline>
 			(() => {
 				let stored = null;
 				try { stored = localStorage.getItem('omni-theme'); } catch { /* private mode */ }
 				const dark = stored ? stored === 'dark'
-					: matchMedia('(prefers-color-scheme: dark)').matches;
+					: !matchMedia('(prefers-color-scheme: light)').matches;
 				document.documentElement.dataset.theme = dark ? 'dark' : 'light';
 			})();
 		</script>

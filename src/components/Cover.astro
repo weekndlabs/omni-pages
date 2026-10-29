@@ -1,0 +1,21 @@
+---
+/* A post's cover. A real release card wins; otherwise one is drawn from the
+   post itself: the cropped mark, the version when the title names one, and the
+   title when the cover is wide or has no version to show. */
+import Mark from './Mark.astro';
+import { versionOf } from '../lib/cover.js';
+
+interface Props { title: string; image?: string; imageAlt?: string; size: 'row' | 'wide' }
+const { title, image, imageAlt, size } = Astro.props;
+const version = versionOf(title);
+const showTitle = size === 'wide' || !version;
+---
+{image ? (
+	<img class={`cover cover-${size} cover-img`} src={image} alt={imageAlt || ''} width="1200" height="630" loading={size === 'wide' ? 'eager' : 'lazy'} decoding="async" />
+) : (
+	<div class={`cover cover-${size}`} aria-hidden="true">
+		<Mark cropped class="cover-mark" />
+		{showTitle && <span class="cover-title">{title.replace(/^(OMNI|Contexere)\s+v[\d.]+(-rc\d+)?:\s*/, '')}</span>}
+		{version && <span class="cover-version">{version}</span>}
+	</div>
+)}

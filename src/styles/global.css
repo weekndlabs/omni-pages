@@ -28,15 +28,24 @@
    is the whole adapter: 800 lines of rules below it never learn that the
    palette moved. */
 :root {
-  /* Paper, raised, recessed. */
-  --paper:        var(--wl-background);
-  --paper-panel:  var(--wl-card);
-  --paper-sunk:   var(--wl-muted);
+  /* Contexere's colours come from the mark, not from @weekndlabs/design, so
+     weekndlabs.com keeps its own. Fonts and measures still come from the
+     package. src/lib/palette.js holds the same values and tests them for AA.
+     Dark is the default; the light block below overrides it. */
+  --paper:        #14172A;
+  --paper-panel:  #1B1F36;
+  --paper-sunk:   #191C33;
 
-  --ink:          var(--wl-foreground);
-  --ink-soft:     var(--wl-muted-foreground);
-  --rule:         var(--wl-border);
-  --rule-strong:  var(--wl-input);
+  --ink:          #E6E8F2;
+  --ink-soft:     #8F94B0;
+  --rule:         #2C3150;
+  --rule-strong:  #3A4066;
+
+  /* The three threads of the mark: skills, credentials, memory. Together only
+     where they mean those three things; teal alone is the action accent. */
+  --t1: #5FAEF5;
+  --t2: #9187F0;
+  --t3: #3FD4B4;
 
   /* The instrument. Only ever used together, only inside .crt. The system
      carries a terminal ramp precisely so a black block is not a local
@@ -65,7 +74,7 @@
   /* The accent, on paper. Links, rules under them, the focus ring, the dot
      after the headline. --wl-ring is what weekndlabs.com spends it on, and
      unlike the old amber it has a dark-theme value. */
-  --accent:       var(--wl-ring);
+  --accent:       var(--t3);
 
   --font-display: var(--wl-font-sans);
   --font-body:    var(--wl-font-sans);
@@ -85,7 +94,12 @@
 /* Tells the browser which way to paint what it owns rather than what we style:
    form controls, scrollbars, the caret, and the canvas behind an overscroll.
    Without it a light page hands dark-mode users a dark scrollbar. */
-:root[data-theme='light'] { color-scheme: light; }
+:root[data-theme='light'] {
+  color-scheme: light;
+  --paper: #EEF0F6; --paper-panel: #E3E6F0; --paper-sunk: #E8EBF3;
+  --ink: #14172A; --ink-soft: #565B78; --rule: #CDD1E0; --rule-strong: #AFB4C8;
+  --t1: #2F7FE0; --t2: #5B4FD6; --t3: #0E7462;
+}
 :root[data-theme='dark']  { color-scheme: dark; }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -212,7 +226,7 @@ code {
   min-height: 44px;
 }
 .btn-solid { background: var(--ink); color: var(--paper); }
-.btn-solid:hover { background: oklch(from var(--wl-primary) calc(l - 0.06) c h); transform: translateY(-1px); }
+.btn-solid:hover { background: oklch(from var(--ink) calc(l - 0.06) c h); transform: translateY(-1px); }
 .btn-ghost { background: transparent; color: var(--ink); }
 .btn-ghost:hover { background: var(--paper-sunk); }
 .btn-sm { padding: var(--wl-space-2) var(--wl-space-3); font-size: var(--wl-text-meta); min-height: 44px; }
@@ -292,7 +306,7 @@ code {
    Hero
    -------------------------------------------------------------------------- */
 
-.hero { padding: 60px 0 52px; }
+.hero { padding: 60px 0 52px; overflow: clip; }
 .hero-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
@@ -302,6 +316,18 @@ code {
 .hero h1 { margin-bottom: 22px; }
 .hero .lede { margin-bottom: 30px; }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.hero-grid:has(.hero-art) { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
+.th1 { color: var(--t1); } .th2 { color: var(--t2); } .th3 { color: var(--t3); }
+.btn-accent { background: var(--accent); color: var(--paper); font-weight: 600; }
+.btn-accent:hover { background: oklch(from var(--accent) calc(l - 0.06) c h); transform: translateY(-1px); }
+.hero-cmd { margin-top: 22px; }
+.hero-cmd code { font-family: var(--font-mono); font-size: var(--wl-text-meta); color: var(--ink);
+  background: var(--paper-panel); border: 1px solid var(--rule); border-radius: 4px; padding: 8px 12px; display: inline-block; max-width: 100%; overflow-x: auto; }
+.hero-note { margin-top: 14px; color: var(--ink-soft); font-size: var(--wl-text-meta); }
+/* The mark as art, cropped by the page edge like the release cards. */
+.hero-art { position: relative; justify-self: end; margin-right: -12vw; }
+.hero-art .logo-mark { width: min(520px, 42vw); height: auto; display: block; }
+.today-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 56px; align-items: start; }
 
 
 /* Install strip. Reads as a field you copy from, not a hero CTA. Every
@@ -733,6 +759,9 @@ code {
      that `auto` floor is the widest line in the terminal, which pushed the whole
      hero to 493px inside a 390px viewport. */
   .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+  .hero-grid:has(.hero-art) { grid-template-columns: minmax(0, 1fr); }
+  .hero-art { display: none; }
+  .today-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
   .split { grid-template-columns: minmax(0, 1fr); gap: 26px; }
 }
 
@@ -883,3 +912,65 @@ code {
   .step-next { text-align: left; margin-left: 0; }
   .rc-list li { flex-direction: column; gap: 2px; }
 }
+
+/* Post covers. The mark runs off the right edge as art, the same move as the
+   release cards and the hero. */
+.cover {
+  position: relative; display: block; overflow: hidden; width: 100%;
+  aspect-ratio: 1200 / 630; border: 1px solid var(--rule); border-radius: var(--wl-radius-sm, 4px);
+  background: var(--paper-panel);
+}
+.cover-wide { aspect-ratio: 1200 / 430; }
+.cover-img { object-fit: cover; height: auto; }
+/* A real card is never cropped: only drawn covers take the wide frame. */
+.cover-wide.cover-img { aspect-ratio: 1200 / 630; }
+.cover-mark { position: absolute; right: -18%; top: 50%; transform: translateY(-50%); width: 62%; height: auto; }
+.cover-wide .cover-mark { right: -6%; width: 42%; }
+.cover-version {
+  position: absolute; left: 8%; bottom: 10%;
+  font-family: var(--font-mono); font-weight: 600; color: var(--ink); font-size: clamp(12px, 2.4vw, 22px);
+}
+.cover-title {
+  position: absolute; left: 8%; top: 12%; max-width: 58%;
+  font-family: var(--font-display); font-weight: 700; color: var(--ink); line-height: 1.15;
+  font-size: clamp(11px, 1.6vw, 26px);
+}
+.cover-row .cover-title { font-size: 11px; }
+
+/* The journal as one thread per era. The line carries the three threads of the
+   mark top to bottom; each post is a knot on it. */
+.era { margin-top: var(--wl-space-8, 48px); }
+.era-h { font-family: var(--font-display); font-size: var(--wl-text-meta); font-weight: 600; color: var(--ink-soft); margin-bottom: 16px; }
+.thread { list-style: none; position: relative; padding-left: 28px; }
+.thread::before {
+  content: ""; position: absolute; left: 8px; top: 6px; bottom: 6px; width: 3px; border-radius: 2px;
+  background: linear-gradient(var(--t1), var(--t2), var(--t3));
+}
+.thread > li { position: relative; }
+.thread > li::before {
+  content: ""; position: absolute; left: -25px; top: 50%; width: 11px; height: 11px; border-radius: 50%;
+  transform: translateY(-50%); background: var(--paper); border: 2px solid var(--t3);
+}
+.thread-row {
+  display: grid; grid-template-columns: minmax(0, 200px) minmax(0, 1fr); gap: 20px; align-items: center;
+  padding: 12px 0; min-height: 44px;
+}
+.thread-row .post-when { display: block; }
+.thread-row .post-title { font-size: var(--wl-text-body); font-weight: 600; margin: 2px 0 4px; }
+.thread-row:hover .post-title { color: var(--accent); }
+@media (max-width: 640px) {
+  .thread-row { grid-template-columns: minmax(0, 110px) minmax(0, 1fr); gap: 14px; }
+  .thread-row .post-excerpt { display: none; }
+}
+
+/* "What you get": the post's own lines, one thread colour per row. */
+.article .cover { margin: 28px 0 20px; }
+.glance { border: 1px solid var(--rule); border-radius: 6px; padding: 14px 18px; margin-bottom: 32px; background: var(--paper-panel); }
+.glance-h { font-family: var(--font-display); font-size: var(--wl-text-meta); font-weight: 600; color: var(--ink-soft); margin-bottom: 6px; }
+.glance ul { list-style: none; }
+.glance li { position: relative; padding: 8px 0 8px 20px; border-top: 1px solid var(--rule); line-height: 1.5; }
+.glance li:first-child { border-top: 0; }
+.glance li::before { content: ""; position: absolute; left: 2px; top: 16px; width: 8px; height: 8px; border-radius: 50%; background: var(--t1); }
+.glance li:nth-child(3n+2)::before { background: var(--t2); }
+.glance li:nth-child(3n)::before { background: var(--t3); }
+.glance code { font-family: var(--font-mono); font-size: .9em; }

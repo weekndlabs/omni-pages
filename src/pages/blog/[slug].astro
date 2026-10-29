@@ -2,6 +2,8 @@
 import Layout from '../../layouts/Layout.astro';
 import { getCollection, render } from 'astro:content';
 import { RC_SLUG, wordsIn, relatedFor } from '../../lib/blog.js';
+import { glanceFor } from '../../lib/cover.js';
+import Cover from '../../components/Cover.astro';
 
 export async function getStaticPaths() {
   const all = await getCollection('blog');
@@ -29,9 +31,14 @@ const isReleaseCandidate = RC_SLUG.test(entry.id);
 /* Most post titles already say OMNI, so appending the brand pushed 18 of 50
    titles past the ~60 characters a SERP shows and got them truncated. Only
    append when the title does not name the product itself. */
-const pageTitle = /\bOMNI\b/i.test(entry.data.title)
+const pageTitle = /\b(OMNI|Contexere)\b/i.test(entry.data.title)
 	? entry.data.title
-	: `${entry.data.title}, OMNI`;
+	: `${entry.data.title}, Contexere`;
+
+/* The post in five seconds: its description, then its first list if the post
+   opens with one. Backticks become code; the body below is untouched. */
+const glance = glanceFor(entry.body || '', entry.data.description);
+const glanceRows = [glance.description, ...glance.bullets].map((t) => t.split('`'));
 
 /* There were zero links between any of the 42 posts, so nothing pointed at the
    handful worth reading and no topical cluster could form. Every post now links
@@ -57,9 +64,9 @@ const jsonLd = {
 	inLanguage: 'en',
 	mainEntityOfPage: { '@type': 'WebPage', '@id': url },
 	author: { '@type': 'Person', name: author, url: 'https://github.com/fajarhide' },
-	publisher: { '@type': 'Organization', name: 'OMNI', url: 'https://omni.weekndlabs.com' },
-	isPartOf: { '@type': 'Blog', name: 'OMNI Journal', url: 'https://omni.weekndlabs.com/blog' },
-	about: { '@type': 'SoftwareApplication', name: 'OMNI', applicationCategory: 'DeveloperApplication' },
+	publisher: { '@type': 'Organization', name: 'Contexere', url: 'https://omni.weekndlabs.com' },
+	isPartOf: { '@type': 'Blog', name: 'Contexere Journal', url: 'https://omni.weekndlabs.com/blog' },
+	about: { '@type': 'SoftwareApplication', name: 'Contexere', applicationCategory: 'DeveloperApplication' },
 };
 
 /* Posts sit two levels down and nothing told a crawler that, so every result
@@ -68,7 +75,7 @@ const breadcrumbs = {
 	'@context': 'https://schema.org',
 	'@type': 'BreadcrumbList',
 	itemListElement: [
-		{ '@type': 'ListItem', position: 1, name: 'OMNI', item: 'https://omni.weekndlabs.com' },
+		{ '@type': 'ListItem', position: 1, name: 'Contexere', item: 'https://omni.weekndlabs.com' },
 		{ '@type': 'ListItem', position: 2, name: 'Journal', item: 'https://omni.weekndlabs.com/blog' },
 		{ '@type': 'ListItem', position: 3, name: entry.data.title, item: url },
 	],
@@ -95,6 +102,17 @@ const breadcrumbs = {
 				<span>{readTime} min read</span>
 			</div>
 		</header>
+
+		<Cover size="wide" title={entry.data.title} image={entry.data.image} imageAlt={entry.data.imageAlt} />
+
+		<section class="glance" aria-label="What you get">
+			<h2 class="glance-h">What you get</h2>
+			<ul>
+				{glanceRows.map((parts) => (
+					<li>{parts.map((t, k) => (k % 2 ? <code>{t}</code> : t))}</li>
+				))}
+			</ul>
+		</section>
 
 		{isReleaseCandidate && (
 			<p class="rc-note">

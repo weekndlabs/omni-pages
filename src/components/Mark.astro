@@ -1,0 +1,14 @@
+---
+/* The three arcs of media/logo.svg, paths verbatim. `cropped` drops the case so
+   the arcs can run off an edge as art; the full mark keeps the case for a logo. */
+interface Props { size?: number; cropped?: boolean; class?: string }
+const { size = 40, cropped = false, class: cls } = Astro.props;
+---
+<svg class:list={['logo-mark', cls]} viewBox="0 0 1024 1024" width={size} height={size} aria-hidden="true">
+	{!cropped && <rect width="1024" height="1024" rx="230" fill="#1B1F36" />}
+	<g fill="none" stroke-width="58" stroke-linecap="round">
+		<path d="M745.3,329.8 A296,296 0 1 0 745.3,694.2" style="stroke:var(--t1)" />
+		<path d="M652.1,345.0 A218,218 0 1 0 652.1,679.0" style="stroke:var(--t2)" />
+		<path d="M577.7,388.4 A140,140 0 1 0 577.7,635.6" style="stroke:var(--t3)" />
+	</g>
+</svg>
