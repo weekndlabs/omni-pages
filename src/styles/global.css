@@ -897,3 +897,25 @@ code {
   .step-next { text-align: left; margin-left: 0; }
   .rc-list li { flex-direction: column; gap: 2px; }
 }
+
+/* Post covers. The mark runs off the right edge as art, the same move as the
+   release cards and the hero. */
+.cover {
+  position: relative; display: block; overflow: hidden; width: 100%;
+  aspect-ratio: 1200 / 630; border: 1px solid var(--rule); border-radius: var(--wl-radius-sm, 4px);
+  background: var(--paper-panel);
+}
+.cover-wide { aspect-ratio: 1200 / 430; }
+.cover-img { object-fit: cover; height: auto; }
+.cover-mark { position: absolute; right: -18%; top: 50%; transform: translateY(-50%); width: 62%; height: auto; }
+.cover-wide .cover-mark { right: -6%; width: 42%; }
+.cover-version {
+  position: absolute; left: 8%; bottom: 10%;
+  font-family: var(--font-mono); font-weight: 600; color: var(--ink); font-size: clamp(12px, 2.4vw, 22px);
+}
+.cover-title {
+  position: absolute; left: 8%; top: 12%; max-width: 58%;
+  font-family: var(--font-display); font-weight: 700; color: var(--ink); line-height: 1.15;
+  font-size: clamp(11px, 1.6vw, 26px);
+}
+.cover-row .cover-title { font-size: 11px; }
