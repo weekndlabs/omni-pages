@@ -922,6 +922,8 @@ code {
 }
 .cover-wide { aspect-ratio: 1200 / 430; }
 .cover-img { object-fit: cover; height: auto; }
+/* A real card is never cropped: only drawn covers take the wide frame. */
+.cover-wide.cover-img { aspect-ratio: 1200 / 630; }
 .cover-mark { position: absolute; right: -18%; top: 50%; transform: translateY(-50%); width: 62%; height: auto; }
 .cover-wide .cover-mark { right: -6%; width: 42%; }
 .cover-version {
@@ -960,3 +962,15 @@ code {
   .thread-row { grid-template-columns: minmax(0, 110px) minmax(0, 1fr); gap: 14px; }
   .thread-row .post-excerpt { display: none; }
 }
+
+/* "What you get": the post's own lines, one thread colour per row. */
+.article .cover { margin: 28px 0 20px; }
+.glance { border: 1px solid var(--rule); border-radius: 6px; padding: 14px 18px; margin-bottom: 32px; background: var(--paper-panel); }
+.glance-h { font-family: var(--font-display); font-size: var(--wl-text-meta); font-weight: 600; color: var(--ink-soft); margin-bottom: 6px; }
+.glance ul { list-style: none; }
+.glance li { position: relative; padding: 8px 0 8px 20px; border-top: 1px solid var(--rule); line-height: 1.5; }
+.glance li:first-child { border-top: 0; }
+.glance li::before { content: ""; position: absolute; left: 2px; top: 16px; width: 8px; height: 8px; border-radius: 50%; background: var(--t1); }
+.glance li:nth-child(3n+2)::before { background: var(--t2); }
+.glance li:nth-child(3n)::before { background: var(--t3); }
+.glance code { font-family: var(--font-mono); font-size: .9em; }
