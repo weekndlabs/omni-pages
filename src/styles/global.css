@@ -306,7 +306,7 @@ code {
    Hero
    -------------------------------------------------------------------------- */
 
-.hero { padding: 60px 0 52px; }
+.hero { padding: 60px 0 52px; overflow: clip; }
 .hero-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
@@ -316,6 +316,18 @@ code {
 .hero h1 { margin-bottom: 22px; }
 .hero .lede { margin-bottom: 30px; }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.hero-grid:has(.hero-art) { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
+.th1 { color: var(--t1); } .th2 { color: var(--t2); } .th3 { color: var(--t3); }
+.btn-accent { background: var(--accent); color: var(--paper); font-weight: 600; }
+.btn-accent:hover { background: oklch(from var(--accent) calc(l - 0.06) c h); transform: translateY(-1px); }
+.hero-cmd { margin-top: 22px; }
+.hero-cmd code { font-family: var(--font-mono); font-size: var(--wl-text-meta); color: var(--ink);
+  background: var(--paper-panel); border: 1px solid var(--rule); border-radius: 4px; padding: 8px 12px; display: inline-block; max-width: 100%; overflow-x: auto; }
+.hero-note { margin-top: 14px; color: var(--ink-soft); font-size: var(--wl-text-meta); }
+/* The mark as art, cropped by the page edge like the release cards. */
+.hero-art { position: relative; justify-self: end; margin-right: -12vw; }
+.hero-art .logo-mark { width: min(520px, 42vw); height: auto; display: block; }
+.today-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 56px; align-items: start; }
 
 
 /* Install strip. Reads as a field you copy from, not a hero CTA. Every
@@ -747,6 +759,9 @@ code {
      that `auto` floor is the widest line in the terminal, which pushed the whole
      hero to 493px inside a 390px viewport. */
   .hero-grid { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+  .hero-grid:has(.hero-art) { grid-template-columns: minmax(0, 1fr); }
+  .hero-art { display: none; }
+  .today-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
   .split { grid-template-columns: minmax(0, 1fr); gap: 26px; }
 }
 

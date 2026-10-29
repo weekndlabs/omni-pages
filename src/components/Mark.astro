@@ -4,7 +4,7 @@
 interface Props { size?: number; cropped?: boolean; class?: string }
 const { size = 40, cropped = false, class: cls } = Astro.props;
 ---
-<svg class:list={['mark', cls]} viewBox="0 0 1024 1024" width={size} height={size} aria-hidden="true">
+<svg class:list={['logo-mark', cls]} viewBox="0 0 1024 1024" width={size} height={size} aria-hidden="true">
 	{!cropped && <rect width="1024" height="1024" rx="230" fill="#1B1F36" />}
 	<g fill="none" stroke-width="58" stroke-linecap="round">
 		<path d="M745.3,329.8 A296,296 0 1 0 745.3,694.2" style="stroke:var(--t1)" />
