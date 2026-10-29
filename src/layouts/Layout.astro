@@ -24,7 +24,7 @@ const {
     image = '/media/og.png',
     // Travels with . A page that overrides one and not the other
     // describes a picture it is not showing.
-    imageAlt = 'OMNI, noise-canceling context and long-term memory for AI coding agents',
+    imageAlt = 'Contexere, the context layer for AI coding agents',
     author = 'Fajar Hidayat',
     publishDate,
     jsonLd,
@@ -41,7 +41,8 @@ const isArticle = Boolean(publishDate);
 const defaultJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
-    name: 'OMNI',
+    name: 'Contexere',
+    alternateName: 'OMNI',
     applicationCategory: 'DeveloperApplication',
     operatingSystem: 'macOS, Linux, Windows',
     description,
@@ -78,7 +79,7 @@ const structuredData = jsonLd ?? defaultJsonLd;
 		<!-- Canonical URL -->
 		<link rel="canonical" href={canonicalURL} />
 		<link rel="sitemap" href="/sitemap-index.xml" />
-		<link rel="alternate" type="text/plain" href="/llms.txt" title="OMNI summary for AI systems" />
+		<link rel="alternate" type="text/plain" href="/llms.txt" title="Contexere summary for AI systems" />
 
 		<meta name="author" content={author} />
 		{/* The one place a token has to be written out: this meta takes a colour,
@@ -106,7 +107,7 @@ const structuredData = jsonLd ?? defaultJsonLd;
 		<meta name="robots" content={robots} />
 
 		<!-- Open Graph -->
-		<meta property="og:site_name" content="OMNI" />
+		<meta property="og:site_name" content="Contexere" />
 		<meta property="og:type" content={isArticle ? 'article' : 'website'} />
 		<meta property="og:url" content={canonicalURL} />
 		<meta property="og:title" content={title} />
