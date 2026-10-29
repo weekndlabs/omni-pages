@@ -50,7 +50,7 @@ Taken from the logo (`public/media/contexere-0.8.1.png` shows it applied):
 - three threads: skills blue `#5FAEF5`, credentials violet `#9187F0`, memory teal
   `#3FD4B4`. Teal is the single accent for actions. The three together appear only where
   they mean the three things (the hero words, the mark, the blog thread).
-- light variant: `#EEF0F6` ground, threads `#2F7FE0 / #5B4FD6 / #138A72`. Both themes ship
+- light variant: `#EEF0F6` ground, threads `#2F7FE0 / #5B4FD6 / #0E7462`. Both themes ship
   and pass AA.
 - the mark drawn large and cropped by the edge is the hero art.
 

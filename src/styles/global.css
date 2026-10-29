@@ -98,7 +98,7 @@
   color-scheme: light;
   --paper: #EEF0F6; --paper-panel: #E3E6F0; --paper-sunk: #E8EBF3;
   --ink: #14172A; --ink-soft: #565B78; --rule: #CDD1E0; --rule-strong: #AFB4C8;
-  --t1: #2F7FE0; --t2: #5B4FD6; --t3: #138A72;
+  --t1: #2F7FE0; --t2: #5B4FD6; --t3: #0E7462;
 }
 :root[data-theme='dark']  { color-scheme: dark; }
 

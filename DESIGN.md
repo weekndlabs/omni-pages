@@ -37,7 +37,7 @@ three threads as its only colour, and only where they mean those three things.
 | soft ink | `#8F94B0` | `#565B78` |
 | skills | `#5FAEF5` | `#2F7FE0` |
 | credentials | `#9187F0` | `#5B4FD6` |
-| memory, accent | `#3FD4B4` | `#138A72` |
+| memory, accent | `#3FD4B4` | `#0E7462` |
 
 Dark is the no-JS default; an OS that asks for light gets light; a stored toggle wins.
 The terminal keeps its own `--wl-terminal-*` ramp on a black ground in both themes.

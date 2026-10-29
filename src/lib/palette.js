@@ -12,7 +12,7 @@ export const PALETTE = {
 	light: {
 		ground: '#EEF0F6', panel: '#E3E6F0', rule: '#CDD1E0',
 		ink: '#14172A', inkSoft: '#565B78',
-		t1: '#2F7FE0', t2: '#5B4FD6', t3: '#138A72',
+		t1: '#2F7FE0', t2: '#5B4FD6', t3: '#0E7462',
 	},
 };
 

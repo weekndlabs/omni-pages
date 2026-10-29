@@ -16,3 +16,13 @@ for (const t of ['dark', 'light']) {
 		for (const k of ['t1', 't2', 't3']) assert.ok(contrast(p[k], p.ground) >= 3, k);
 	});
 }
+
+for (const t of ['dark', 'light']) {
+	const p = PALETTE[t];
+	// t3 is also the accent: links, hover titles and the Install label are body text.
+	test(`${t}: the accent passes AA as text on ground and panel, and under paper on a button`, () => {
+		assert.ok(contrast(p.t3, p.ground) >= 4.5, 'on ground');
+		assert.ok(contrast(p.t3, p.panel) >= 4.5, 'on panel');
+		assert.ok(contrast(p.ground, p.t3) >= 4.5, 'button label');
+	});
+}

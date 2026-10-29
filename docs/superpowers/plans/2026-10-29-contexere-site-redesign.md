@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - Palette (dark, default): ground `#14172A`, panel `#1B1F36`, rule `#2C3150`, ink `#E6E8F2`, soft ink `#8F94B0`, threads `#5FAEF5` / `#9187F0` / `#3FD4B4`, teal is the one action accent.
-- Palette (light): ground `#EEF0F6`, threads `#2F7FE0` / `#5B4FD6` / `#138A72`; panel, rule, ink and soft ink as in the 0.8.1 card (`#E3E6F0`, `#CDD1E0`, `#14172A`, `#565B78`).
+- Palette (light): ground `#EEF0F6`, threads `#2F7FE0` / `#5B4FD6` / `#0E7462`; panel, rule, ink and soft ink as in the 0.8.1 card (`#E3E6F0`, `#CDD1E0`, `#14172A`, `#565B78`).
 - Both themes pass WCAG AA (4.5:1 body text, 3:1 large text and UI).
 - Mark geometry is `media/logo.svg` from `fajarhide/contexere`, three arcs, paths copied verbatim.
 - Discord: `https://discord.gg/zHTuvZhF2M`. Install command: `brew install fajarhide/tap/contexere`.
