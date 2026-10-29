@@ -934,3 +934,29 @@ code {
   font-size: clamp(11px, 1.6vw, 26px);
 }
 .cover-row .cover-title { font-size: 11px; }
+
+/* The journal as one thread per era. The line carries the three threads of the
+   mark top to bottom; each post is a knot on it. */
+.era { margin-top: var(--wl-space-8, 48px); }
+.era-h { font-family: var(--font-display); font-size: var(--wl-text-meta); font-weight: 600; color: var(--ink-soft); margin-bottom: 16px; }
+.thread { list-style: none; position: relative; padding-left: 28px; }
+.thread::before {
+  content: ""; position: absolute; left: 8px; top: 6px; bottom: 6px; width: 3px; border-radius: 2px;
+  background: linear-gradient(var(--t1), var(--t2), var(--t3));
+}
+.thread > li { position: relative; }
+.thread > li::before {
+  content: ""; position: absolute; left: -25px; top: 50%; width: 11px; height: 11px; border-radius: 50%;
+  transform: translateY(-50%); background: var(--paper); border: 2px solid var(--t3);
+}
+.thread-row {
+  display: grid; grid-template-columns: minmax(0, 200px) minmax(0, 1fr); gap: 20px; align-items: center;
+  padding: 12px 0; min-height: 44px;
+}
+.thread-row .post-when { display: block; }
+.thread-row .post-title { font-size: var(--wl-text-body); font-weight: 600; margin: 2px 0 4px; }
+.thread-row:hover .post-title { color: var(--accent); }
+@media (max-width: 640px) {
+  .thread-row { grid-template-columns: minmax(0, 110px) minmax(0, 1fr); gap: 14px; }
+  .thread-row .post-excerpt { display: none; }
+}
