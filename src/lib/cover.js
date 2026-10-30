@@ -28,3 +28,24 @@ export function glanceFor(body, description) {
 	}
 	return { description, bullets };
 }
+
+const versionKey = (title) =>
+	(versionOf(title) || 'v0.0.0').slice(1).split(/[.-]/).map((n) => parseInt(n.replace('rc', ''), 10) || 0);
+
+/**
+ * Sort comparator for posts: newest date first, and on a shared date the higher
+ * version first, compared as numbers so v0.8.10 beats v0.8.9.
+ */
+export function newestFirst(a, b) {
+	const byDate = b.data.date.valueOf() - a.data.date.valueOf();
+	if (byDate) return byDate;
+	const [x, y] = [versionKey(a.data.title), versionKey(b.data.title)];
+	for (let i = 0; i < Math.max(x.length, y.length); i++) {
+		if ((y[i] || 0) !== (x[i] || 0)) return (y[i] || 0) - (x[i] || 0);
+	}
+	return b.id.localeCompare(a.id);
+}
+
+/** A title for a drawn cover: the version and the brand beside it are already on the cover. */
+export const coverTitle = (title) =>
+	title.replace(/\s*(?:(?:OMNI|Contexere)\s+)?v\d+\.\d+\.\d+(-rc\d+)?:?\s*/, ' ').replace(/^\s*:?\s*|\s*:?\s*$/g, '');

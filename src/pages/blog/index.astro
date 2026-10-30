@@ -2,13 +2,13 @@
 import Layout from '../../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
 import { RC_SLUG, wordsIn } from '../../lib/blog.js';
-import { eraOf } from '../../lib/cover.js';
+import { eraOf, newestFirst } from '../../lib/cover.js';
 import Cover from '../../components/Cover.astro';
 
 const all = await getCollection('blog');
 /* Same-day releases (0.8.0 and 0.8.1 both shipped on Oct 29) fall back to the
-   id, which carries the version, so the later release still lists first. */
-const sorted = all.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf() || b.id.localeCompare(a.id));
+   version, so the later release still lists first. */
+const sorted = all.sort(newestFirst);
 
 /* Fourteen of the forty-two posts are release-candidate notes. Listed inline
    they buried everything else, so they get their own compact group at the end.
@@ -86,6 +86,7 @@ const jsonLd = {
 									<Cover size="row" title={post.data.title} image={post.data.image} imageAlt={post.data.imageAlt} />
 									<div>
 										<time class="post-when" datetime={iso(post.data.date)}>{fmt(post.data.date)}</time>
+										{post.data.tag && post.data.tag !== 'Release Note' && <span class="post-tag">{post.data.tag}</span>}
 										<h3 class="post-title">{post.data.title}</h3>
 										<p class="post-excerpt">{post.data.description}</p>
 									</div>

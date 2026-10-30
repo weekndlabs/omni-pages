@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync } from 'node:fs';
-import { versionOf, eraOf, glanceFor } from './cover.js';
+import { versionOf, eraOf, glanceFor, newestFirst, coverTitle } from './cover.js';
 
 test('versionOf reads a release and keeps the rc suffix', () => {
 	assert.equal(versionOf('Contexere v0.8.1: The New Name'), 'v0.8.1');
@@ -32,4 +32,21 @@ test('every post on disk has a description for its box', () => {
 		const body = src.replace(/^---[\s\S]*?\n---\n/, '');
 		assert.ok(glanceFor(body, desc).description.length > 0, f);
 	}
+});
+
+test('newestFirst breaks a same-day tie by version, numerically', () => {
+	const d = new Date('2026-10-29');
+	const post = (title, id) => ({ id, data: { title, date: d } });
+	const a = post('Contexere v0.8.9: A', 'contexere-v0-8-9-a');
+	const b = post('Contexere v0.8.10: B', 'contexere-v0-8-10-b');
+	assert.deepEqual([a, b].sort(newestFirst).map((p) => p.id), ['contexere-v0-8-10-b', 'contexere-v0-8-9-a']);
+	const older = { id: 'x', data: { title: 'Contexere v0.9.0: C', date: new Date('2026-10-01') } };
+	assert.equal([older, a].sort(newestFirst)[0], a, 'date still wins over version');
+});
+
+test('coverTitle drops the version and the brand next to it, wherever they sit', () => {
+	assert.equal(coverTitle('Contexere v0.8.1: The New Name, Everywhere You Look'), 'The New Name, Everywhere You Look');
+	assert.equal(coverTitle('Automated Tool Distillation: OMNI v0.5.7-rc1'), 'Automated Tool Distillation');
+	assert.equal(coverTitle('Six views and a synonym: v0.7.8'), 'Six views and a synonym');
+	assert.equal(coverTitle('Why Your AI Agent Is Expensive'), 'Why Your AI Agent Is Expensive');
 });

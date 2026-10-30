@@ -2,7 +2,7 @@
 import Layout from '../../layouts/Layout.astro';
 import { getCollection, render } from 'astro:content';
 import { RC_SLUG, wordsIn, relatedFor } from '../../lib/blog.js';
-import { glanceFor } from '../../lib/cover.js';
+import { glanceFor, newestFirst } from '../../lib/cover.js';
 import Cover from '../../components/Cover.astro';
 
 export async function getStaticPaths() {
@@ -48,7 +48,7 @@ const related = relatedFor(entry, all);
 
 /* Date-adjacent neighbours, so a crawler can walk the archive without bouncing
    back to the index between every post. */
-const ordered = [...all].sort((a, b) => a.data.date.valueOf() - b.data.date.valueOf());
+const ordered = [...all].sort((a, b) => newestFirst(b, a));
 const i = ordered.findIndex((p) => p.id === entry.id);
 const prev = ordered[i - 1];
 const next = ordered[i + 1];
