@@ -1,168 +1,85 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
 <meta charset="utf-8">
 <!--
-  The share card, rendered by scripts/make-og.mjs. Do not edit public/media/og.png
-  by hand and do not type a number into this file.
-
-  Every {{placeholder}} below is substituted from src/demo/, the same real fixture
-  output the landing page's hero plays, so the card cannot drift from the page the
-  way the one it replaced did. That card shipped 58.9% across 1,810 executions for
-  three weeks after the corpus became 6,656, and carried an invented category name
-  and a logo that was not the mark.
-
-  The theme is pinned because the card is one image with no viewer preference to
-  read. Dark is what an unstyled visitor lands on: @weekndlabs/design carries no
-  prefers-color-scheme rule at all, so the palette comes from [data-theme] and the
-  bare :root holds the dark set. If the site's default ever flips, flip this with
-  it, or the card stops looking like the page it links to.
+  The share card, rendered by scripts/make-cards.mjs at two sizes. Do not edit the PNGs by
+  hand. It says only what ships today, in words a non-developer can follow, and the last
+  line is marked as direction. No figures: a card stays cached by every network it was
+  shared to.
 -->
-<title>OMNI share card</title>
-<link rel="stylesheet" href="../node_modules/@weekndlabs/design/dist/tokens.css">
-<link rel="stylesheet" href="../node_modules/@weekndlabs/design/dist/fonts.css">
+<title>Contexere share card</title>
 <style>
+  @font-face { font-family: "Plex Cond"; src: url(../public/docs/fonts/ibm-plex-sans-condensed-700.woff2) format("woff2"); font-weight: 700; }
+  @font-face { font-family: "Plex Cond"; src: url(../public/docs/fonts/ibm-plex-sans-condensed-600.woff2) format("woff2"); font-weight: 600; }
+  @font-face { font-family: "Plex Sans"; src: url(../public/docs/fonts/ibm-plex-sans-400.woff2) format("woff2"); font-weight: 400; }
+  @font-face { font-family: "Plex Sans"; src: url(../public/docs/fonts/ibm-plex-sans-500.woff2) format("woff2"); font-weight: 500; }
+  @font-face { font-family: "Plex Mono"; src: url(../public/docs/fonts/ibm-plex-mono-400.woff2) format("woff2"); font-weight: 400; }
+  @font-face { font-family: "Plex Mono"; src: url(../public/docs/fonts/ibm-plex-mono-500.woff2) format("woff2"); font-weight: 500; }
+
+  /* Colours come from logo.svg: the navy case and the three threads. */
   :root {
-    --paper: var(--wl-background);
-    --ink: var(--wl-foreground);
-    --ink-soft: var(--wl-muted-foreground);
-    --rule: var(--wl-border);
-    --accent: var(--wl-ring);
-    --crt: var(--wl-terminal-ground);
-    --phosphor: var(--wl-terminal-foreground);
-    --phosphor-dim: var(--wl-terminal-dim);
-    /* The terminal ramp's blue, never --accent. --wl-ring flips with the theme and
-       this ground does not, so the accent falls to 3.38:1 on it under light. */
-    --phosphor-hot: var(--wl-terminal-blue);
+    --bg: #14172A; --panel: #1B1F36; --rule: #2C3150;
+    --ink: #E6E8F2; --ink-soft: #8F94B0;
+    --t1: #5FAEF5; --t2: #9187F0; --t3: #3FD4B4;
+    --accent: var(--t3);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
-
   body {
-    width: 1200px;
-    height: 630px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    background: var(--paper);
-    color: var(--ink);
-    font-family: var(--wl-font-sans);
-    overflow: hidden;
+    width: 100vw; height: 100vh; overflow: hidden; position: relative;
+    background: var(--bg); color: var(--ink);
+    font-family: "Plex Sans", sans-serif;
+    padding: 56px 64px 44px;
+    display: flex; flex-direction: column;
   }
 
-  .left { padding: 58px 0 58px 64px; display: flex; flex-direction: column; }
-  .right { padding: 58px 64px 58px 40px; display: flex; align-items: center; }
+  /* The mark at scale, cropped by the edge: the weave is the brand, so it is the art. */
+  .weave { position: absolute; right: -170px; top: 50%; transform: translateY(-50%);
+           width: 640px; height: 640px; }
+  .weave path { fill: none; stroke-width: 34; stroke-linecap: round; }
 
-  .brand { display: flex; align-items: center; gap: 14px; }
-  .brand img { width: 54px; height: 54px; border-radius: 11px; display: block; }
-  .brand span {
-    font-size: 30px; font-weight: 700; letter-spacing: 0.14em;
-  }
-
-  .eyebrow {
-    margin-top: 30px;
-    font-family: var(--wl-font-mono);
-    font-size: 15px;
-    letter-spacing: 0.18em;
-    color: var(--ink-soft);
-  }
+  header { display: flex; align-items: center; gap: 14px; position: relative; }
+  header img { width: 40px; height: 40px; }
+  .wordmark { font-family: "Plex Cond", sans-serif; font-weight: 700; font-size: 26px; letter-spacing: .04em; }
+  .ver { font-family: "Plex Mono", monospace; font-size: 18px; color: var(--ink-soft);
+         border-left: 1px solid var(--rule); padding-left: 14px; margin-left: 4px; }
 
   h1 {
-    margin-top: 16px;
-    font-size: 52px;
-    line-height: 1.08;
-    letter-spacing: -0.025em;
-    font-weight: 700;
-    max-width: 14ch;
-    hyphens: none;
-    overflow-wrap: normal;
+    position: relative; margin-top: 40px;
+    font-family: "Plex Cond", sans-serif; font-weight: 700;
+    font-size: 58px; line-height: 1.06; letter-spacing: -.01em;
   }
-  h1 .dot { color: var(--accent); }
+  h1 em { font-style: normal; color: var(--accent); }
+  .sub { position: relative; margin-top: 16px; font-size: 21px; color: var(--ink-soft); max-width: 720px; line-height: 1.4; }
+  .next { position: relative; margin-top: auto; max-width: 720px; font-size: 18px; color: var(--ink-soft); border-top: 1px solid var(--rule); padding-top: 14px; }
 
-  .lede {
-    margin-top: 18px;
-    font-size: 18.5px;
-    line-height: 1.45;
-    color: var(--ink-soft);
-    max-width: 37ch;
-  }
+  ul { position: relative; list-style: none; margin-top: auto; width: 690px; }
+  li { display: grid; grid-template-columns: 300px 1fr; align-items: baseline;
+       padding: 11px 0; border-top: 1px solid var(--rule); font-size: 17px; color: var(--ink-soft); }
+  li code { font-family: "Plex Mono", monospace; font-size: 17px; color: var(--ink); }
 
-  /* Both figures carry the same weight. Setting the best case in the large size
-     and the aggregate in fine print is the move the page argues against. */
-  .figures { margin-top: auto; padding-top: 22px; display: flex; gap: 52px; }
-  .fig-n { font-size: 44px; font-weight: 700; letter-spacing: -0.02em; }
-  .fig-l {
-    margin-top: 4px; font-size: 15px; line-height: 1.35;
-    color: var(--ink-soft); max-width: 20ch;
-  }
-
-  .crt {
-    width: 100%;
-    background: var(--crt);
-    border-radius: 14px;
-    padding: 26px 30px 22px;
-    font-family: var(--wl-font-mono);
-    font-size: 16.5px;
-    line-height: 1.72;
-    color: var(--phosphor);
-  }
-  .crt-head {
-    display: flex; justify-content: space-between; align-items: center;
-    font-size: 13px; letter-spacing: 0.12em;
-    color: var(--phosphor-dim);
-    padding-bottom: 16px;
-  }
-  .crt-head b { color: var(--phosphor-hot); font-weight: 400; }
-
-  .ln { display: grid; grid-template-columns: 20px 1fr; }
-  .ln .mark { color: var(--phosphor-dim); }
-  .cut { color: var(--phosphor-dim); text-decoration: line-through; }
-  .keep { color: var(--phosphor-hot); }
-
-  .crt-foot {
-    margin-top: 18px;
-    padding-top: 14px;
-    border-top: 1px solid color-mix(in oklch, var(--phosphor-dim) 30%, transparent);
-    font-size: 13px;
-    color: var(--phosphor-dim);
-    display: flex; justify-content: space-between; gap: 24px;
-    white-space: nowrap;
-  }
+  footer { position: relative; margin-top: 22px; display: flex; gap: 20px; align-items: baseline;
+           font-family: "Plex Mono", monospace; font-size: 16px; color: var(--ink-soft); }
+  footer code { color: var(--ink); background: var(--panel); border: 1px solid var(--rule);
+                border-radius: 3px; padding: 5px 11px; font-size: 17px; }
 </style>
 
-<div class="left">
-  <div class="brand">
-    <img src="../public/logo.svg" alt="">
-    <span>OMNI</span>
-  </div>
+<svg class="weave" viewBox="0 0 1024 1024" aria-hidden="true">
+  <path d="M745.3,329.8 A296,296 0 1 0 745.3,694.2" style="stroke:var(--t1)"/>
+  <path d="M652.1,345.0 A218,218 0 1 0 652.1,679.0" style="stroke:var(--t2)"/>
+  <path d="M577.7,388.4 A140,140 0 1 0 577.7,635.6" style="stroke:var(--t3)"/>
+</svg>
 
-  <p class="eyebrow">SHELL HOOK &middot; MCP SERVER &middot; APACHE 2.0</p>
-  <h1>Your agent reads less noise, and loses nothing<span class="dot">.</span></h1>
-  <p class="lede">
-    It trims command output the model does not need and archives every byte it
-    cuts. A command that fails reaches the model whole.
-  </p>
+<header>
+  <img src="../public/logo.svg" alt="">
+  <span class="wordmark">Contexere</span>
+</header>
 
-  <div class="figures">
-    <div>
-      <div class="fig-n">{{BUILD_SAVED}}</div>
-      <div class="fig-l">off a successful cargo build</div>
-    </div>
-    <div>
-      <div class="fig-n">0 B</div>
-      <div class="fig-l">taken from a failing cargo test</div>
-    </div>
-  </div>
-</div>
+<h1>Less noise for your AI agents.<br><em>Nothing lost.</em></h1>
+<p class="sub">Trims long command results before your AI reads them, and hides the passwords it finds. Free, and it runs on your machine.</p>
 
-<div class="right">
-  <div class="crt">
-    <div class="crt-head">
-      <span>GIT STATUS</span>
-      <span><b>{{FIXTURE_IN}}</b></span>
-    </div>
-{{CRT_LINES}}
-    <div class="crt-foot">
-      <span>{{FIXTURE_OUT}} delivered, {{FIXTURE_SAVED}} smaller</span>
-      <span>nothing deleted, hashed to disk</span>
-    </div>
-  </div>
-</div>
+<p class="next">Growing into one place for the skills, keys and memory of every agent you use.</p>
+
+<footer>
+  <code>brew install fajarhide/tap/contexere</code>
+  <span>github.com/fajarhide/contexere</span>
+</footer>
