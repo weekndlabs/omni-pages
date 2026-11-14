@@ -7,7 +7,7 @@
 # reproducible from tests/fixtures/. This runs each fixture through the installed
 # `omni exec`, behind a stand-in binary that prints the fixture and exits with the
 # code the real command would, so the exit code takes the same path it does live.
-# Not wired into the build: Vercel has no omni binary. Rerun after a release.
+# Not wired into the build: the deploy build has no omni binary. Rerun after a release.
 set -euo pipefail
 
 repo="${OMNI_REPO:?set OMNI_REPO to a checkout of fajarhide/omni}"

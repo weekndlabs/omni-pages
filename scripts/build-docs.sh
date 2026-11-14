@@ -6,17 +6,17 @@
 # lets it be published from here without a second copy: fetch the source, render
 # it, drop the result where Astro copies static files from.
 #
-# Runs during `vercel build` and on a laptop. Everything it needs is downloaded,
+# Runs in the deploy build and on a laptop. Everything it needs is downloaded,
 # so there is no toolchain to install on either.
 #
 # The trap that comes with fetching the source from another repository: a change
-# to the manual there does not publish itself. Vercel builds this project when
+# to the manual there does not publish itself. A deploy builds this project when
 # this project is pushed, and nothing else, so the clone below only picks up new
 # prose when something unrelated happens to trigger a deploy. It cost two and a
 # half hours on 2026-08-12, when fajarhide/omni#487 sat merged and unpublished
 # while /docs kept serving the theme from before it.
 #
-# The fix is a Vercel Deploy Hook for this project, called from a workflow in
+# The fix is a deploy of this project, called from a workflow in
 # fajarhide/omni on any push to main touching `docs/website/**`. Until that is
 # wired, a manual change over there needs a deploy here to become real.
 set -euo pipefail
@@ -31,7 +31,7 @@ trap 'rm -rf "$work"' EXIT
 
 # --- the renderer ------------------------------------------------------------
 # Prefer an mdbook already on PATH, which is the laptop case, so a local run
-# does not download 5 MB it does not need. Vercel has none, so it fetches one.
+# does not download 5 MB it does not need. A deploy runner has none, so it fetches one.
 if command -v mdbook >/dev/null 2>&1; then
   MDBOOK="$(command -v mdbook)"
   echo "docs: using $($MDBOOK --version) from PATH"
@@ -179,12 +179,12 @@ fi
 node "$here/scripts/docs-meta.mjs"
 
 # Every link mdbook writes is relative, so the book only holds together under a
-# path that ends in a slash. /docs and /docs/ both return 200 on Vercel and only
+# path that ends in a slash. /docs and /docs/ can both return 200 and only
 # the second one resolves `css/general.css` inside the book; the first sends it
 # to the origin root, which is what put 404s on omni.weekndlabs.com/*.css. The
-# redirect in vercel.json is what closes that, and this is the check that it is
+# redirect in public/_redirects is what closes that, and this is the check that it is
 # still there, because nothing else in a build would notice if it were dropped.
-grep -q '"/docs"' "$here/vercel.json" || {
-  echo "docs: vercel.json has no /docs to /docs/ redirect, the book will load its assets from the site root" >&2
+grep -q '^/docs /docs/ ' "$here/public/_redirects" || {
+  echo "docs: public/_redirects has no /docs to /docs/ redirect, the book will load its assets from the site root" >&2
   exit 1
 }

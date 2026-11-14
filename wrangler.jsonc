@@ -1,0 +1,12 @@
+{
+  // Static assets only. Build first: npm run build
+  "name": "omni-pages",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "dist",
+    // Same URLs as Vercel's cleanUrls: /x.html redirects to /x, /dir to /dir/.
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+  "routes": [{ "pattern": "omni.weekndlabs.com/*", "zone_name": "weekndlabs.com" }]
+}

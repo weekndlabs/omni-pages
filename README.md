@@ -66,7 +66,7 @@ featured: false
 ## 🛠 Tech Stack
 - **Framework:** [Astro](https://astro.build)
 - **Styling:** Vanilla CSS (Modern CSS variables & Grid)
-- **Deployment:** [Vercel](https://vercel.com)
+- **Deployment:** Cloudflare Workers static assets (`wrangler.jsonc`)
 - **SEO:** Automated Sitemap, Robots.txt, and Meta Tag generation.
 
 ---
