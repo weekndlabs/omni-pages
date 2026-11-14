@@ -234,7 +234,7 @@ export async function getBenchmarkStats() {
 		// already replaced. A warning nobody reads is not a guard, so on a deploy
 		// this stops being advisory.
 		console.warn(`[benchmarks] USING COMMITTED FALLBACK, the live read failed: ${e.message}`);
-		if (process.env.VERCEL && !process.env.OMNI_ALLOW_STALE_BENCHMARKS) {
+		if (process.env.CI && !process.env.OMNI_ALLOW_STALE_BENCHMARKS) {
 			throw new Error(
 				`benchmark parse fell back (${e.message}). Refusing to publish figures ` +
 					`that could not be verified against the manual. Fix the parser in ` +

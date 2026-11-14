@@ -8,14 +8,14 @@
  *
  * The two forms are not a style choice, they are what the server answers:
  *
- *     /docs/concepts/what-it-is.html  308  /docs/concepts/what-it-is
- *     /docs/index.html                308  /docs, then 308 /docs/ (vercel.json)
+ *     /docs/concepts/what-it-is.html  307  /docs/concepts/what-it-is
+ *     /docs/index.html                307  /docs/ (Workers auto-trailing-slash)
  *
  * and each is also the only form whose relative assets resolve. From
  * `/docs/concepts/what-it-is`, mdBook's `../css/general.css` lands on
  * `/docs/css/general.css`; add a trailing slash and the same link asks for
  * `/docs/concepts/css/general.css`. An index page is the other way round, which
- * is what the `/docs` redirect in vercel.json exists for.
+ * is what the `/docs` redirect in public/_redirects exists for.
  */
 import { existsSync, readdirSync } from 'node:fs';
 

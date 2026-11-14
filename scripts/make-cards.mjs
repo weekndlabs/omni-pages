@@ -5,7 +5,7 @@
  *     node scripts/make-cards.mjs
  *
  * Run it when the card's words or the mark change. Deliberately not wired
- * into `npm run build`: the build runs on Vercel, which has no browser, and a card
+ * into `npm run build`: the deploy build has no browser, and a card
  * that silently fails to regenerate in CI is how the card this replaced went weeks
  * out of date without anyone noticing, shipping 58.9% across 1,810 executions long
  * after the corpus became 6,656.
